@@ -6,7 +6,7 @@
 
 ```
 sabia-tcc/
-├── web/              # Frontend — Next.js 15 + TypeScript + Tailwind
+├── web/              # Frontend — Next.js 16 + TypeScript + Tailwind
 ├── api/              # Backend  — Java 21 + Spring Boot 3 + PostgreSQL
 ├── docs/             # Documentação técnica
 ├── .github/          # CI/CD e templates
@@ -18,7 +18,7 @@ sabia-tcc/
 
 | Ferramenta | Versão mínima |
 |---|---|
-| Node.js | 20+ |
+| Node.js | 22+ |
 | Java | 21 |
 | Maven | 3.9+ |
 | Docker + Compose | latest |

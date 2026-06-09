@@ -14,7 +14,7 @@ Browser  ─→  Next.js (apps/web)  ─→  Spring Boot API (apps/api)  ─→ 
 
 | Item | Tecnologia |
 |---|---|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Linguagem | TypeScript |
 | Estilo | Tailwind CSS 4 |
 | HTTP Client | Axios |
