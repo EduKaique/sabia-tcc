@@ -1,15 +1,14 @@
 package com.sabia.api.dto.response;
 
-import com.sabia.api.domain.activity.StatusAtividade;
-
 import java.time.LocalDateTime;
-import java.util.UUID;
+
+import com.sabia.api.model.atividade.StatusAtividade;
 
 public record AtividadeResponse(
-        UUID id,
+        Long id,
         String titulo,
         String descricao,
-        UUID turmaId,
+        Long turmaId,
         int pontuacaoMaxima,
         LocalDateTime dataEntrega,
         boolean eGeradaIa,

@@ -9,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -59,6 +61,7 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(500, "Erro interno do servidor"));
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record ErroResponse(int status, String erro, String timestamp, Map<String, String> campos) {
 
         public static ErroResponse of(int status, String erro) {

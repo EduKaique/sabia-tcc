@@ -1,9 +1,7 @@
 package com.sabia.api.exception;
 
-import java.util.UUID;
-
 public class AtividadeNaoEncontradaException extends RuntimeException {
-    public AtividadeNaoEncontradaException(UUID id) {
+    public AtividadeNaoEncontradaException(Long id) {
         super("Atividade com id " + id + " não encontrada.");
     }
 }

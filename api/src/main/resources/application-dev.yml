@@ -2,7 +2,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true  
+    show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
 
 logging:
   level:

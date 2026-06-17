@@ -1,9 +1,9 @@
 package com.sabia.api.controller.aluno;
 
-import com.sabia.api.domain.user.Usuario;
 import com.sabia.api.dto.request.SubmeterAtividadeRequest;
 import com.sabia.api.dto.response.AtividadeResponse;
 import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.AtividadeService;
 import com.sabia.api.service.SubmissaoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/aluno/atividades")
@@ -37,7 +36,7 @@ public class AlunoAtividadeController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe de uma atividade disponível")
-    public ResponseEntity<AtividadeResponse> buscar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<AtividadeResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeService.buscarParaAluno(alunoId(auth), id));
     }
 
@@ -45,13 +44,13 @@ public class AlunoAtividadeController {
     @Operation(summary = "Submete a atividade com o estado JSON do projeto Scratch")
     public ResponseEntity<SubmissaoResponse> submeter(
             Authentication auth,
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody SubmeterAtividadeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(submissaoService.submeter(alunoId(auth), id, request));
     }
 
-    private UUID alunoId(Authentication auth) {
+    private Long alunoId(Authentication auth) {
         return ((Usuario) auth.getPrincipal()).getId();
     }
 }

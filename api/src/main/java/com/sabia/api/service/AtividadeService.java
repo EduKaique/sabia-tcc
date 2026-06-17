@@ -1,7 +1,5 @@
 package com.sabia.api.service;
 
-import com.sabia.api.domain.activity.AtividadeAvaliativa;
-import com.sabia.api.domain.activity.StatusAtividade;
 import com.sabia.api.dto.request.CriarAtividadeRequest;
 import com.sabia.api.dto.request.EditarAtividadeRequest;
 import com.sabia.api.dto.response.AtividadeResponse;
@@ -9,6 +7,8 @@ import com.sabia.api.exception.AcessoNegadoException;
 import com.sabia.api.exception.AtividadeNaoEncontradaException;
 import com.sabia.api.exception.OperacaoInvalidaException;
 import com.sabia.api.mapper.AtividadeMapper;
+import com.sabia.api.model.atividade.AtividadeAvaliativa;
+import com.sabia.api.model.atividade.StatusAtividade;
 import com.sabia.api.repository.AtividadeAvaliativaRepository;
 import com.sabia.api.repository.TurmaAlunoRepository;
 import com.sabia.api.repository.TurmaRepository;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class AtividadeService {
 
     // --------- PROFESSOR ---------
 
-    public List<AtividadeResponse> listarDosProfessor(UUID professorId, UUID turmaId, StatusAtividade status) {
+    public List<AtividadeResponse> listarDosProfessor(Long professorId, Long turmaId, StatusAtividade status) {
         List<AtividadeAvaliativa> resultado;
         if (turmaId != null && status != null) {
             resultado = atividadeRepository.findByTurma_ProfessorIdAndTurmaIdAndStatus(professorId, turmaId, status);
@@ -48,7 +47,7 @@ public class AtividadeService {
     }
 
     @Transactional
-    public AtividadeResponse criar(UUID professorId, CriarAtividadeRequest request) {
+    public AtividadeResponse criar(Long professorId, CriarAtividadeRequest request) {
         var turma = turmaRepository.findById(request.turmaId())
                 .orElseThrow(() -> new OperacaoInvalidaException("Turma não encontrada."));
 
@@ -69,12 +68,12 @@ public class AtividadeService {
         return atividadeMapper.toResponse(atividade);
     }
 
-    public AtividadeResponse buscarParaProfessor(UUID professorId, UUID atividadeId) {
+    public AtividadeResponse buscarParaProfessor(Long professorId, Long atividadeId) {
         return atividadeMapper.toResponse(validarProprietario(professorId, atividadeId));
     }
 
     @Transactional
-    public AtividadeResponse editar(UUID professorId, UUID atividadeId, EditarAtividadeRequest request) {
+    public AtividadeResponse editar(Long professorId, Long atividadeId, EditarAtividadeRequest request) {
         var atividade = validarProprietario(professorId, atividadeId);
 
         if (request.titulo() != null)         atividade.setTitulo(request.titulo());
@@ -87,7 +86,7 @@ public class AtividadeService {
     }
 
     @Transactional
-    public AtividadeResponse publicar(UUID professorId, UUID atividadeId) {
+    public AtividadeResponse publicar(Long professorId, Long atividadeId) {
         var atividade = validarProprietario(professorId, atividadeId);
         if (atividade.getStatus() == StatusAtividade.PUBLICADA) {
             throw new OperacaoInvalidaException("Atividade já está publicada.");
@@ -98,7 +97,7 @@ public class AtividadeService {
     }
 
     @Transactional
-    public AtividadeResponse despublicar(UUID professorId, UUID atividadeId) {
+    public AtividadeResponse despublicar(Long professorId, Long atividadeId) {
         var atividade = validarProprietario(professorId, atividadeId);
         if (atividade.getStatus() == StatusAtividade.RASCUNHO) {
             throw new OperacaoInvalidaException("Atividade já está como rascunho.");
@@ -110,8 +109,8 @@ public class AtividadeService {
 
     // --------- ALUNO ---------
 
-    public List<AtividadeResponse> listarPublicadasParaAluno(UUID alunoId) {
-        List<UUID> turmaIds = turmaAlunoRepository.findByAlunoId(alunoId).stream()
+    public List<AtividadeResponse> listarPublicadasParaAluno(Long alunoId) {
+        List<Long> turmaIds = turmaAlunoRepository.findByAlunoId(alunoId).stream()
                 .map(ta -> ta.getTurma().getId())
                 .toList();
 
@@ -121,7 +120,7 @@ public class AtividadeService {
                 atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA));
     }
 
-    public AtividadeResponse buscarParaAluno(UUID alunoId, UUID atividadeId) {
+    public AtividadeResponse buscarParaAluno(Long alunoId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
@@ -136,7 +135,7 @@ public class AtividadeService {
 
     // --------- helpers ---------
 
-    private AtividadeAvaliativa validarProprietario(UUID professorId, UUID atividadeId) {
+    private AtividadeAvaliativa validarProprietario(Long professorId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
         if (!atividade.getTurma().getProfessor().getId().equals(professorId)) {

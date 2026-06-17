@@ -1,25 +1,23 @@
 package com.sabia.api.repository;
 
-import com.sabia.api.domain.activity.AtividadeAvaliativa;
-import com.sabia.api.domain.activity.StatusAtividade;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
+import com.sabia.api.model.atividade.AtividadeAvaliativa;
+import com.sabia.api.model.atividade.StatusAtividade;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface AtividadeAvaliativaRepository extends JpaRepository<AtividadeAvaliativa, UUID> {
+public interface AtividadeAvaliativaRepository extends JpaRepository<AtividadeAvaliativa, Long> {
 
-    List<AtividadeAvaliativa> findByTurma_ProfessorId(UUID professorId);
+    List<AtividadeAvaliativa> findByTurma_ProfessorId(Long professorId);
 
-    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndTurmaId(UUID professorId, UUID turmaId);
+    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndTurmaId(Long professorId, Long turmaId);
 
-    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndStatus(UUID professorId, StatusAtividade status);
+    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndStatus(Long professorId, StatusAtividade status);
 
-    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndTurmaIdAndStatus(UUID professorId, UUID turmaId, StatusAtividade status);
+    List<AtividadeAvaliativa> findByTurma_ProfessorIdAndTurmaIdAndStatus(Long professorId, Long turmaId, StatusAtividade status);
 
-    List<AtividadeAvaliativa> findByTurmaIdInAndStatus(List<UUID> turmaIds, StatusAtividade status);
+    List<AtividadeAvaliativa> findByTurmaIdInAndStatus(List<Long> turmaIds, StatusAtividade status);
 
-    List<AtividadeAvaliativa> findByTurmaIdIn(List<UUID> turmaIds);
+    List<AtividadeAvaliativa> findByTurmaIdIn(List<Long> turmaIds);
 }

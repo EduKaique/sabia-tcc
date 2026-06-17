@@ -1,11 +1,11 @@
 package com.sabia.api.repository;
 
-import com.sabia.api.domain.turma.Turma;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.UUID;
+import com.sabia.api.model.turma.Turma;
 
-public interface TurmaRepository extends JpaRepository<Turma, UUID> {
-    List<Turma> findByProfessorId(UUID professorId);
+import java.util.List;
+
+public interface TurmaRepository extends JpaRepository<Turma, Long> {
+    List<Turma> findByProfessorId(Long professorId);
 }

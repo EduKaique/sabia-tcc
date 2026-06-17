@@ -1,12 +1,12 @@
 package com.sabia.api.repository;
 
-import com.sabia.api.domain.user.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.sabia.api.model.usuario.Usuario;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+import java.util.Optional;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByCpf(String cpf);

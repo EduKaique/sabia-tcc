@@ -1,7 +1,7 @@
 package com.sabia.api.controller.aluno;
 
-import com.sabia.api.domain.user.Usuario;
 import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.SubmissaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/aluno/submissoes")
@@ -31,11 +30,11 @@ public class AlunoSubmissaoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da submissão com avaliação (quando CORRIGIDA)")
-    public ResponseEntity<SubmissaoResponse> buscar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<SubmissaoResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(submissaoService.buscarDoAluno(alunoId(auth), id));
     }
 
-    private UUID alunoId(Authentication auth) {
+    private Long alunoId(Authentication auth) {
         return ((Usuario) auth.getPrincipal()).getId();
     }
 }

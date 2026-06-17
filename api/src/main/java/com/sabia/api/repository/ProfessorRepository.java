@@ -1,8 +1,8 @@
 package com.sabia.api.repository;
 
-import com.sabia.api.domain.user.Professor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.UUID;
+import com.sabia.api.model.usuario.Professor;
 
-public interface ProfessorRepository extends JpaRepository<Professor, UUID> {}
+
+public interface ProfessorRepository extends JpaRepository<Professor, Long> {}

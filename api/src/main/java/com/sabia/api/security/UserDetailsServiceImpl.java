@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -20,7 +18,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         try {
-            UUID id = UUID.fromString(identifier);
+            Long id = Long.parseLong(identifier);
             return usuarioRepository.findById(id)
                     .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + identifier));
         } catch (IllegalArgumentException e) {

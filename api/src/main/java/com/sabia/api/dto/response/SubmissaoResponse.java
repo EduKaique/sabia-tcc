@@ -1,13 +1,12 @@
 package com.sabia.api.dto.response;
 
-import com.sabia.api.domain.activity.StatusSubmissao;
-
 import java.time.LocalDateTime;
-import java.util.UUID;
+
+import com.sabia.api.model.atividade.StatusSubmissao;
 
 public record SubmissaoResponse(
-        UUID id,
-        UUID atividadeId,
+        Long id,
+        Long atividadeId,
         LocalDateTime dataEnvio,
         StatusSubmissao status,
         AvaliacaoResponse avaliacao

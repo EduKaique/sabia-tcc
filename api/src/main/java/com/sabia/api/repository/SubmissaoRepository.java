@@ -1,19 +1,19 @@
 package com.sabia.api.repository;
 
-import com.sabia.api.domain.activity.StatusSubmissao;
-import com.sabia.api.domain.activity.Submissao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.sabia.api.model.atividade.StatusSubmissao;
+import com.sabia.api.model.atividade.Submissao;
+
 import java.util.List;
-import java.util.UUID;
 
-public interface SubmissaoRepository extends JpaRepository<Submissao, UUID> {
+public interface SubmissaoRepository extends JpaRepository<Submissao, Long> {
 
-    boolean existsByAlunoIdAndAtividadeId(UUID alunoId, UUID atividadeId);
+    boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
-    List<Submissao> findByAlunoId(UUID alunoId);
+    List<Submissao> findByAlunoId(Long alunoId);
 
     @Query("""
         SELECT s FROM Submissao s
@@ -21,6 +21,6 @@ public interface SubmissaoRepository extends JpaRepository<Submissao, UUID> {
           AND s.status = :status
         """)
     List<Submissao> findByProfessorIdAndStatus(
-            @Param("professorId") UUID professorId,
+            @Param("professorId") Long professorId,
             @Param("status") StatusSubmissao status);
 }

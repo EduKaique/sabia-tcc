@@ -1,8 +1,8 @@
 package com.sabia.api.controller.professor;
 
-import com.sabia.api.domain.user.Usuario;
 import com.sabia.api.dto.request.AvaliarSubmissaoRequest;
 import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.SubmissaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/professor/submissoes")
@@ -33,7 +32,7 @@ public class ProfessorSubmissaoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da submissão com avaliação (se existir)")
-    public ResponseEntity<SubmissaoResponse> buscar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<SubmissaoResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(submissaoService.buscarParaProfessor(professorId(auth), id));
     }
 
@@ -41,12 +40,12 @@ public class ProfessorSubmissaoController {
     @Operation(summary = "Salva nota e feedback. Muda status para CORRIGIDA")
     public ResponseEntity<SubmissaoResponse> avaliar(
             Authentication auth,
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody AvaliarSubmissaoRequest request) {
         return ResponseEntity.ok(submissaoService.avaliar(professorId(auth), id, request));
     }
 
-    private UUID professorId(Authentication auth) {
+    private Long professorId(Authentication auth) {
         return ((Usuario) auth.getPrincipal()).getId();
     }
 }

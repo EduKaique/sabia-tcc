@@ -1,7 +1,8 @@
 package com.sabia.api.mapper;
 
-import com.sabia.api.domain.activity.Avaliacao;
 import com.sabia.api.dto.response.AvaliacaoResponse;
+import com.sabia.api.model.atividade.Avaliacao;
+
 import org.mapstruct.Mapper;
 
 @Mapper

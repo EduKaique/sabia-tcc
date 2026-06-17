@@ -1,10 +1,10 @@
 package com.sabia.api.controller.professor;
 
-import com.sabia.api.domain.activity.StatusAtividade;
-import com.sabia.api.domain.user.Usuario;
 import com.sabia.api.dto.request.CriarAtividadeRequest;
 import com.sabia.api.dto.request.EditarAtividadeRequest;
 import com.sabia.api.dto.response.AtividadeResponse;
+import com.sabia.api.model.atividade.StatusAtividade;
+import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.AtividadeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/professor/atividades")
@@ -32,7 +31,7 @@ public class ProfessorAtividadeController {
     @Operation(summary = "Lista atividades do professor autenticado")
     public ResponseEntity<List<AtividadeResponse>> listar(
             Authentication auth,
-            @RequestParam(required = false) UUID turmaId,
+            @RequestParam(required = false) Long turmaId,
             @RequestParam(required = false) StatusAtividade status) {
         return ResponseEntity.ok(atividadeService.listarDosProfessor(professorId(auth), turmaId, status));
     }
@@ -48,7 +47,7 @@ public class ProfessorAtividadeController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da atividade")
-    public ResponseEntity<AtividadeResponse> buscar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<AtividadeResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeService.buscarParaProfessor(professorId(auth), id));
     }
 
@@ -56,24 +55,24 @@ public class ProfessorAtividadeController {
     @Operation(summary = "Edita atividade")
     public ResponseEntity<AtividadeResponse> editar(
             Authentication auth,
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody EditarAtividadeRequest request) {
         return ResponseEntity.ok(atividadeService.editar(professorId(auth), id, request));
     }
 
     @PatchMapping("/{id}/publicar")
     @Operation(summary = "Publica atividade (RASCUNHO → PUBLICADA)")
-    public ResponseEntity<AtividadeResponse> publicar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<AtividadeResponse> publicar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeService.publicar(professorId(auth), id));
     }
 
     @PatchMapping("/{id}/despublicar")
     @Operation(summary = "Despublica atividade (PUBLICADA → RASCUNHO)")
-    public ResponseEntity<AtividadeResponse> despublicar(Authentication auth, @PathVariable UUID id) {
+    public ResponseEntity<AtividadeResponse> despublicar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeService.despublicar(professorId(auth), id));
     }
 
-    private UUID professorId(Authentication auth) {
+    private Long professorId(Authentication auth) {
         return ((Usuario) auth.getPrincipal()).getId();
     }
 }
