@@ -1,51 +1,72 @@
 package com.sabia.api.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+    @ExceptionHandler({AtividadeNaoEncontradaException.class, SubmissaoNaoEncontradaException.class,
+            ResourceNotFoundException.class})
+    public ResponseEntity<ErroResponse> handleNotFound(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+                .body(ErroResponse.of(404, ex.getMessage()));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResponse> handleAcessoNegado(AcessoNegadoException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErroResponse.of(403, ex.getMessage()));
+    }
+
+    @ExceptionHandler(OperacaoInvalidaException.class)
+    public ResponseEntity<ErroResponse> handleOperacaoInvalida(OperacaoInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErroResponse.of(422, ex.getMessage()));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErroResponse> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErroResponse.of(401, ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
+    public ResponseEntity<ErroResponse> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> campos = new LinkedHashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String field = ((FieldError) error).getField();
-            errors.put(field, error.getDefaultMessage());
+            campos.put(field, error.getDefaultMessage());
         });
-        ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Dados inválidos");
-        response.setFieldErrors(errors);
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.badRequest().body(ErroResponse.ofValidation(campos));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+    public ResponseEntity<ErroResponse> handleGeneric(Exception ex) {
+        log.error("Erro inesperado: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno do servidor"));
+                .body(ErroResponse.of(500, "Erro interno do servidor"));
     }
 
-    public record ErrorResponse(int status, String message, String timestamp,
-                                Map<String, String> fieldErrors) {
-        public ErrorResponse(int status, String message) {
-            this(status, message, Instant.now().toString(), null);
+    public record ErroResponse(int status, String erro, String timestamp, Map<String, String> campos) {
+
+        public static ErroResponse of(int status, String erro) {
+            return new ErroResponse(status, erro, Instant.now().toString(), null);
         }
 
-        public void setFieldErrors(Map<String, String> errors) {
-            // imutável por record — use ErrorResponse(status, message, timestamp, errors) diretamente
+        public static ErroResponse ofValidation(Map<String, String> campos) {
+            return new ErroResponse(400, "Dados inválidos", Instant.now().toString(), campos);
         }
     }
 }

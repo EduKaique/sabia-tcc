@@ -1,8 +1,8 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: update
+    show-sql: true  
 
 logging:
   level:
