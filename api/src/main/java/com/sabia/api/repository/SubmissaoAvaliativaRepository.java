@@ -5,22 +5,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.sabia.api.model.atividade.StatusSubmissao;
-import com.sabia.api.model.atividade.Submissao;
+import com.sabia.api.model.atividade.SubmissaoAvaliativa;
 
 import java.util.List;
 
-public interface SubmissaoRepository extends JpaRepository<Submissao, Long> {
+public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAvaliativa, Long> {
 
     boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
-    List<Submissao> findByAlunoId(Long alunoId);
+    List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);
 
     @Query("""
-        SELECT s FROM Submissao s
+        SELECT s FROM SubmissaoAvaliativa s
         WHERE s.atividade.turma.professor.id = :professorId
           AND s.status = :status
         """)
-    List<Submissao> findByProfessorIdAndStatus(
+    List<SubmissaoAvaliativa> findByProfessorIdAndStatus(
             @Param("professorId") Long professorId,
             @Param("status") StatusSubmissao status);
 }

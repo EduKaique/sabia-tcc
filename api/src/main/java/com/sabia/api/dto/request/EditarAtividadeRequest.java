@@ -9,5 +9,5 @@ public record EditarAtividadeRequest(
         String descricao,
         @Min(1) Integer pontuacaoMaxima,
         LocalDateTime dataEntrega,
-        String estadoJson
+        String gabaritoEstadoJson
 ) {}

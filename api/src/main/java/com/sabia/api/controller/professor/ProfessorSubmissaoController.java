@@ -1,9 +1,9 @@
 package com.sabia.api.controller.professor;
 
 import com.sabia.api.dto.request.AvaliarSubmissaoRequest;
-import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.api.model.usuario.Usuario;
-import com.sabia.api.service.SubmissaoService;
+import com.sabia.api.service.SubmissaoAvaliativaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,27 +22,27 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class ProfessorSubmissaoController {
 
-    private final SubmissaoService submissaoService;
+    private final SubmissaoAvaliativaService submissaoAvaliativaService;
 
     @GetMapping("/pendentes")
     @Operation(summary = "Lista submissões pendentes das turmas do professor")
-    public ResponseEntity<List<SubmissaoResponse>> listarPendentes(Authentication auth) {
-        return ResponseEntity.ok(submissaoService.listarPendentesParaProfessor(professorId(auth)));
+    public ResponseEntity<List<SubmissaoAvaliativaResponse>> listarPendentes(Authentication auth) {
+        return ResponseEntity.ok(submissaoAvaliativaService.listarPendentesParaProfessor(professorId(auth)));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da submissão com avaliação (se existir)")
-    public ResponseEntity<SubmissaoResponse> buscar(Authentication auth, @PathVariable Long id) {
-        return ResponseEntity.ok(submissaoService.buscarParaProfessor(professorId(auth), id));
+    public ResponseEntity<SubmissaoAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
+        return ResponseEntity.ok(submissaoAvaliativaService.buscarParaProfessor(professorId(auth), id));
     }
 
     @PostMapping("/{id}/avaliar")
     @Operation(summary = "Salva nota e feedback. Muda status para CORRIGIDA")
-    public ResponseEntity<SubmissaoResponse> avaliar(
+    public ResponseEntity<SubmissaoAvaliativaResponse> avaliar(
             Authentication auth,
             @PathVariable Long id,
             @Valid @RequestBody AvaliarSubmissaoRequest request) {
-        return ResponseEntity.ok(submissaoService.avaliar(professorId(auth), id, request));
+        return ResponseEntity.ok(submissaoAvaliativaService.avaliar(professorId(auth), id, request));
     }
 
     private Long professorId(Authentication auth) {

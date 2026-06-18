@@ -2,6 +2,7 @@ package com.sabia.api.model.atividade;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -9,24 +10,13 @@ import java.time.ZoneOffset;
 import com.sabia.api.model.usuario.Aluno;
 
 @Entity
-@Table(
-    name = "submissao",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"aluno_id", "atividade_id"})
-)
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-public class Submissao {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Getter @Setter @SuperBuilder @NoArgsConstructor @AllArgsConstructor
+public abstract class Submissao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "projeto_id", nullable = false, unique = true)
-    private ProjetoScratch projeto;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "atividade_id", nullable = false)
-    private AtividadeAvaliativa atividade;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aluno_id", nullable = false)

@@ -1,11 +1,11 @@
 package com.sabia.api.controller.aluno;
 
 import com.sabia.api.dto.request.SubmeterAtividadeRequest;
-import com.sabia.api.dto.response.AtividadeResponse;
-import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.dto.response.AtividadeAvaliativaResponse;
+import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.api.model.usuario.Usuario;
-import com.sabia.api.service.AtividadeService;
-import com.sabia.api.service.SubmissaoService;
+import com.sabia.api.service.AtividadeAvaliativaService;
+import com.sabia.api.service.SubmissaoAvaliativaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,29 +25,29 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class AlunoAtividadeController {
 
-    private final AtividadeService atividadeService;
-    private final SubmissaoService submissaoService;
+    private final AtividadeAvaliativaService atividadeAvaliativaService;
+    private final SubmissaoAvaliativaService submissaoAvaliativaService;
 
     @GetMapping
     @Operation(summary = "Lista atividades publicadas das turmas do aluno")
-    public ResponseEntity<List<AtividadeResponse>> listar(Authentication auth) {
-        return ResponseEntity.ok(atividadeService.listarPublicadasParaAluno(alunoId(auth)));
+    public ResponseEntity<List<AtividadeAvaliativaResponse>> listar(Authentication auth) {
+        return ResponseEntity.ok(atividadeAvaliativaService.listarPublicadasParaAluno(alunoId(auth)));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe de uma atividade disponível")
-    public ResponseEntity<AtividadeResponse> buscar(Authentication auth, @PathVariable Long id) {
-        return ResponseEntity.ok(atividadeService.buscarParaAluno(alunoId(auth), id));
+    public ResponseEntity<AtividadeAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
+        return ResponseEntity.ok(atividadeAvaliativaService.buscarParaAluno(alunoId(auth), id));
     }
 
     @PostMapping("/{id}/submeter")
     @Operation(summary = "Submete a atividade com o estado JSON do projeto Scratch")
-    public ResponseEntity<SubmissaoResponse> submeter(
+    public ResponseEntity<SubmissaoAvaliativaResponse> submeter(
             Authentication auth,
             @PathVariable Long id,
             @Valid @RequestBody SubmeterAtividadeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(submissaoService.submeter(alunoId(auth), id, request));
+                .body(submissaoAvaliativaService.submeter(alunoId(auth), id, request));
     }
 
     private Long alunoId(Authentication auth) {

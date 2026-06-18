@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-public record CriarAtividadeRequest(
+public record CriarAtividadeAvaliativaRequest(
         @NotBlank String titulo,
         String descricao,
         @NotNull Long turmaId,

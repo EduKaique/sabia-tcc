@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @Entity
-@Table(name = "avaliacao")
+@Table(name = "correcao")
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-public class Avaliacao {
+public class Correcao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

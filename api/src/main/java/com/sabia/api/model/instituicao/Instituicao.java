@@ -21,14 +21,6 @@ public class Instituicao {
     @Column(unique = true, length = 18)
     private String cnpj;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private ModalidadeEnsino modalidade;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private CategoriaAdministrativa categoria;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;
 

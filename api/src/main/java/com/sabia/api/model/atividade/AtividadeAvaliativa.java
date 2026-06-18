@@ -1,6 +1,7 @@
 package com.sabia.api.model.atividade;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.time.ZoneOffset;
 import com.sabia.api.model.turma.Turma;
 
 @Entity
-@Table(name = "atividade")
+@Table(name = "atividade_avaliativa")
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class AtividadeAvaliativa {
 
@@ -41,8 +42,8 @@ public class AtividadeAvaliativa {
     @Builder.Default
     private StatusAtividade status = StatusAtividade.RASCUNHO;
 
-    @Column(columnDefinition = "TEXT")
-    private String estadoJson;
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String gabaritoEstadoJson;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;

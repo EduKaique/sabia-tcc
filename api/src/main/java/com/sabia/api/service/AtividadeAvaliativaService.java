@@ -1,12 +1,12 @@
 package com.sabia.api.service;
 
-import com.sabia.api.dto.request.CriarAtividadeRequest;
+import com.sabia.api.dto.request.CriarAtividadeAvaliativaRequest;
 import com.sabia.api.dto.request.EditarAtividadeRequest;
-import com.sabia.api.dto.response.AtividadeResponse;
+import com.sabia.api.dto.response.AtividadeAvaliativaResponse;
 import com.sabia.api.exception.AcessoNegadoException;
 import com.sabia.api.exception.AtividadeNaoEncontradaException;
 import com.sabia.api.exception.OperacaoInvalidaException;
-import com.sabia.api.mapper.AtividadeMapper;
+import com.sabia.api.mapper.AtividadeAvaliativaMapper;
 import com.sabia.api.model.atividade.AtividadeAvaliativa;
 import com.sabia.api.model.atividade.StatusAtividade;
 import com.sabia.api.repository.AtividadeAvaliativaRepository;
@@ -23,16 +23,16 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class AtividadeService {
+public class AtividadeAvaliativaService {
 
     private final AtividadeAvaliativaRepository atividadeRepository;
     private final TurmaRepository turmaRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
-    private final AtividadeMapper atividadeMapper;
+    private final AtividadeAvaliativaMapper atividadeAvaliativaMapper;
 
     // --------- PROFESSOR ---------
 
-    public List<AtividadeResponse> listarDosProfessor(Long professorId, Long turmaId, StatusAtividade status) {
+    public List<AtividadeAvaliativaResponse> listarDosProfessor(Long professorId, Long turmaId, StatusAtividade status) {
         List<AtividadeAvaliativa> resultado;
         if (turmaId != null && status != null) {
             resultado = atividadeRepository.findByTurma_ProfessorIdAndTurmaIdAndStatus(professorId, turmaId, status);
@@ -43,11 +43,11 @@ public class AtividadeService {
         } else {
             resultado = atividadeRepository.findByTurma_ProfessorId(professorId);
         }
-        return atividadeMapper.toResponseList(resultado);
+        return atividadeAvaliativaMapper.toResponseList(resultado);
     }
 
     @Transactional
-    public AtividadeResponse criar(Long professorId, CriarAtividadeRequest request) {
+    public AtividadeAvaliativaResponse criar(Long professorId, CriarAtividadeAvaliativaRequest request) {
         var turma = turmaRepository.findById(request.turmaId())
                 .orElseThrow(() -> new OperacaoInvalidaException("Turma não encontrada."));
 
@@ -65,62 +65,62 @@ public class AtividadeService {
 
         atividade = atividadeRepository.save(atividade);
         log.info("Atividade criada id={} por professor id={}", atividade.getId(), professorId);
-        return atividadeMapper.toResponse(atividade);
+        return atividadeAvaliativaMapper.toResponse(atividade);
     }
 
-    public AtividadeResponse buscarParaProfessor(Long professorId, Long atividadeId) {
-        return atividadeMapper.toResponse(validarProprietario(professorId, atividadeId));
+    public AtividadeAvaliativaResponse buscarParaProfessor(Long professorId, Long atividadeId) {
+        return atividadeAvaliativaMapper.toResponse(validarProprietario(professorId, atividadeId));
     }
 
     @Transactional
-    public AtividadeResponse editar(Long professorId, Long atividadeId, EditarAtividadeRequest request) {
+    public AtividadeAvaliativaResponse editar(Long professorId, Long atividadeId, EditarAtividadeRequest request) {
         var atividade = validarProprietario(professorId, atividadeId);
 
         if (request.titulo() != null)         atividade.setTitulo(request.titulo());
         if (request.descricao() != null)      atividade.setDescricao(request.descricao());
         if (request.pontuacaoMaxima() != null) atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
         if (request.dataEntrega() != null)    atividade.setDataEntrega(request.dataEntrega());
-        if (request.estadoJson() != null)     atividade.setEstadoJson(request.estadoJson());
+        if (request.gabaritoEstadoJson() != null)     atividade.setGabaritoEstadoJson(request.gabaritoEstadoJson());
 
-        return atividadeMapper.toResponse(atividadeRepository.save(atividade));
+        return atividadeAvaliativaMapper.toResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
-    public AtividadeResponse publicar(Long professorId, Long atividadeId) {
+    public AtividadeAvaliativaResponse publicar(Long professorId, Long atividadeId) {
         var atividade = validarProprietario(professorId, atividadeId);
         if (atividade.getStatus() == StatusAtividade.PUBLICADA) {
             throw new OperacaoInvalidaException("Atividade já está publicada.");
         }
         atividade.setStatus(StatusAtividade.PUBLICADA);
         log.info("Atividade id={} publicada", atividadeId);
-        return atividadeMapper.toResponse(atividadeRepository.save(atividade));
+        return atividadeAvaliativaMapper.toResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
-    public AtividadeResponse despublicar(Long professorId, Long atividadeId) {
+    public AtividadeAvaliativaResponse despublicar(Long professorId, Long atividadeId) {
         var atividade = validarProprietario(professorId, atividadeId);
         if (atividade.getStatus() == StatusAtividade.RASCUNHO) {
             throw new OperacaoInvalidaException("Atividade já está como rascunho.");
         }
         atividade.setStatus(StatusAtividade.RASCUNHO);
         log.info("Atividade id={} despublicada", atividadeId);
-        return atividadeMapper.toResponse(atividadeRepository.save(atividade));
+        return atividadeAvaliativaMapper.toResponse(atividadeRepository.save(atividade));
     }
 
     // --------- ALUNO ---------
 
-    public List<AtividadeResponse> listarPublicadasParaAluno(Long alunoId) {
+    public List<AtividadeAvaliativaResponse> listarPublicadasParaAluno(Long alunoId) {
         List<Long> turmaIds = turmaAlunoRepository.findByAlunoId(alunoId).stream()
                 .map(ta -> ta.getTurma().getId())
                 .toList();
 
         if (turmaIds.isEmpty()) return List.of();
 
-        return atividadeMapper.toResponseList(
+        return atividadeAvaliativaMapper.toResponseList(
                 atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA));
     }
 
-    public AtividadeResponse buscarParaAluno(Long alunoId, Long atividadeId) {
+    public AtividadeAvaliativaResponse buscarParaAluno(Long alunoId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
@@ -130,7 +130,7 @@ public class AtividadeService {
         if (!turmaAlunoRepository.existsByTurmaIdAndAlunoId(atividade.getTurma().getId(), alunoId)) {
             throw new AcessoNegadoException("Você não está matriculado nesta turma.");
         }
-        return atividadeMapper.toResponse(atividade);
+        return atividadeAvaliativaMapper.toResponse(atividade);
     }
 
     // --------- helpers ---------

@@ -4,10 +4,10 @@ import java.time.LocalDateTime;
 
 import com.sabia.api.model.atividade.StatusSubmissao;
 
-public record SubmissaoResponse(
+public record SubmissaoAvaliativaResponse(
         Long id,
         Long atividadeId,
         LocalDateTime dataEnvio,
         StatusSubmissao status,
-        AvaliacaoResponse avaliacao
+        CorrecaoResponse correcao
 ) {}

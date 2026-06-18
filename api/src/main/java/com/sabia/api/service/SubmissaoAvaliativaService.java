@@ -2,13 +2,13 @@ package com.sabia.api.service;
 
 import com.sabia.api.dto.request.AvaliarSubmissaoRequest;
 import com.sabia.api.dto.request.SubmeterAtividadeRequest;
-import com.sabia.api.dto.response.AvaliacaoResponse;
-import com.sabia.api.dto.response.SubmissaoResponse;
+import com.sabia.api.dto.response.CorrecaoResponse;
+import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.api.exception.AcessoNegadoException;
 import com.sabia.api.exception.AtividadeNaoEncontradaException;
 import com.sabia.api.exception.OperacaoInvalidaException;
 import com.sabia.api.exception.SubmissaoNaoEncontradaException;
-import com.sabia.api.mapper.AvaliacaoMapper;
+import com.sabia.api.mapper.CorrecaoMapper;
 import com.sabia.api.model.atividade.*;
 import com.sabia.api.model.usuario.Aluno;
 import com.sabia.api.repository.*;
@@ -23,21 +23,21 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class SubmissaoService {
+public class SubmissaoAvaliativaService {
 
-    private final SubmissaoRepository submissaoRepository;
-    private final AvaliacaoRepository avaliacaoRepository;
-    private final AtividadeAvaliativaRepository atividadeRepository;
+    private final SubmissaoAvaliativaRepository submissaoRepository;
+    private final CorrecaoRepository correcaoRepository;
+    private final AtividadeAvaliativaRepository atividadeAvaliativaRepository;
     private final AlunoRepository alunoRepository;
-    private final ProjetoScratchRepository projetoScratchRepository;
+    private final ProjetoAvaliativoRepository projetoScratchRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
-    private final AvaliacaoMapper avaliacaoMapper;
+    private final CorrecaoMapper correcaoMapper;
 
     // --------- ALUNO ---------
 
     @Transactional
-    public SubmissaoResponse submeter(Long alunoId, Long atividadeId, SubmeterAtividadeRequest request) {
-        var atividade = atividadeRepository.findById(atividadeId)
+    public SubmissaoAvaliativaResponse submeter(Long alunoId, Long atividadeId, SubmeterAtividadeRequest request) {
+        var atividade = atividadeAvaliativaRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
         if (atividade.getStatus() != StatusAtividade.PUBLICADA) {
@@ -53,16 +53,17 @@ public class SubmissaoService {
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() -> new AcessoNegadoException("Aluno não encontrado."));
 
-        var projeto = ProjetoScratch.builder()
+        var projeto = ProjetoAvaliativo.builder()
                 .aluno(aluno)
                 .estadoJson(request.estadoJson())
                 .build();
         projeto = projetoScratchRepository.save(projeto);
 
-        var submissao = Submissao.builder()
+        var submissao = SubmissaoAvaliativa.builder()
                 .atividade(atividade)
                 .aluno(aluno)
                 .projeto(projeto)
+                .status(StatusSubmissao.PENDENTE)
                 .build();
         submissao = submissaoRepository.save(submissao);
 
@@ -70,80 +71,80 @@ public class SubmissaoService {
         return toResponse(submissao, null);
     }
 
-    public List<SubmissaoResponse> listarDoAluno(Long alunoId) {
+    public List<SubmissaoAvaliativaResponse> listarDoAluno(Long alunoId) {
         return submissaoRepository.findByAlunoId(alunoId).stream()
-                .map(s -> toResponse(s, avaliacaoRepository.findBySubmissaoId(s.getId()).orElse(null)))
+                .map(s -> toResponse(s, s.getCorrecao()))
                 .toList();
     }
 
-    public SubmissaoResponse buscarDoAluno(Long alunoId, Long submissaoId) {
+    public SubmissaoAvaliativaResponse buscarDoAluno(Long alunoId, Long submissaoId) {
         var submissao = buscarPorId(submissaoId);
         if (!submissao.getAluno().getId().equals(alunoId)) {
             throw new AcessoNegadoException("Esta submissão não pertence ao seu perfil.");
         }
-        return toResponse(submissao, avaliacaoRepository.findBySubmissaoId(submissaoId).orElse(null));
+        return toResponse(submissao, submissao.getCorrecao());
     }
 
     // --------- PROFESSOR ---------
 
-    public List<SubmissaoResponse> listarPendentesParaProfessor(Long professorId) {
+    public List<SubmissaoAvaliativaResponse> listarPendentesParaProfessor(Long professorId) {
         return submissaoRepository.findByProfessorIdAndStatus(professorId, StatusSubmissao.PENDENTE).stream()
                 .map(s -> toResponse(s, null))
                 .toList();
     }
 
-    public SubmissaoResponse buscarParaProfessor(Long professorId, Long submissaoId) {
+    public SubmissaoAvaliativaResponse buscarParaProfessor(Long professorId, Long submissaoId) {
         var submissao = buscarPorId(submissaoId);
         validarProfessorDaSubmissao(professorId, submissao);
-        return toResponse(submissao, avaliacaoRepository.findBySubmissaoId(submissaoId).orElse(null));
+        return toResponse(submissao, submissao.getCorrecao());
     }
 
     @Transactional
-    public SubmissaoResponse avaliar(Long professorId, Long submissaoId, AvaliarSubmissaoRequest request) {
+    public SubmissaoAvaliativaResponse avaliar(Long professorId, Long submissaoId, AvaliarSubmissaoRequest request) {
         var submissao = buscarPorId(submissaoId);
         validarProfessorDaSubmissao(professorId, submissao);
 
-        if (avaliacaoRepository.findBySubmissaoId(submissaoId).isPresent()) {
+        if (submissao.getCorrecao() != null) {
             throw new OperacaoInvalidaException("Esta submissão já foi avaliada.");
         }
 
-        var avaliacao = Avaliacao.builder()
+        var correcao = Correcao.builder()
                 .submissao(submissao)
                 .nota(request.nota())
                 .feedbackProfessor(request.feedbackProfessor())
                 .build();
-        avaliacao = avaliacaoRepository.save(avaliacao);
+        correcao = correcaoRepository.save(correcao);
 
         submissao.setStatus(StatusSubmissao.CORRIGIDA);
         submissaoRepository.save(submissao);
 
         log.info("Submissão id={} avaliada com nota={} pelo professor id={}", submissaoId, request.nota(), professorId);
-        return toResponse(submissao, avaliacao);
+        return toResponse(submissao, correcao);
     }
 
     // --------- helpers ---------
 
-    private Submissao buscarPorId(Long id) {
+    private SubmissaoAvaliativa buscarPorId(Long id) {
         return submissaoRepository.findById(id)
                 .orElseThrow(() -> new SubmissaoNaoEncontradaException(id));
     }
 
-    private void validarProfessorDaSubmissao(Long professorId, Submissao submissao) {
+    private void validarProfessorDaSubmissao(Long professorId, SubmissaoAvaliativa submissao) {
         if (!submissao.getAtividade().getTurma().getProfessor().getId().equals(professorId)) {
             throw new AcessoNegadoException("Esta submissão não pertence a uma atividade sua.");
         }
     }
 
-    private SubmissaoResponse toResponse(Submissao submissao, Avaliacao avaliacao) {
-        AvaliacaoResponse avaliacaoResponse = avaliacao != null
-                ? avaliacaoMapper.toResponse(avaliacao)
+    private SubmissaoAvaliativaResponse toResponse(SubmissaoAvaliativa submissao, Correcao correcao) {
+        CorrecaoResponse CorrecaoResponse = correcao != null
+                ? correcaoMapper.toResponse(correcao)
                 : null;
-        return new SubmissaoResponse(
+        return new SubmissaoAvaliativaResponse(
                 submissao.getId(),
                 submissao.getAtividade().getId(),
                 submissao.getDataEnvio(),
                 submissao.getStatus(),
-                avaliacaoResponse
+                CorrecaoResponse
         );
     }
 }

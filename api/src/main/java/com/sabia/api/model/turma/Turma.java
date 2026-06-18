@@ -29,6 +29,10 @@ public class Turma {
     @JoinColumn(name = "instituicao_id")
     private Instituicao instituicao;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private EtapaEnsino etapa;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;
 

@@ -4,13 +4,11 @@
 -- ================================================================
 
 -- 1. Instituição
-INSERT INTO instituicao (id, nome, cnpj, modalidade, categoria, criada_em)
+INSERT INTO instituicao (id, nome, cnpj, criada_em)
 VALUES (
     1,
     'Universidade Federal do Brasil',
     '00.000.000/0001-00',
-    'PRESENCIAL',
-    'FEDERAL',
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
@@ -53,12 +51,13 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- 4. Turma
-INSERT INTO turma (id, nome, professor_id, instituicao_id, criada_em)
+INSERT INTO turma (id, nome, professor_id, instituicao_id, etapa, criada_em)
 VALUES (
     10,
     'Programação I — 2025/1',
     2,
     1,
+    'ANOS_INICIAIS',
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
@@ -74,7 +73,7 @@ VALUES (
 -- 6. Atividades com status diferentes
 
 -- 6.1 Rascunho (sem prazo)
-INSERT INTO atividade (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
 VALUES (
     20,
     10,
@@ -89,7 +88,7 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- 6.2 Publicada com prazo futuro
-INSERT INTO atividade (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
 VALUES (
     21,
     10,
@@ -104,7 +103,7 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- 6.3 Publicada com prazo encerrado
-INSERT INTO atividade (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
 VALUES (
     22,
     10,
