@@ -17,10 +17,12 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
 
     @Query("""
         SELECT s FROM SubmissaoAvaliativa s
-        WHERE s.atividade.turma.professor.id = :professorId
-          AND s.status = :status
+        WHERE s.atividade.id = :atividadeId
+          AND s.atividade.turma.professor.id = :professorId
+          AND (:status IS NULL OR s.status = :status)
         """)
-    List<SubmissaoAvaliativa> findByProfessorIdAndStatus(
+    List<SubmissaoAvaliativa> findByAtividadeIdAndProfessorAndStatus(
+            @Param("atividadeId") Long atividadeId,
             @Param("professorId") Long professorId,
             @Param("status") StatusSubmissao status);
 }

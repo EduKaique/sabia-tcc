@@ -1,12 +1,13 @@
 import api from '@/lib/api'
-import type { AtividadeAvaliativa } from '@/types'
+import type { AtividadeAvaliativa, AtividadeDetalhes, StatusAtividade } from '@/types'
 
 export interface CriarAtividadePayload {
   titulo: string
   descricao: string
-  turmaId: string
+  turmaId: number
   pontuacaoMaxima: number
-  dataEntrega: string | null
+  dataEntrega: string | undefined
+  status: StatusAtividade
 }
 
 export async function listarAtividades(): Promise<AtividadeAvaliativa[]> {
@@ -46,4 +47,9 @@ export async function despublicarAtividade(id: string): Promise<AtividadeAvaliat
 
 export async function deletarAtividade(id: string): Promise<void> {
   await api.delete(`/api/professor/atividades/${id}`)
+}
+
+export async function buscarAtividadeDetalhes(id: string): Promise<AtividadeDetalhes> {
+  const { data } = await api.get<AtividadeDetalhes>(`/api/professor/atividades/${id}`)
+  return data
 }

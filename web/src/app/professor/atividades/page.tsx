@@ -35,18 +35,18 @@ export default function AtividadesPage() {
   const hasFilter = filter !== 'TODAS'
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="px-8 py-6">
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Atividades</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {total} atividade{total !== 1 ? 's' : ''}
+          <h1 className="text-3xl font-bold text-foreground">Atividades</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerencie os desafios de lógica e acompanhe o progresso das turmas.
           </p>
         </div>
         <Button asChild>
           <Link href="/professor/atividades/nova">
             <Plus size={16} />
-            Nova atividade
+            Nova Atividade
           </Link>
         </Button>
       </div>
@@ -60,7 +60,7 @@ export default function AtividadesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState filtered={hasFilter} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((atividade) => (
             <AtividadeCard
               key={atividade.id}

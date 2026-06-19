@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.sabia.api.model.atividade.StatusAtividade;
 
-public record AtividadeAvaliativaResponse(
+public record AtividadeAvaliativaProfessorResponse(
         Long id,
         String titulo,
         String descricao,
@@ -13,5 +13,6 @@ public record AtividadeAvaliativaResponse(
         LocalDateTime dataEntrega,
         boolean eGeradaIa,
         StatusAtividade status,
-        LocalDateTime criadaEm
+        LocalDateTime criadaEm,
+        String gabaritoEstadoJson
 ) {}

@@ -1,7 +1,6 @@
 package com.sabia.api.model.atividade;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.time.LocalDateTime;

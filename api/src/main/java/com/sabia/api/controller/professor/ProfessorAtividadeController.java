@@ -2,10 +2,14 @@ package com.sabia.api.controller.professor;
 
 import com.sabia.api.dto.request.CriarAtividadeAvaliativaRequest;
 import com.sabia.api.dto.request.EditarAtividadeRequest;
-import com.sabia.api.dto.response.AtividadeAvaliativaResponse;
+import com.sabia.api.dto.response.AtividadeAvaliativaProfessorResponse;
+import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.api.model.atividade.StatusAtividade;
+import com.sabia.api.model.atividade.StatusSubmissao;
 import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.AtividadeAvaliativaService;
+import com.sabia.api.service.SubmissaoAvaliativaService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,10 +30,11 @@ import java.util.List;
 public class ProfessorAtividadeController {
 
     private final AtividadeAvaliativaService atividadeAvaliativaService;
+    private final SubmissaoAvaliativaService submissaoAvaliativaService;
 
     @GetMapping
     @Operation(summary = "Lista atividades do professor autenticado")
-    public ResponseEntity<List<AtividadeAvaliativaResponse>> listar(
+    public ResponseEntity<List<AtividadeAvaliativaProfessorResponse>> listar(
             Authentication auth,
             @RequestParam(required = false) Long turmaId,
             @RequestParam(required = false) StatusAtividade status) {
@@ -38,7 +43,7 @@ public class ProfessorAtividadeController {
 
     @PostMapping
     @Operation(summary = "Cria nova atividade (status inicial: RASCUNHO)")
-    public ResponseEntity<AtividadeAvaliativaResponse> criar(
+    public ResponseEntity<AtividadeAvaliativaProfessorResponse> criar(
             Authentication auth,
             @Valid @RequestBody CriarAtividadeAvaliativaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -47,13 +52,13 @@ public class ProfessorAtividadeController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da atividade")
-    public ResponseEntity<AtividadeAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<AtividadeAvaliativaProfessorResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeAvaliativaService.buscarParaProfessor(professorId(auth), id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Edita atividade")
-    public ResponseEntity<AtividadeAvaliativaResponse> editar(
+    public ResponseEntity<AtividadeAvaliativaProfessorResponse> editar(
             Authentication auth,
             @PathVariable Long id,
             @Valid @RequestBody EditarAtividadeRequest request) {
@@ -62,14 +67,21 @@ public class ProfessorAtividadeController {
 
     @PatchMapping("/{id}/publicar")
     @Operation(summary = "Publica atividade (RASCUNHO → PUBLICADA)")
-    public ResponseEntity<AtividadeAvaliativaResponse> publicar(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<AtividadeAvaliativaProfessorResponse> publicar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeAvaliativaService.publicar(professorId(auth), id));
     }
 
     @PatchMapping("/{id}/despublicar")
     @Operation(summary = "Despublica atividade (PUBLICADA → RASCUNHO)")
-    public ResponseEntity<AtividadeAvaliativaResponse> despublicar(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<AtividadeAvaliativaProfessorResponse> despublicar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeAvaliativaService.despublicar(professorId(auth), id));
+    }
+
+    @GetMapping("/{id}/submissoes")
+    @Operation(summary = "Lista submissões pendentes das turmas do professor")
+    public ResponseEntity<List<SubmissaoAvaliativaResponse>> listarSubmissoesDaAtividade(Authentication auth, @PathVariable Long id,
+        @RequestParam(required = false) StatusSubmissao status) {
+        return ResponseEntity.ok(submissaoAvaliativaService.listarSubmissoesPorAtividade(id, professorId(auth), status));
     }
 
     private Long professorId(Authentication auth) {

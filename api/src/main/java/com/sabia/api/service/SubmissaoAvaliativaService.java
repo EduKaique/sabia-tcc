@@ -87,8 +87,12 @@ public class SubmissaoAvaliativaService {
 
     // --------- PROFESSOR ---------
 
-    public List<SubmissaoAvaliativaResponse> listarPendentesParaProfessor(Long professorId) {
-        return submissaoRepository.findByProfessorIdAndStatus(professorId, StatusSubmissao.PENDENTE).stream()
+    public List<SubmissaoAvaliativaResponse> listarSubmissoesPorAtividade(
+            Long atividadeId, 
+            Long professorId, 
+            StatusSubmissao status) {
+            
+        return submissaoRepository.findByAtividadeIdAndProfessorAndStatus(atividadeId, professorId, status).stream()
                 .map(s -> toResponse(s, null))
                 .toList();
     }
@@ -100,7 +104,7 @@ public class SubmissaoAvaliativaService {
     }
 
     @Transactional
-    public SubmissaoAvaliativaResponse avaliar(Long professorId, Long submissaoId, AvaliarSubmissaoRequest request) {
+    public SubmissaoAvaliativaResponse corrigir(Long professorId, Long submissaoId, AvaliarSubmissaoRequest request) {
         var submissao = buscarPorId(submissaoId);
         validarProfessorDaSubmissao(professorId, submissao);
 

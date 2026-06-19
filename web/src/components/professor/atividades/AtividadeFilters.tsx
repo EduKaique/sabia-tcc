@@ -1,6 +1,17 @@
 'use client'
 
+import { useState } from 'react'
+import { Search, Users } from 'lucide-react'
 import type { StatusAtividade } from '@/types'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useTurmas } from '@/hooks/useTurmas'
 
 export type FilterValue = StatusAtividade | 'TODAS'
 
@@ -9,28 +20,48 @@ interface Props {
   onChange: (v: FilterValue) => void
 }
 
-const tabs: { label: string; value: FilterValue }[] = [
-  { label: 'Todas', value: 'TODAS' },
-  { label: 'Rascunho', value: 'RASCUNHO' },
-  { label: 'Publicadas', value: 'PUBLICADA' },
-]
-
 export function AtividadeFilters({ value, onChange }: Props) {
+  const [searchText, setSearchText] = useState('')
+  const [turmaId, setTurmaId] = useState('TODAS')
+  const { data: turmas = [] } = useTurmas()
+
   return (
-    <div className="flex gap-1 bg-muted p-1 rounded-lg w-fit">
-      {tabs.map((tab) => (
-        <button
-          key={tab.value}
-          onClick={() => onChange(tab.value)}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            value === tab.value
-              ? 'bg-background text-primary shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="flex gap-3">
+      <div className="relative flex-1 max-w-xs">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Buscar atividade por nome..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      <Select value={turmaId} onValueChange={setTurmaId}>
+        <SelectTrigger className="w-44">
+          <Users size={15} className="text-muted-foreground shrink-0" />
+          <SelectValue placeholder="Turma" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="TODAS">Todas as turmas</SelectItem>
+          {turmas.map((t) => (
+            <SelectItem key={t.id} value={String(t.id)}>
+              {t.nome}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={value} onValueChange={(v) => onChange(v as FilterValue)}>
+        <SelectTrigger className="w-40">
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="TODAS">Todas</SelectItem>
+          <SelectItem value="RASCUNHO">Rascunho</SelectItem>
+          <SelectItem value="PUBLICADA">Publicada</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   )
 }

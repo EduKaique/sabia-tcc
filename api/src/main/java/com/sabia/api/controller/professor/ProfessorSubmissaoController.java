@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/professor/submissoes")
 @RequiredArgsConstructor
@@ -24,25 +22,19 @@ public class ProfessorSubmissaoController {
 
     private final SubmissaoAvaliativaService submissaoAvaliativaService;
 
-    @GetMapping("/pendentes")
-    @Operation(summary = "Lista submissões pendentes das turmas do professor")
-    public ResponseEntity<List<SubmissaoAvaliativaResponse>> listarPendentes(Authentication auth) {
-        return ResponseEntity.ok(submissaoAvaliativaService.listarPendentesParaProfessor(professorId(auth)));
-    }
-
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da submissão com avaliação (se existir)")
     public ResponseEntity<SubmissaoAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(submissaoAvaliativaService.buscarParaProfessor(professorId(auth), id));
     }
 
-    @PostMapping("/{id}/avaliar")
+    @PostMapping("/{id}/corrigir")
     @Operation(summary = "Salva nota e feedback. Muda status para CORRIGIDA")
-    public ResponseEntity<SubmissaoAvaliativaResponse> avaliar(
+    public ResponseEntity<SubmissaoAvaliativaResponse> corrigir(
             Authentication auth,
             @PathVariable Long id,
             @Valid @RequestBody AvaliarSubmissaoRequest request) {
-        return ResponseEntity.ok(submissaoAvaliativaService.avaliar(professorId(auth), id, request));
+        return ResponseEntity.ok(submissaoAvaliativaService.corrigir(professorId(auth), id, request));
     }
 
     private Long professorId(Authentication auth) {

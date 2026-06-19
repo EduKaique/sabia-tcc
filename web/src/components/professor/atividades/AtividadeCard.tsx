@@ -1,9 +1,9 @@
 'use client'
 
-import { Pencil, Trash2, Eye, EyeOff, Calendar, Award } from 'lucide-react'
+import Link from 'next/link'
+import { Pencil, Trash2, Eye, EyeOff, Calendar, Trophy } from 'lucide-react'
 import type { AtividadeAvaliativa } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -25,28 +25,29 @@ export function AtividadeCard({
 }: Props) {
   const isPublicada = atividade.status === 'PUBLICADA'
 
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const formatDate = (date: Date | string) =>
+    new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   return (
-    <Card className="hover:shadow-sm transition-shadow">
+    <Link href={`/professor/atividades/${atividade.id}`} className="block">
+    <Card className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
-              <Badge
-                variant="secondary"
-                className={isPublicada ? 'bg-[--color-success-container] text-[--color-success]' : ''}
-              >
-                {isPublicada ? 'Publicada' : 'Rascunho'}
-              </Badge>
-              {atividade.eGeradaIa && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                  IA
-                </Badge>
+              {isPublicada ? (
+                <span className="inline-flex items-center bg-[#ECFDF5] text-[#065F46] rounded-full px-2 py-0.5 text-xs font-medium">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10B981] mr-1" />
+                  Publicada
+                </span>
+              ) : (
+                <span className="inline-flex items-center bg-[#FFFBEB] text-[#92400E] rounded-full px-2 py-0.5 text-xs font-medium">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#F59E0B] mr-1" />
+                  Rascunho
+                </span>
               )}
             </div>
-            <h3 className="text-base font-semibold text-foreground truncate">{atividade.titulo}</h3>
+            <h3 className="text-xl font-bold text-foreground truncate">{atividade.titulo}</h3>
             {turmaNome && <p className="text-sm text-muted-foreground mt-0.5">{turmaNome}</p>}
           </div>
 
@@ -54,7 +55,7 @@ export function AtividadeCard({
             <Button
               variant="ghost"
               size="icon"
-              onClick={isPublicada ? onDespublicar : onPublicar}
+              onClick={(e) => { e.stopPropagation(); isPublicada ? onDespublicar() : onPublicar() }}
               title={isPublicada ? 'Despublicar' : 'Publicar'}
               className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
             >
@@ -63,7 +64,7 @@ export function AtividadeCard({
             <Button
               variant="ghost"
               size="icon"
-              onClick={onEdit}
+              onClick={(e) => { e.stopPropagation(); onEdit() }}
               title="Editar"
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
@@ -72,7 +73,7 @@ export function AtividadeCard({
             <Button
               variant="ghost"
               size="icon"
-              onClick={onDeletar}
+              onClick={(e) => { e.stopPropagation(); onDeletar() }}
               title="Excluir"
               className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             >
@@ -83,17 +84,18 @@ export function AtividadeCard({
 
         <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Award size={14} />
+            <Trophy size={14} className="w-3.5 h-3.5" />
             {atividade.pontuacaoMaxima} pts
           </span>
           {atividade.dataEntrega && (
             <span className="flex items-center gap-1">
-              <Calendar size={14} />
+              <Calendar size={14} className="w-3.5 h-3.5" />
               {formatDate(atividade.dataEntrega)}
             </span>
           )}
         </div>
       </CardContent>
     </Card>
+    </Link>
   )
 }

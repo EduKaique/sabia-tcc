@@ -6,10 +6,14 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
+import com.sabia.api.model.atividade.StatusAtividade;
+
 public record CriarAtividadeAvaliativaRequest(
         @NotBlank String titulo,
         String descricao,
+        StatusAtividade status,
         @NotNull Long turmaId,
         @Min(1) int pontuacaoMaxima,
-        LocalDateTime dataEntrega
+        LocalDateTime dataEntrega,
+        String gabaritoEstadoJson
 ) {}

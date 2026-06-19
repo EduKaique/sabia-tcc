@@ -1,7 +1,7 @@
 package com.sabia.api.controller.aluno;
 
 import com.sabia.api.dto.request.SubmeterAtividadeRequest;
-import com.sabia.api.dto.response.AtividadeAvaliativaResponse;
+import com.sabia.api.dto.response.AtividadeAvaliativaAlunoResponse;
 import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.api.model.usuario.Usuario;
 import com.sabia.api.service.AtividadeAvaliativaService;
@@ -30,13 +30,13 @@ public class AlunoAtividadeController {
 
     @GetMapping
     @Operation(summary = "Lista atividades publicadas das turmas do aluno")
-    public ResponseEntity<List<AtividadeAvaliativaResponse>> listar(Authentication auth) {
+    public ResponseEntity<List<AtividadeAvaliativaAlunoResponse>> listar(Authentication auth) {
         return ResponseEntity.ok(atividadeAvaliativaService.listarPublicadasParaAluno(alunoId(auth)));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe de uma atividade disponível")
-    public ResponseEntity<AtividadeAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<AtividadeAvaliativaAlunoResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeAvaliativaService.buscarParaAluno(alunoId(auth), id));
     }
 

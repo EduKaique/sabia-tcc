@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(OperacaoInvalidaException.class)
     public ResponseEntity<ErroResponse> handleOperacaoInvalida(OperacaoInvalidaException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ErroResponse.of(422, ex.getMessage()));
     }
 
