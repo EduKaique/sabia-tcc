@@ -6,7 +6,7 @@ export async function listarSubmissoes(
   page = 0,
 ): Promise<PageResponse<SubmissaoItem>> {
   const { data } = await api.get<PageResponse<SubmissaoItem>>(
-    `/api/professor/atividade/${atividadeId}/submissoes`,
+    `/api/professor/atividades/${atividadeId}/submissoes`,
     { params: { page } },
   )
   return data

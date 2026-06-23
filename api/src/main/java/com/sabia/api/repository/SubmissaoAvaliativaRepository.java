@@ -1,5 +1,7 @@
 package com.sabia.api.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,8 +23,9 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
           AND s.atividade.turma.professor.id = :professorId
           AND (:status IS NULL OR s.status = :status)
         """)
-    List<SubmissaoAvaliativa> findByAtividadeIdAndProfessorAndStatus(
+    Page<SubmissaoAvaliativa> findByAtividadeIdAndProfessorAndStatus(
             @Param("atividadeId") Long atividadeId,
             @Param("professorId") Long professorId,
-            @Param("status") StatusSubmissao status);
+            @Param("status") StatusSubmissao status,
+            Pageable pageable);
 }

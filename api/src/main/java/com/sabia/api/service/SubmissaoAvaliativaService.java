@@ -3,7 +3,9 @@ package com.sabia.api.service;
 import com.sabia.api.dto.request.AvaliarSubmissaoRequest;
 import com.sabia.api.dto.request.SubmeterAtividadeRequest;
 import com.sabia.api.dto.response.CorrecaoResponse;
+import com.sabia.api.dto.response.PageResponse;
 import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
+import com.sabia.api.dto.response.SubmissaoListagemResponse;
 import com.sabia.api.exception.AcessoNegadoException;
 import com.sabia.api.exception.AtividadeNaoEncontradaException;
 import com.sabia.api.exception.OperacaoInvalidaException;
@@ -14,6 +16,7 @@ import com.sabia.api.model.usuario.Aluno;
 import com.sabia.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,14 +90,14 @@ public class SubmissaoAvaliativaService {
 
     // --------- PROFESSOR ---------
 
-    public List<SubmissaoAvaliativaResponse> listarSubmissoesPorAtividade(
-            Long atividadeId, 
-            Long professorId, 
-            StatusSubmissao status) {
-            
-        return submissaoRepository.findByAtividadeIdAndProfessorAndStatus(atividadeId, professorId, status).stream()
-                .map(s -> toResponse(s, null))
-                .toList();
+    public PageResponse<SubmissaoListagemResponse> listarSubmissoesPorAtividade(
+            Long atividadeId,
+            Long professorId,
+            StatusSubmissao status,
+            Pageable pageable) {
+
+        var page = submissaoRepository.findByAtividadeIdAndProfessorAndStatus(atividadeId, professorId, status, pageable);
+        return PageResponse.from(page.map(this::toListagemResponse));
     }
 
     public SubmissaoAvaliativaResponse buscarParaProfessor(Long professorId, Long submissaoId) {
@@ -149,6 +152,29 @@ public class SubmissaoAvaliativaService {
                 submissao.getDataEnvio(),
                 submissao.getStatus(),
                 CorrecaoResponse
+        );
+    }
+
+    private SubmissaoListagemResponse toListagemResponse(SubmissaoAvaliativa submissao) {
+        var atividade = submissao.getAtividade();
+        var aluno = submissao.getAluno();
+        var correcao = submissao.getCorrecao();
+
+        boolean entregueComAtraso = atividade.getDataEntrega() != null
+                && submissao.getDataEnvio().isAfter(atividade.getDataEntrega());
+
+        var nota = correcao != null ? correcao.getNota() : null;
+
+        return new SubmissaoListagemResponse(
+                submissao.getId(),
+                aluno.getId(),
+                aluno.getUsuario().getNome(),
+                null,
+                null,
+                entregueComAtraso,
+                submissao.getStatus(),
+                nota,
+                submissao.getDataEnvio()
         );
     }
 }

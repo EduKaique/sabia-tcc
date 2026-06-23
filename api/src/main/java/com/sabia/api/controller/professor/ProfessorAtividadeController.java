@@ -3,7 +3,8 @@ package com.sabia.api.controller.professor;
 import com.sabia.api.dto.request.CriarAtividadeAvaliativaRequest;
 import com.sabia.api.dto.request.EditarAtividadeRequest;
 import com.sabia.api.dto.response.AtividadeAvaliativaProfessorResponse;
-import com.sabia.api.dto.response.SubmissaoAvaliativaResponse;
+import com.sabia.api.dto.response.PageResponse;
+import com.sabia.api.dto.response.SubmissaoListagemResponse;
 import com.sabia.api.model.atividade.StatusAtividade;
 import com.sabia.api.model.atividade.StatusSubmissao;
 import com.sabia.api.model.usuario.Usuario;
@@ -15,6 +16,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -78,10 +82,13 @@ public class ProfessorAtividadeController {
     }
 
     @GetMapping("/{id}/submissoes")
-    @Operation(summary = "Lista submissões pendentes das turmas do professor")
-    public ResponseEntity<List<SubmissaoAvaliativaResponse>> listarSubmissoesDaAtividade(Authentication auth, @PathVariable Long id,
-        @RequestParam(required = false) StatusSubmissao status) {
-        return ResponseEntity.ok(submissaoAvaliativaService.listarSubmissoesPorAtividade(id, professorId(auth), status));
+    @Operation(summary = "Lista submissões da atividade com paginação")
+    public ResponseEntity<PageResponse<SubmissaoListagemResponse>> listarSubmissoesDaAtividade(
+            Authentication auth,
+            @PathVariable Long id,
+            @RequestParam(required = false) StatusSubmissao status,
+            @PageableDefault(size = 20, sort = "dataEnvio", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(submissaoAvaliativaService.listarSubmissoesPorAtividade(id, professorId(auth), status, pageable));
     }
 
     private Long professorId(Authentication auth) {
