@@ -1,29 +1,35 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore, useMemo } from "react";
 
 interface AuthUser {
-  id: string
-  nome: string
-  perfil: 'PROFESSOR' | 'ALUNO'
+  id: string;
+  nome: string;
+  perfil: "PROFESSOR" | "ALUNO";
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+const subscribe = (listener: () => void) => {
+  window.addEventListener("storage", listener);
+  return () => window.removeEventListener("storage", listener);
+};
 
-  useEffect(() => {
-    const stored = localStorage.getItem('token')
-    if (!stored) return
+const getSnapshot = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+const getServerSnapshot = () => null;
+
+export function useAuth() {
+  const token = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const user = useMemo<AuthUser | null>(() => {
+    if (!token) return null;
 
     try {
-      const payload = JSON.parse(atob(stored.split('.')[1]))
-      setUser({ id: payload.sub, nome: payload.nome, perfil: payload.perfil })
-      setToken(stored)
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return { id: payload.sub, nome: payload.nome, perfil: payload.perfil };
     } catch {
-      localStorage.removeItem('token')
+      return null;
     }
-  }, [])
+  }, [token]);
 
-  return { user, token }
+  return { user, token };
 }

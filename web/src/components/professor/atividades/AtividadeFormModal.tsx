@@ -37,7 +37,7 @@ export function AtividadeForm({ atividade }: Props) {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<AtividadeFormInput, any, AtividadeFormData>({
+  } = useForm<AtividadeFormInput, unknown, AtividadeFormData>({
     resolver: zodResolver(atividadeSchema),
     defaultValues: atividade
       ? {

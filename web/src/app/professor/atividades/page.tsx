@@ -31,7 +31,6 @@ export default function AtividadesPage() {
     (a) => filter === 'TODAS' || a.status === filter,
   )
 
-  const total = atividades?.length ?? 0
   const hasFilter = filter !== 'TODAS'
 
   return (
