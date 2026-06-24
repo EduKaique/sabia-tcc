@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🐦 Sabiá — Setup inicial"
+echo "Sabiá — Setup inicial"
 echo "========================"
 
 # Verifica pré-requisitos
