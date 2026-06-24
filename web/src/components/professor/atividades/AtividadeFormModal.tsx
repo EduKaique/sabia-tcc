@@ -19,6 +19,7 @@ import {
 import { useTurmas } from "@/hooks/useTurmas";
 import { RichTextEditor } from "./RichTextEditor";
 import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
+import BlocklyEditor from "@/components/BlocklyEditor"; 
 import type { AtividadeAvaliativa, StatusAtividade, TipoAtividade } from "@/types";
 import type { SugestaoAtividadeIa } from "@/service/ia";
 import { Button } from "@/components/ui/button";
@@ -63,8 +64,9 @@ export function AtividadeForm({ atividade }: Props) {
           turmaId: atividade.turmaId,
           pontuacaoMaxima: atividade.pontuacaoMaxima,
           dataEntrega: atividade?.dataEntrega ?? undefined,
+          gabaritoEstadoJson: atividade.gabaritoEstadoJson ?? "", // NOVO CAMPO ADICIONADO
         }
-      : { pontuacaoMaxima: 10, descricao: "" },
+      : { pontuacaoMaxima: 10, descricao: "", gabaritoEstadoJson: "" },
   });
 
   const criar = useCriarAtividade();
@@ -151,19 +153,37 @@ export function AtividadeForm({ atividade }: Props) {
           {errors.titulo && <p className="text-xs text-destructive">{errors.titulo.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <Label>
-            Descrição <span className="text-destructive">*</span>
-          </Label>
-          <Controller
-            control={control}
-            name="descricao"
-            render={({ field }) => (
-              <RichTextEditor value={field.value ?? ""} onChange={field.onChange} />
-            )}
-          />
-          {errors.descricao && <p className="text-xs text-destructive">{errors.descricao.message}</p>}
-        </div>
+      <div className="space-y-1.5">
+        <Label>
+          Descrição <span className="text-destructive">*</span>
+        </Label>
+        <Controller
+          control={control}
+          name="descricao"
+          render={({ field }) => (
+            <RichTextEditor value={field.value ?? ""} onChange={field.onChange} />
+          )}
+        />
+        {errors.descricao && <p className="text-xs text-destructive">{errors.descricao.message}</p>}
+      </div>
+
+      {/* NOVO CAMPO: BLOCKLY EDITOR */}
+      <div className="space-y-1.5">
+        <Label>
+          Estrutura Base do Código (Blockly)
+        </Label>
+        <Controller
+          control={control}
+          name="gabaritoEstadoJson"
+          render={({ field }) => (
+            <div className="rounded-md overflow-hidden border border-border">
+              <BlocklyEditor onCodeChange={field.onChange} />
+            </div>
+          )}
+        />
+        {/* Usamos //@ts-ignore ou ajustamos os tipos se errors.gabaritoEstadoJson reclamar dependendo do Zod */}
+        {errors.gabaritoEstadoJson && <p className="text-xs text-destructive">{errors.gabaritoEstadoJson?.message as string}</p>}
+      </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">

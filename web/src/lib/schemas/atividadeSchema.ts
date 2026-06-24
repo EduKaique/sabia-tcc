@@ -38,6 +38,7 @@ export const atividadeSchema = z.object({
       )
       .optional()
   ),
+  gabaritoEstadoJson: z.string().optional(),
 });
 
 export type AtividadeFormInput = z.input<typeof atividadeSchema>

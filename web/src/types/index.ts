@@ -27,6 +27,7 @@ export interface AtividadeAvaliativa {
   pontuacaoMaxima: number
   dataEntrega: Date | undefined
   eGeradaIa: boolean
+  gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
 }
