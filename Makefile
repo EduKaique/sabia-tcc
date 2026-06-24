@@ -4,6 +4,12 @@
 dev:
 	docker compose up --build
 
+api-dev:
+	cd api && mvn spring-boot:run
+
+web-dev:
+	cd web && pnpm dev
+
 ## Sobe apenas o banco
 db:
 	docker compose up -d db
@@ -13,32 +19,14 @@ stop:
 	docker compose down
 
 ## Para e remove volumes
-clean:
+docker clean:
 	docker compose down -v
-
-## Instala dependências do frontend
-setup-web:
-	cd apps/web && npm install
 
 ## Compila o backend
 build-api:
-	cd apps/api && ./mvnw clean package -DskipTests
-
-## Roda testes do backend
-test-api:
-	cd apps/api && ./mvnw test
-
-## Roda testes do frontend
-test-web:
-	cd apps/web && npm run test
-
-## Roda todos os testes
-test: test-api test-web
+	cd api && ./mvnw clean package -DskipTests
 
 ## Exibe logs dos containers
 logs:
 	docker compose logs -f
 
-## Setup inicial completo
-setup: setup-web
-	@echo "Setup concluído! Rode 'make db' para subir o banco e depois 'make dev' para tudo."
