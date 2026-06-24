@@ -20,6 +20,8 @@ web/node_modules/
 web/.turbo/
 web/dist/
 web/build/
+web/*.tsbuildinfo
+
 
 api/target/
 api/.mvn/wrapper/maven-wrapper.jar
@@ -40,3 +42,5 @@ docker-compose.override.yml
 *.bak
 *.swp
 *~.nib
+
+.vscode/
