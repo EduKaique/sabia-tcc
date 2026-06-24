@@ -34,8 +34,6 @@ public class IaAtividadeService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IaAtividadeService.class);
 
     public SugestaoAtividadeResponse gerarSugestao(GerarAtividadeRequest request) {
-        log.info("API Key carregada: '{}'", 
-            geminiApiKey != null && !geminiApiKey.isEmpty() ? "OK (" + geminiApiKey.length() + " chars)" : "VAZIA");
 
         Turma turma = turmaRepository.findById(request.idTurma())
                 .orElseThrow(() -> new ResourceNotFoundException("Turma", request.idTurma()));

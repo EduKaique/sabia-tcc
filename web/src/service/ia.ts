@@ -10,6 +10,7 @@ export interface GerarAtividadeIaPayload {
 export interface SugestaoAtividadeIa {
   titulo: string
   descricao: string
+  gabarito_estado_json?: string
 }
 
 export async function gerarAtividadeComIa(

@@ -48,6 +48,7 @@ export function AtividadeForm({ atividade }: Props) {
   const { data: turmas = [] } = useTurmas();
   const [painelIaAberto, setPainelIaAberto] = useState(false);
   const [iaPreconditionError, setIaPreconditionError] = useState<string | null>(null);
+  const [gabaritoIa, setGabaritoIa] = useState<string | null>(null);
 
   const {
     register,
@@ -112,6 +113,9 @@ export function AtividadeForm({ atividade }: Props) {
   function handleAceitarSugestao(sugestao: SugestaoAtividadeIa) {
     setValue("titulo", sugestao.titulo, { shouldDirty: true, shouldValidate: true });
     setValue("descricao", sugestao.descricao, { shouldDirty: true, shouldValidate: true });
+    if (sugestao.gabarito_estado_json) {
+      setGabaritoIa(sugestao.gabarito_estado_json);
+    }
     setPainelIaAberto(false);
   }
 
@@ -177,7 +181,7 @@ export function AtividadeForm({ atividade }: Props) {
           name="gabaritoEstadoJson"
           render={({ field }) => (
             <div className="rounded-md overflow-hidden border border-border">
-              <BlocklyEditor onCodeChange={field.onChange} />
+              <BlocklyEditor onCodeChange={field.onChange} initialState={gabaritoIa ?? undefined} />
             </div>
           )}
         />
