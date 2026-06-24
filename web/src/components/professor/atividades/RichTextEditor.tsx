@@ -24,7 +24,14 @@ export function RichTextEditor({ value, onChange }: Props) {
   })
 
   useEffect(() => {
-    if (editor && value === '') editor.commands.clearContent()
+    if (!editor) return;
+    if (value === '') {
+      editor.commands.clearContent();
+      return;
+    }
+    if (value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
   }, [editor, value])
 
   if (!editor) return null

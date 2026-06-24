@@ -28,9 +28,10 @@ if (!Blockly.Blocks['get_input']) {
 
 interface BlocklyEditorProps {
   onCodeChange?: (code: string) => void;
+  initialState?: string;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, initialState }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   
@@ -186,6 +187,15 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange }) => {
       }
     };
   }, [onCodeChange]);
+
+  useEffect(() => {
+    if (!workspaceRef.current || !initialState) return;
+    try {
+      Blockly.serialization.workspaces.load(JSON.parse(initialState), workspaceRef.current);
+    } catch {
+      // JSON inválido ou formato não suportado — ignora
+    }
+  }, [initialState]);
 
   // Função para executar o código do Blockly
   const handleRunCode = () => {
