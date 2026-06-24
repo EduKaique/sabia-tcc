@@ -31,6 +31,7 @@ services:
       SPRING_DATASOURCE_USERNAME: sabia
       SPRING_DATASOURCE_PASSWORD: sabia
       SPRING_PROFILES_ACTIVE: dev
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8080:8080"
 

@@ -36,3 +36,7 @@ sabia:
         expiration-ms: ${JWT_EXPIRATION_MS:28800000}
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+    ia:
+        gemini:
+            api-key: ${GEMINI_API_KEY:}
+            model: gemini-2.5-flash

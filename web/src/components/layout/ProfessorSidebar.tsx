@@ -2,13 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, GraduationCap, Users, Settings, LogOut } from 'lucide-react'
+import { BookOpen, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
   { href: '/professor/atividades', label: 'Atividades', icon: BookOpen },
-  { href: '/professor/turmas', label: 'Turmas', icon: GraduationCap },
-  { href: '/professor/alunos', label: 'Alunos', icon: Users },
 ]
 
 export function ProfessorSidebar() {
@@ -57,13 +55,13 @@ export function ProfessorSidebar() {
       </nav>
 
       <div className="px-3 py-3 border-t border-sidebar-border space-y-1">
-        <Link
+        {/* <Link
           href="/professor/configuracoes"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
         >
           <Settings size={18} />
           Configurações
-        </Link>
+        </Link> */}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
@@ -82,13 +80,6 @@ export function ProfessorSidebar() {
             <p className="text-sm font-medium truncate">{user?.nome ?? '...'}</p>
             <p className="text-xs text-sidebar-foreground/60">Professor</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-1.5 hover:bg-sidebar-accent/50 rounded-lg transition-colors shrink-0 text-sidebar-foreground/60"
-            title="Sair"
-          >
-            <LogOut size={15} />
-          </button>
         </div>
       </div>
     </aside>
