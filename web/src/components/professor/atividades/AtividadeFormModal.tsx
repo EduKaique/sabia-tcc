@@ -11,6 +11,8 @@ import {
 } from "@/hooks/useAtividades";
 import { useTurmas } from "@/hooks/useTurmas";
 import { RichTextEditor } from "./RichTextEditor";
+// IMPORTAÇÃO DO BLOCKLY
+import BlocklyEditor from "@/components/BlocklyEditor"; 
 import type { AtividadeAvaliativa, StatusAtividade } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +48,9 @@ export function AtividadeForm({ atividade }: Props) {
           turmaId: atividade.turmaId,
           pontuacaoMaxima: atividade.pontuacaoMaxima,
           dataEntrega: atividade?.dataEntrega ?? undefined,
+          gabaritoEstadoJson: atividade.gabaritoEstadoJson ?? "", // NOVO CAMPO ADICIONADO
         }
-      : { pontuacaoMaxima: 10, descricao: "" },
+      : { pontuacaoMaxima: 10, descricao: "", gabaritoEstadoJson: "" },
   });
 
   const criar = useCriarAtividade();
@@ -56,14 +59,13 @@ export function AtividadeForm({ atividade }: Props) {
 
   async function onSubmit(data: AtividadeFormData, publish: boolean) {
     const dataEntregaFormatada = data.dataEntrega ? data.dataEntrega.toISOString() : undefined;
-
     const statusAtividade: StatusAtividade = publish ? "PUBLICADA" : "RASCUNHO";
 
+    const payload = { ...data, dataEntrega: dataEntregaFormatada, status: statusAtividade };
+
     if (isEditing) {
-      const payload = { ...data, dataEntrega: dataEntregaFormatada, status: statusAtividade };
       await atualizar.mutateAsync(payload);
     } else {
-      const payload = { ...data, dataEntrega: dataEntregaFormatada, status: statusAtividade };
       await criar.mutateAsync(payload);
     }
     router.push("/professor/atividades");
@@ -74,6 +76,8 @@ export function AtividadeForm({ atividade }: Props) {
 
   return (
     <form onSubmit={handleSubmit((d) => onSubmit(d, alreadyPublished))} noValidate className="space-y-6">
+      
+      {/* ... (Campos de Título e Descrição mantidos iguais) ... */}
       <div className="space-y-1.5">
         <Label htmlFor="titulo">
           Título <span className="text-destructive">*</span>
@@ -100,7 +104,26 @@ export function AtividadeForm({ atividade }: Props) {
         {errors.descricao && <p className="text-xs text-destructive">{errors.descricao.message}</p>}
       </div>
 
+      {/* NOVO CAMPO: BLOCKLY EDITOR */}
+      <div className="space-y-1.5">
+        <Label>
+          Estrutura Base do Código (Blockly)
+        </Label>
+        <Controller
+          control={control}
+          name="gabaritoEstadoJson"
+          render={({ field }) => (
+            <div className="rounded-md overflow-hidden border border-border">
+              <BlocklyEditor onCodeChange={field.onChange} />
+            </div>
+          )}
+        />
+        {/* Usamos //@ts-ignore ou ajustamos os tipos se errors.gabaritoEstadoJson reclamar dependendo do Zod */}
+        {errors.gabaritoEstadoJson && <p className="text-xs text-destructive">{errors.gabaritoEstadoJson?.message as string}</p>}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ... (Campos de Turma, Pontuação e Data de Entrega mantidos iguais) ... */}
         <div className="space-y-1.5">
           <Label htmlFor="turmaId">
             Turma <span className="text-destructive">*</span>
@@ -148,6 +171,7 @@ export function AtividadeForm({ atividade }: Props) {
         <Input id="dataEntrega" {...register("dataEntrega")} type="date" />
       </div>
 
+      {/* ... (Botões de Ação mantidos iguais) ... */}
       <div className="flex justify-between items-center gap-3 pt-2 border-t border-border">
         <Button type="button" variant="ghost" onClick={() => router.back()}>
           Cancelar
