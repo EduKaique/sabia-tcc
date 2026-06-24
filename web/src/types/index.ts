@@ -15,6 +15,10 @@ export interface PageResponse<T> {
 
 export type StatusAtividade = 'RASCUNHO' | 'PUBLICADA'
 
+export type TipoAtividade =
+  | 'ATIVIDADE_AVALIATIVA'
+  | 'ATIVIDADE_TRILHA'
+
 export interface AtividadeAvaliativa {
   id: string
   titulo: string
@@ -30,6 +34,9 @@ export interface AtividadeAvaliativa {
 export interface Turma {
   id: number
   nome: string
+  anoSerie?: string
+  modalidadeEnsino?: string
+  etapaEnsino?: string
 }
 
 export interface AtividadeDetalhes {
