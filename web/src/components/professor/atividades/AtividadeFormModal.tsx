@@ -68,7 +68,6 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
         }
       : { 
           titulo: "", 
-          turmaId: "" as any, 
           pontuacaoMaxima: 10, 
           descricao: "", 
           gabaritoEstadoJson: "" 
