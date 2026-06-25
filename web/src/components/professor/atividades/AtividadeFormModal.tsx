@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useState, useCallback } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   atividadeSchema,
-  tiposAtividade,
   type AtividadeFormData,
   type AtividadeFormInput,
 } from "@/lib/schemas/atividadeSchema";
@@ -19,7 +18,7 @@ import {
 import { useTurmas } from "@/hooks/useTurmas";
 import { RichTextEditor } from "./RichTextEditor";
 import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
-import BlocklyEditor from "@/components/BlocklyEditor"; 
+import BlocklyEditor from "@/components/BlocklyEditor";
 import type { AtividadeAvaliativa, StatusAtividade, TipoAtividade } from "@/types";
 import type { SugestaoAtividadeIa } from "@/service/ia";
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,7 @@ import {
 
 interface Props {
   atividade?: AtividadeAvaliativa;
+  tipoAtividade: TipoAtividade;
 }
 
 const tipoAtividadeLabels: Record<TipoAtividade, string> = {
@@ -42,12 +42,11 @@ const tipoAtividadeLabels: Record<TipoAtividade, string> = {
   ATIVIDADE_TRILHA: "Atividade Trilha",
 };
 
-export function AtividadeForm({ atividade }: Props) {
+export function AtividadeForm({ atividade, tipoAtividade }: Props) {
   const router = useRouter();
   const isEditing = !!atividade;
   const { data: turmas = [] } = useTurmas();
   const [painelIaAberto, setPainelIaAberto] = useState(false);
-  const [iaPreconditionError, setIaPreconditionError] = useState<string | null>(null);
   const [gabaritoIa, setGabaritoIa] = useState<string | null>(null);
 
   const {
@@ -65,18 +64,26 @@ export function AtividadeForm({ atividade }: Props) {
           turmaId: atividade.turmaId,
           pontuacaoMaxima: atividade.pontuacaoMaxima,
           dataEntrega: atividade?.dataEntrega ?? undefined,
-          gabaritoEstadoJson: atividade.gabaritoEstadoJson ?? "", // NOVO CAMPO ADICIONADO
+          gabaritoEstadoJson: atividade.gabaritoEstadoJson ?? "",
         }
-      : { pontuacaoMaxima: 10, descricao: "", gabaritoEstadoJson: "" },
+      : { 
+          titulo: "", 
+          pontuacaoMaxima: 10, 
+          descricao: "", 
+          gabaritoEstadoJson: "" 
+        },
   });
 
   const criar = useCriarAtividade();
   const atualizar = useAtualizarAtividade(atividade?.id ?? "");
   const publicar = usePublicarAtividade();
 
-  const turmaIdSelecionada = Number(useWatch({ control, name: "turmaId" }));
-  const tipoAtividadeSelecionado = useWatch({ control, name: "tipoAtividade" });
-  const turmaSelecionada = turmas.find((turma) => turma.id === turmaIdSelecionada);
+  const handleBlocklyStateChange = useCallback(
+    (state: string) => {
+      setValue("gabaritoEstadoJson", state, { shouldDirty: true });
+    },
+    [setValue]
+  );
 
   async function onSubmit(data: AtividadeFormData, publish: boolean) {
     const dataEntregaFormatada = data.dataEntrega ? data.dataEntrega.toISOString() : undefined;
@@ -88,6 +95,7 @@ export function AtividadeForm({ atividade }: Props) {
       pontuacaoMaxima: data.pontuacaoMaxima,
       dataEntrega: dataEntregaFormatada,
       status: statusAtividade,
+      gabaritoEstadoJson: data.gabaritoEstadoJson,
     };
 
     if (isEditing) {
@@ -99,22 +107,15 @@ export function AtividadeForm({ atividade }: Props) {
   }
 
   function handleAbrirPainelIa() {
-    if (!tipoAtividadeSelecionado || !turmaIdSelecionada || !turmaSelecionada) {
-      setIaPreconditionError(
-        "Selecione o tipo de atividade e a turma antes de abrir o Assistente de IA.",
-      );
-      return;
-    }
-
-    setIaPreconditionError(null);
     setPainelIaAberto(true);
   }
 
-  function handleAceitarSugestao(sugestao: SugestaoAtividadeIa) {
+  function handleAceitarSugestao(sugestao: SugestaoAtividadeIa, turmaId: number) {
     setValue("titulo", sugestao.titulo, { shouldDirty: true, shouldValidate: true });
     setValue("descricao", sugestao.descricao, { shouldDirty: true, shouldValidate: true });
-    if (sugestao.gabarito_estado_json) {
-      setGabaritoIa(sugestao.gabarito_estado_json);
+    setValue("turmaId", turmaId, { shouldDirty: true, shouldValidate: true });
+    if (sugestao.gabaritoEstadoJson) {
+      setGabaritoIa(sugestao.gabaritoEstadoJson);
     }
     setPainelIaAberto(false);
   }
@@ -124,7 +125,11 @@ export function AtividadeForm({ atividade }: Props) {
 
   return (
     <>
-      <form onSubmit={handleSubmit((d) => onSubmit(d, alreadyPublished))} noValidate className="space-y-6">
+      <form
+        onSubmit={handleSubmit((d) => onSubmit(d, alreadyPublished))}
+        noValidate
+        className="space-y-6"
+      >
         {!isEditing && (
           <div className="rounded-lg border border-border bg-secondary/40 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -139,9 +144,6 @@ export function AtividadeForm({ atividade }: Props) {
                 Assistente de IA
               </Button>
             </div>
-            {iaPreconditionError && (
-              <p className="mt-3 text-sm text-destructive">{iaPreconditionError}</p>
-            )}
           </div>
         )}
 
@@ -157,97 +159,45 @@ export function AtividadeForm({ atividade }: Props) {
           {errors.titulo && <p className="text-xs text-destructive">{errors.titulo.message}</p>}
         </div>
 
-      <div className="space-y-1.5">
-        <Label>
-          Descrição <span className="text-destructive">*</span>
-        </Label>
-        <Controller
-          control={control}
-          name="descricao"
-          render={({ field }) => (
-            <RichTextEditor value={field.value ?? ""} onChange={field.onChange} />
+        <div className="space-y-1.5">
+          <Label>
+            Descrição <span className="text-destructive">*</span>
+          </Label>
+          <Controller
+            control={control}
+            name="descricao"
+            render={({ field }) => (
+              <RichTextEditor value={field.value ?? ""} onChange={field.onChange} />
+            )}
+          />
+          {errors.descricao && (
+            <p className="text-xs text-destructive">{errors.descricao.message}</p>
           )}
-        />
-        {errors.descricao && <p className="text-xs text-destructive">{errors.descricao.message}</p>}
-      </div>
+        </div>
 
-      {/* NOVO CAMPO: BLOCKLY EDITOR */}
-      <div className="space-y-1.5">
-        <Label>
-          Estrutura Base do Código (Blockly)
-        </Label>
-        <Controller
-          control={control}
-          name="gabaritoEstadoJson"
-          render={({ field }) => (
-            <div className="rounded-md overflow-hidden border border-border">
-              <BlocklyEditor onCodeChange={field.onChange} initialState={gabaritoIa ?? undefined} />
-            </div>
-          )}
-        />
-        {/* Usamos //@ts-ignore ou ajustamos os tipos se errors.gabaritoEstadoJson reclamar dependendo do Zod */}
-        {errors.gabaritoEstadoJson && <p className="text-xs text-destructive">{errors.gabaritoEstadoJson?.message as string}</p>}
-      </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="tipoAtividade">Tipo de atividade</Label>
-            <Controller
-              control={control}
-              name="tipoAtividade"
-              render={({ field }) => (
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setIaPreconditionError(null);
-                  }}
-                  value={field.value}
-                >
-                  <SelectTrigger id="tipoAtividade" className="w-full">
-                    <SelectValue placeholder="Selecione um tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tiposAtividade.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>
-                        {tipoAtividadeLabels[tipo]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="turmaId">
-              Turma <span className="text-destructive">*</span>
-            </Label>
-            <Controller
-              control={control}
-              name="turmaId"
-              render={({ field }) => (
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setIaPreconditionError(null);
-                  }}
-                  value={field.value?.toString()}
-                >
-                  <SelectTrigger id="turmaId" className="w-full">
-                    <SelectValue placeholder="Selecione uma turma" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {turmas.map((t) => (
-                      <SelectItem key={t.id} value={String(t.id)}>
-                        {t.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.turmaId && <p className="text-xs text-destructive">{errors.turmaId.message}</p>}
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="turmaId">
+            Turma <span className="text-destructive">*</span>
+          </Label>
+          <Controller
+            control={control}
+            name="turmaId"
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                <SelectTrigger id="turmaId" className="w-full">
+                  <SelectValue placeholder="Selecione uma turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {turmas.map((t) => (
+                    <SelectItem key={t.id} value={String(t.id)}>
+                      {t.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.turmaId && <p className="text-xs text-destructive">{errors.turmaId.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -271,6 +221,21 @@ export function AtividadeForm({ atividade }: Props) {
             <Label htmlFor="dataEntrega">Data de entrega</Label>
             <Input id="dataEntrega" {...register("dataEntrega")} type="date" />
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Gabarito da Atividade</Label>
+          <div className="rounded-md overflow-hidden border border-border">
+            <BlocklyEditor
+              onStateChange={handleBlocklyStateChange}
+              initialState={gabaritoIa ?? atividade?.gabaritoEstadoJson ?? undefined}
+            />
+          </div>
+          {errors.gabaritoEstadoJson && (
+            <p className="text-xs text-destructive">
+              {errors.gabaritoEstadoJson?.message as string}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-between items-center gap-3 pt-2 border-t border-border">
@@ -313,13 +278,11 @@ export function AtividadeForm({ atividade }: Props) {
         </div>
       </form>
 
-      {!isEditing && tipoAtividadeSelecionado && turmaSelecionada && (
+      {!isEditing && (
         <GerarAtividadeIaPanel
           open={painelIaAberto}
-          idTurma={turmaIdSelecionada}
-          tipoAtividade={tipoAtividadeSelecionado}
-          turmaNome={turmaSelecionada.nome}
-          tipoAtividadeLabel={tipoAtividadeLabels[tipoAtividadeSelecionado]}
+          tipoAtividade={tipoAtividade}
+          tipoAtividadeLabel={tipoAtividadeLabels[tipoAtividade]}
           onAccept={handleAceitarSugestao}
           onClose={() => setPainelIaAberto(false)}
         />

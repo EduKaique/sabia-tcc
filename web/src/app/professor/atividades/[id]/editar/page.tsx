@@ -43,7 +43,7 @@ export default function EditarAtividadePage({
               </div>
             </div>
           ) : atividade ? (
-            <AtividadeForm atividade={atividade} />
+            <AtividadeForm atividade={atividade} tipoAtividade="ATIVIDADE_AVALIATIVA" />
           ) : (
             <p className="text-sm text-muted-foreground">Atividade não encontrada.</p>
           )}

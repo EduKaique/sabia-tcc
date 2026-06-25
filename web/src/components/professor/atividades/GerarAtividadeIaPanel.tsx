@@ -3,43 +3,54 @@
 import { useState } from "react";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { useGerarAtividadeIa } from "@/hooks/useGerarAtividadeIa";
+import { useTurmas } from "@/hooks/useTurmas";
 import type { SugestaoAtividadeIa } from "@/service/ia";
 import type { TipoAtividade } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   open: boolean;
-  idTurma: number;
   tipoAtividade: TipoAtividade;
-  turmaNome?: string;
   tipoAtividadeLabel: string;
-  onAccept: (sugestao: SugestaoAtividadeIa) => void;
+  onAccept: (sugestao: SugestaoAtividadeIa, turmaId: number) => void;
   onClose: () => void;
 }
 
 export function GerarAtividadeIaPanel({
   open,
-  idTurma,
   tipoAtividade,
-  turmaNome,
   tipoAtividadeLabel,
   onAccept,
   onClose,
 }: Props) {
+  const [turmaSelecionadaId, setTurmaSelecionadaId] = useState<number | null>(null);
   const [descricaoObjetivo, setDescricaoObjetivo] = useState("");
   const [sugestao, setSugestao] = useState<SugestaoAtividadeIa | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const gerarAtividade = useGerarAtividadeIa();
+  const { data: turmas = [] } = useTurmas();
 
   if (!open) return null;
 
   const carregando = gerarAtividade.isPending;
-  const objetivoVazio = descricaoObjetivo.trim().length === 0;
+  const turmaSelecionada = turmas.find((t) => t.id === turmaSelecionadaId);
 
   async function handleGerar() {
-    if (objetivoVazio) {
+    if (!turmaSelecionadaId) {
+      setErro("Selecione a turma antes de gerar a atividade.");
+      return;
+    }
+
+    if (descricaoObjetivo.trim().length === 0) {
       setErro("Descreva o objetivo pedagogico antes de gerar a atividade.");
       return;
     }
@@ -48,14 +59,16 @@ export function GerarAtividadeIaPanel({
 
     try {
       const resultado = await gerarAtividade.mutateAsync({
-        idTurma,
+        idTurma: turmaSelecionadaId,
         tipoAtividade,
         descricaoObjetivo: descricaoObjetivo.trim(),
       });
 
       setSugestao(resultado);
-    } catch {
-      setErro("Nao foi possivel gerar a atividade. Tente novamente.");
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { erro?: string } } })?.response?.data?.erro;
+      setErro(msg ?? "Nao foi possivel gerar a atividade. Tente novamente.");
     }
   }
 
@@ -77,7 +90,7 @@ export function GerarAtividadeIaPanel({
             </div>
             <h2 className="mt-1 text-xl font-bold text-foreground">Gerar atividade</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {turmaNome ?? "Turma selecionada"} · {tipoAtividadeLabel}
+              {turmaSelecionada?.nome ?? "Selecione uma turma"} · {tipoAtividadeLabel}
             </p>
           </div>
 
@@ -87,6 +100,30 @@ export function GerarAtividadeIaPanel({
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="turmaIa">
+              Turma <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              onValueChange={(value) => {
+                setTurmaSelecionadaId(Number(value));
+                setErro(null);
+              }}
+              value={turmaSelecionadaId?.toString()}
+            >
+              <SelectTrigger id="turmaIa" className="w-full" disabled={carregando}>
+                <SelectValue placeholder="Selecione uma turma" />
+              </SelectTrigger>
+              <SelectContent>
+                {turmas.map((t) => (
+                  <SelectItem key={t.id} value={String(t.id)}>
+                    {t.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="descricaoObjetivo">Objetivo pedagogico</Label>
             <Textarea
@@ -152,7 +189,7 @@ export function GerarAtividadeIaPanel({
           <Button
             type="button"
             disabled={!sugestao || carregando}
-            onClick={() => sugestao && onAccept(sugestao)}
+            onClick={() => sugestao && turmaSelecionadaId && onAccept(sugestao, turmaSelecionadaId)}
           >
             Aceitar sugestao
           </Button>

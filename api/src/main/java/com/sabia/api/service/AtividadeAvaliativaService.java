@@ -65,6 +65,7 @@ public class AtividadeAvaliativaService {
                 .dataEntrega(request.dataEntrega())
                 .pontuacaoMaxima(request.pontuacaoMaxima())
                 .status(request.status())
+                .gabaritoEstadoJson(request.gabaritoEstadoJson())
                 .build();
 
         atividade = atividadeRepository.save(atividade);
@@ -135,6 +136,12 @@ public class AtividadeAvaliativaService {
             throw new AcessoNegadoException("Você não está matriculado nesta turma.");
         }
         return atividadeAvaliativaMapper.toAlunoResponse(atividade);
+    }
+
+    @Transactional
+    public void deletar(Long professorId, Long atividadeId) {
+        var atividade = validarProprietario(professorId, atividadeId);
+        atividadeRepository.delete(atividade);
     }
 
     // --------- helpers ---------

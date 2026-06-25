@@ -69,6 +69,13 @@ public class ProfessorAtividadeController {
         return ResponseEntity.ok(atividadeAvaliativaService.editar(professorId(auth), id, request));
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deleta atividade")
+    public ResponseEntity<Void> deletar(Authentication auth, @PathVariable Long id) {
+        atividadeAvaliativaService.deletar(professorId(auth), id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/publicar")
     @Operation(summary = "Publica atividade (RASCUNHO → PUBLICADA)")
     public ResponseEntity<AtividadeAvaliativaProfessorResponse> publicar(Authentication auth, @PathVariable Long id) {

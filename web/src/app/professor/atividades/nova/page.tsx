@@ -21,7 +21,7 @@ export default function NovaAtividadePage() {
 
       <Card>
         <CardContent className="p-6">
-          <AtividadeForm />
+          <AtividadeForm tipoAtividade="ATIVIDADE_AVALIATIVA" />
         </CardContent>
       </Card>
     </div>

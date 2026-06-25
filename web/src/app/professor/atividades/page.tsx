@@ -5,9 +5,6 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import {
   useAtividades,
-  usePublicarAtividade,
-  useDespublicarAtividade,
-  useDeletarAtividade,
 } from '@/hooks/useAtividades'
 import { useTurmas } from '@/hooks/useTurmas'
 import { AtividadeCard } from '@/components/professor/atividades/AtividadeCard'
@@ -21,9 +18,6 @@ export default function AtividadesPage() {
 
   const { data: atividades, isLoading } = useAtividades()
   const { data: turmas = [] } = useTurmas()
-  const publicar = usePublicarAtividade()
-  const despublicar = useDespublicarAtividade()
-  const deletar = useDeletarAtividade()
 
   const turmaMap = Object.fromEntries(turmas.map((t) => [t.id, t.nome]))
 
@@ -65,12 +59,6 @@ export default function AtividadesPage() {
               key={atividade.id}
               atividade={atividade}
               turmaNome={turmaMap[atividade.turmaId]}
-              onEdit={() => (window.location.href = `/professor/atividades/${atividade.id}/editar`)}
-              onPublicar={() => publicar.mutate(atividade.id)}
-              onDespublicar={() => despublicar.mutate(atividade.id)}
-              onDeletar={() => {
-                if (confirm('Deseja excluir esta atividade?')) deletar.mutate(atividade.id)
-              }}
             />
           ))}
         </div>
