@@ -15,6 +15,7 @@ export function RichTextEditor({ value, onChange }: Props) {
   const editor = useEditor({
     extensions: [StarterKit, Underline],
     content: value,
+    immediatelyRender: false,
     onUpdate({ editor }) {
       onChange(editor.getHTML())
     },

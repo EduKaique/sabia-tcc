@@ -8,6 +8,7 @@ export interface CriarAtividadePayload {
   pontuacaoMaxima: number
   dataEntrega: string | undefined
   status: StatusAtividade
+  gabaritoEstadoJson?: string
 }
 
 export async function listarAtividades(): Promise<AtividadeAvaliativa[]> {
