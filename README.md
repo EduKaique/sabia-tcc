@@ -30,17 +30,20 @@ sabia-tcc/
 git clone https://github.com/<seu-usuario>/sabia-tcc.git
 cd sabia-tcc
 
+# Setup
+./setup.sh
+
 # Subir infraestrutura (banco de dados)
 docker compose up -d db
 
 # Backend
-cd apps/api
+cd ./api
 ./mvnw spring-boot:run
 
 # Frontend (outro terminal)
-cd apps/web
-npm install
-npm run dev
+cd ./web
+pnpm install
+pnpm dev
 ```
 
 Ou use o Makefile:
