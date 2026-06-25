@@ -1,43 +1,51 @@
 // components/BlocklyEditor.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import * as Blockly from 'blockly/core';
-import 'blockly/blocks';
-import { javascriptGenerator, Order } from 'blockly/javascript';
-import * as ptBr from 'blockly/msg/pt-br';
+import React, { useEffect, useRef, useState } from "react";
+import * as Blockly from "blockly/core";
+import "blockly/blocks";
+import { javascriptGenerator, Order } from "blockly/javascript";
+import * as ptBr from "blockly/msg/pt-br";
 
 //@ts-expect-error ignorando tipagem do locale
 Blockly.setLocale(ptBr);
 
-// Define o bloco customizado de "Entrada do Usuário" apenas uma vez
-if (!Blockly.Blocks['get_input']) {
-  Blockly.Blocks['get_input'] = {
+if (!Blockly.Blocks["get_input"]) {
+  Blockly.Blocks["get_input"] = {
     init: function () {
-      this.appendDummyInput().appendField('Entrada do Usuário');
-      this.setOutput(true, null); // Pode ser string, número, etc.
+      this.appendDummyInput().appendField("Entrada do Usuário");
+      this.setOutput(true, null);
       this.setColour(160);
-      this.setTooltip('Retorna o valor digitado no campo de input acima do editor.');
+      this.setTooltip("Retorna o valor digitado no campo de input acima do editor.");
     },
   };
 
-  // Define como o bloco customizado é convertido para JavaScript
-  javascriptGenerator.forBlock['get_input'] = function () {
-    // Usaremos a variável 'entrada_usuario' no escopo de execução
-    return ['entrada_usuario', Order.ATOMIC];
+  javascriptGenerator.forBlock["get_input"] = function () {
+    return ["entrada_usuario", Order.ATOMIC];
   };
 }
 
 interface BlocklyEditorProps {
   onCodeChange?: (code: string) => void;
+  onStateChange?: (state: string) => void;
   initialState?: string;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, initialState }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
-  
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [inputValue, setInputValue] = useState('');
-  const [outputValue, setOutputValue] = useState('');
+  const onCodeChangeRef = useRef(onCodeChange);
+  const onStateChangeRef = useRef(onStateChange);
+
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [outputValue, setOutputValue] = useState("");
+
+  useEffect(() => {
+    onCodeChangeRef.current = onCodeChange;
+  }, [onCodeChange]);
+
+  useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  }, [onStateChange]);
 
   useEffect(() => {
     if (!workspaceRef.current && blocklyDiv.current) {
@@ -175,7 +183,11 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, initialStat
         if (workspaceRef.current) {
           const code = javascriptGenerator.workspaceToCode(workspaceRef.current);
           setGeneratedCode(code);
-          if (onCodeChange) onCodeChange(code);
+          onCodeChangeRef.current?.(code);
+          if (onStateChangeRef.current) {
+            const state = Blockly.serialization.workspaces.save(workspaceRef.current);
+            onStateChangeRef.current(JSON.stringify(state));
+          }
         }
       });
     }
@@ -186,84 +198,133 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, initialStat
         workspaceRef.current = null;
       }
     };
-  }, [onCodeChange]);
+  }, []); 
 
   useEffect(() => {
     if (!workspaceRef.current || !initialState) return;
     try {
-      Blockly.serialization.workspaces.load(JSON.parse(initialState), workspaceRef.current);
-    } catch {
-      // JSON inválido ou formato não suportado — ignora
+      const parsed = JSON.parse(initialState);
+      Blockly.serialization.workspaces.load(parsed, workspaceRef.current);
+    } catch (err) {
+      console.error("[Blockly] Falha ao carregar estado:", err);
     }
   }, [initialState]);
 
-  // Função para executar o código do Blockly
   const handleRunCode = () => {
     const outputBuffer: string[] = [];
-    
+
     const originalAlert = window.alert;
     window.alert = (msg: string) => {
       outputBuffer.push(String(msg));
     };
 
     try {
-      const executableFunc = new Function('entrada_usuario', generatedCode);
-      // Avaliamos o inputValue (caso o usuário tenha digitado um JSON, array, ou número direto no input)
-      let parsedInput = inputValue;
+      const executableFunc = new Function("entrada_usuario", generatedCode);
+      let parsedInput: unknown = inputValue;
       try {
-          parsedInput = JSON.parse(inputValue);
-      } catch(e) {
-          // Se não for um JSON/Número válido, passa como string normal
+        parsedInput = JSON.parse(inputValue);
+      } catch {
+        // Não é JSON válido — passa como string normal
       }
 
       executableFunc(parsedInput);
-      
+
       setOutputValue(
-        outputBuffer.length > 0 
-          ? outputBuffer.join(' ') 
-          : 'Executado com sucesso. (Nenhuma saída impressa)'
+        outputBuffer.length > 0
+          ? outputBuffer.join(" ")
+          : "Executado com sucesso. (Nenhuma saída impressa)"
       );
-    } catch (error) {
-      setOutputValue(`Erro na execução`);
+    } catch {
+      setOutputValue("Erro na execução");
     } finally {
       window.alert = originalAlert;
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
-      
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem",
+        width: "100%",
+        maxWidth: "1000px",
+        margin: "0 auto",
+      }}
+    >
       {/* 1. ÁREA DE INPUT SUPERIOR */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-        <label htmlFor="blockly-input" style={{ fontWeight: 'bold' }}>Input de Dados:</label>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+          padding: "10px",
+          backgroundColor: "#f5f5f5",
+          borderRadius: "8px",
+        }}
+      >
+        <label htmlFor="blockly-input" style={{ fontWeight: "bold" }}>
+          Input de Dados:
+        </label>
         <input
           id="blockly-input"
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ex: [1, 2, 3] ou 'texto'"
-          style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
         />
-        <button 
+        <button
           onClick={handleRunCode}
           type="button"
-          style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
         >
           Executar Código
         </button>
       </div>
 
-      {/* 2. EDITOR BLOCKLY CENTRALIZADO */}
-      <div ref={blocklyDiv} style={{ height: '600px', width: '100%', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden' }} />
+      {/* 2. EDITOR BLOCKLY */}
+      <div
+        ref={blocklyDiv}
+        style={{
+          height: "600px",
+          width: "100%",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          overflow: "hidden",
+        }}
+      />
 
-      {/* 3. ÁREA DE OUTPUT INFERIOR */}
-      <div style={{ padding: '10px', backgroundColor: '#282c34', color: '#61dafb', borderRadius: '8px', minHeight: '100px' }}>
-        <h4 style={{ margin: '0 0 10px 0', color: '#fff' }}>Output da Execução:</h4>
-        <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordWrap: 'break-word', fontFamily: 'monospace' }}>
-          {outputValue || 'Aguardando execução...'}
+      {/* 3. ÁREA DE OUTPUT */}
+      <div
+        style={{
+          padding: "10px",
+          backgroundColor: "#282c34",
+          color: "#61dafb",
+          borderRadius: "8px",
+          minHeight: "100px",
+        }}
+      >
+        <h4 style={{ margin: "0 0 10px 0", color: "#fff" }}>Output da Execução:</h4>
+        <pre
+          style={{
+            margin: 0,
+            whiteSpace: "pre-wrap",
+            wordWrap: "break-word",
+            fontFamily: "monospace",
+          }}
+        >
+          {outputValue || "Aguardando execução..."}
         </pre>
       </div>
-
     </div>
   );
 };

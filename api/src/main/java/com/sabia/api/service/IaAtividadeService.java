@@ -71,7 +71,18 @@ public class IaAtividadeService {
             Map<?, ?> parsed = objectMapper.readValue(generatedText, Map.class);
             String titulo = (String) parsed.get("titulo");
             String descricao = (String) parsed.get("descricao");
-            String gabaritoEstadoJson = (String) parsed.get("gabarito_estado_json");
+            Object gabaritoObj = parsed.get("gabarito_estado_json");
+            String gabaritoEstadoJson = null;
+
+            if (gabaritoObj != null) {
+                Map<?, ?> gabaritoMap = (Map<?, ?>) gabaritoObj;
+                if (gabaritoMap.containsKey("languageVersion")) {
+                    gabaritoEstadoJson = objectMapper.writeValueAsString(Map.of("blocks", gabaritoObj));
+                } else {
+                    gabaritoEstadoJson = objectMapper.writeValueAsString(gabaritoObj);
+                }
+            }
+
             return new SugestaoAtividadeResponse(titulo, descricao, gabaritoEstadoJson);
         } catch (JsonProcessingException e) {
             throw new IaIndisponivelException("Resposta da IA em formato inválido.");
@@ -99,19 +110,47 @@ public class IaAtividadeService {
         };
 
         return """
-                Você é um assistente pedagógico especializado em programação com Scratch para educação básica.
+        Você é um assistente pedagógico especializado em programação visual com Blockly para educação básica.
 
-                Contexto da turma:
-                - Tipo de atividade: %s
-                - Etapa de ensino: %s
+        Contexto da turma:
+        - Tipo de atividade: %s
+        - Etapa de ensino: %s
 
-                O professor descreveu o seguinte objetivo pedagógico:
-                "%s"
+        O professor descreveu o seguinte objetivo pedagógico:
+        "%s"
 
-                Com base nesse objetivo, gere um título conciso, uma descrição clara e motivadora para essa atividade e o JSON dos blocos de gabarito da atividade.
+        Com base nesse objetivo, gere titulo, descricao e gabarito_estado_json.
 
-                Responda APENAS com um JSON válido no seguinte formato, sem nenhum texto adicional:
-                {"titulo": "...", "descricao": "...", "gabarito_estado_json": "..."}
-                """.formatted(request.tipoAtividade(), etapaDisplay, request.descricaoObjetivo());
+        REGRAS para gabarito_estado_json:
+        - Use APENAS estes tipos de bloco: controls_if, logic_compare, logic_operation, logic_negate, logic_boolean, math_number, math_arithmetic, math_modulo, text, text_print, text_join, get_input, variables_get, variables_set, controls_repeat_ext, controls_whileUntil, controls_for
+        - NUNCA use controls_if com ELSE. Use dois controls_if separados com logic_negate.
+        - Formato: objeto com chave "blocks" contendo "languageVersion": 0 e array "blocks".
+        - Blocos topLevel precisam de "type", "id", "x", "y". Sequencia via "next", nao array.
+        - Todos os textos: apenas ASCII sem acentos.
+        - Use APENAS estes tipos de bloco: controls_if, logic_compare, logic_operation, logic_negate, logic_boolean, math_number, math_arithmetic, math_modulo, text, text_print, get_input, variables_get, variables_set, controls_repeat_ext, controls_whileUntil, controls_for
+        - NUNCA use text_join. Para imprimir texto com variavel, use text_print duas vezes separadas.
+        - NUNCA inclua o campo "mutation" em nenhum bloco.
+        - Para usar variaveis, inclua no JSON raiz uma chave "variables" com array de objetos {"name": "nomevariavel", "id": "id_unico"}. Nos blocos variables_get e variables_set, use "fields": {"VAR": {"id": "id_unico"}}.
+        - O bloco logic_negate usa a entrada "BOOL" (nao "VALUE"). Exemplo correto: "inputs":{"BOOL":{"block":{...}}}
+        - Apenas blocos topLevel (sem pai) devem ter "x" e "y". Blocos dentro de "next" ou "inputs" nao devem ter "x" e "y".
+        - O bloco text_print usa a entrada "TEXT" (nao "VALUE"). Exemplo: "inputs":{"TEXT":{"block":{...}}}
+        - O bloco get_input NAO tem entradas (inputs). Ele apenas retorna o valor digitado pelo usuario.
+        Use-o assim: {"type":"get_input","id":"id_unico"}  — sem nenhum campo "inputs" ou "fields".
+        Para mostrar instrucoes ao usuario, use um text_print ANTES do get_input.
+        REFERENCIA DE ENTRADAS (use exatamente estes nomes):
+            - text_print:      "TEXT"
+            - logic_negate:    "BOOL"
+            - logic_compare:   "A", "B"
+            - math_modulo:     "DIVIDEND", "DIVISOR"
+            - math_arithmetic: "A", "B"
+            - controls_if:     "IF0", "DO0"  (sem ELSE)
+            - variables_set:   "VALUE"
+            - controls_for:    "FROM", "TO", "BY", "DO"
+            - controls_repeat_ext: "TIMES", "DO"
+            - controls_whileUntil: "BOOL", "DO"
+
+        Responda APENAS com este JSON (gabarito_estado_json e um objeto, nao uma string):
+        {"titulo": "...", "descricao": "...", "gabarito_estado_json": {"blocks": {"languageVersion": 0, "blocks": [...]}}}
+        """.formatted(request.tipoAtividade(), etapaDisplay, request.descricaoObjetivo());
     }
 }
