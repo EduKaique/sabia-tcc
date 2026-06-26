@@ -1,7 +1,6 @@
 'use client'
 
-import { use, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { use, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAtividadeAluno } from '@/hooks/useAtividadesAluno'
@@ -29,7 +28,6 @@ function hasBlocks(stateJson: string): boolean {
 
 export default function EditorPage({ params }: Props) {
   const { id } = use(params)
-  const router = useRouter()
   const queryClient = useQueryClient()
 
   const { data: atividade, isLoading, error } = useAtividadeAluno(Number(id))

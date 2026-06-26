@@ -1,47 +1,48 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { useState } from "react";
+import { Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
-  getCode: () => string
+  getCode: () => string;
 }
 
 export function PainelEntradaSaida({ getCode }: Props) {
-  const [inputValue, setInputValue] = useState('')
-  const [outputValue, setOutputValue] = useState('')
+  const [inputValue, setInputValue] = useState("");
+  const [outputValue, setOutputValue] = useState("");
 
   const runCode = () => {
-    const code = getCode()
+    const code = getCode();
     if (!code.trim()) {
-      setOutputValue('Nenhum bloco para executar.')
-      return
+      setOutputValue("Nenhum bloco para executar.");
+      return;
     }
 
-    const outputBuffer: string[] = []
-    const originalAlert = window.alert
-    window.alert = (msg: string) => outputBuffer.push(String(msg))
+    const outputBuffer: string[] = [];
+    const originalAlert = window.alert;
+    window.alert = (msg: string) => outputBuffer.push(String(msg));
 
     try {
-      let parsedInput: unknown = inputValue
-      try { parsedInput = JSON.parse(inputValue) } catch { /* raw string */ }
+      let parsedInput: unknown = inputValue;
+      try {
+        parsedInput = JSON.parse(inputValue);
+      } catch {}
 
-      // eslint-disable-next-line no-new-func
-      new Function('entrada_usuario', code)(parsedInput)
+      new Function("entrada_usuario", code)(parsedInput);
 
       setOutputValue(
         outputBuffer.length > 0
-          ? outputBuffer.join('\n')
-          : 'Executado com sucesso. (Nenhuma saída impressa)',
-      )
+          ? outputBuffer.join("\n")
+          : "Executado com sucesso. (Nenhuma saída impressa)"
+      );
     } catch (err) {
-      setOutputValue(`Erro: ${err}`)
+      setOutputValue(`Erro: ${err}`);
     } finally {
-      window.alert = originalAlert
+      window.alert = originalAlert;
     }
-  }
+  };
 
   return (
     <aside className="w-80 h-full flex flex-col border-l border-border bg-white shrink-0">
@@ -70,10 +71,10 @@ export function PainelEntradaSaida({ getCode }: Props) {
             Output
           </p>
           <pre className="w-full h-1/2 min-h-24 p-2 text-sm font-mono bg-zinc-900 text-emerald-400 rounded-md overflow-auto whitespace-pre-wrap wrap-break-words">
-            {outputValue || 'Aguardando execução...'}
+            {outputValue || "Aguardando execução..."}
           </pre>
         </div>
       </div>
     </aside>
-  )
+  );
 }
