@@ -20,7 +20,7 @@ import { RichTextEditor } from "./RichTextEditor";
 import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
 import BlocklyEditor from "@/components/BlocklyEditor";
 import type { AtividadeAvaliativa, StatusAtividade, TipoAtividade } from "@/types";
-import type { SugestaoAtividadeIa } from "@/service/ia";
+import type { SugestaoAtividadeIa } from "@/services/ia";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,11 +66,11 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
           dataEntrega: atividade?.dataEntrega ?? undefined,
           gabaritoEstadoJson: atividade.gabaritoEstadoJson ?? "",
         }
-      : { 
-          titulo: "", 
-          pontuacaoMaxima: 10, 
-          descricao: "", 
-          gabaritoEstadoJson: "" 
+      : {
+          titulo: "",
+          pontuacaoMaxima: 10,
+          descricao: "",
+          gabaritoEstadoJson: "",
         },
   });
 

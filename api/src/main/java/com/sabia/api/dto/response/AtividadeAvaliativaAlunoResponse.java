@@ -2,7 +2,7 @@ package com.sabia.api.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.sabia.api.model.atividade.StatusAtividade;
+import com.sabia.api.model.atividade.StatusAtividadeAluno;
 
 public record AtividadeAvaliativaAlunoResponse(
         Long id,
@@ -12,6 +12,6 @@ public record AtividadeAvaliativaAlunoResponse(
         int pontuacaoMaxima,
         LocalDateTime dataEntrega,
         boolean eGeradaIa,
-        StatusAtividade status,
+        StatusAtividadeAluno status,
         LocalDateTime criadaEm
 ) {}

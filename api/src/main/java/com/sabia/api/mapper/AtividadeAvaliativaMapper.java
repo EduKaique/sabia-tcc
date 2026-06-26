@@ -1,6 +1,5 @@
 package com.sabia.api.mapper;
 
-import com.sabia.api.dto.response.AtividadeAvaliativaAlunoResponse;
 import com.sabia.api.dto.response.AtividadeAvaliativaProfessorResponse;
 import com.sabia.api.model.atividade.AtividadeAvaliativa;
 
@@ -12,11 +11,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface AtividadeAvaliativaMapper {
-
-    @Mapping(target = "turmaId", source = "turma.id")
-    AtividadeAvaliativaAlunoResponse toAlunoResponse(AtividadeAvaliativa atividade);
-
-    List<AtividadeAvaliativaAlunoResponse> toAlunoResponseList(List<AtividadeAvaliativa> atividades);
 
     @Mapping(target = "turmaId", source = "turma.id")
     AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade);

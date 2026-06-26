@@ -10,10 +10,13 @@ import com.sabia.api.model.atividade.StatusSubmissao;
 import com.sabia.api.model.atividade.SubmissaoAvaliativa;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAvaliativa, Long> {
 
     boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
+
+    Optional<SubmissaoAvaliativa> findByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
     List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);
 
