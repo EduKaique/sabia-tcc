@@ -10,7 +10,11 @@ import com.sabia.api.exception.OperacaoInvalidaException;
 import com.sabia.api.mapper.AtividadeAvaliativaMapper;
 import com.sabia.api.model.atividade.AtividadeAvaliativa;
 import com.sabia.api.model.atividade.StatusAtividade;
+import com.sabia.api.model.atividade.StatusAtividadeAluno;
+import com.sabia.api.model.atividade.StatusSubmissao;
+import com.sabia.api.model.atividade.SubmissaoAvaliativa;
 import com.sabia.api.repository.AtividadeAvaliativaRepository;
+import com.sabia.api.repository.SubmissaoAvaliativaRepository;
 import com.sabia.api.repository.TurmaAlunoRepository;
 import com.sabia.api.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class AtividadeAvaliativaService {
     private final TurmaRepository turmaRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final AtividadeAvaliativaMapper atividadeAvaliativaMapper;
+    private final SubmissaoAvaliativaRepository submissaoAvaliativaRepository;
 
     // --------- PROFESSOR ---------
 
@@ -121,8 +128,14 @@ public class AtividadeAvaliativaService {
 
         if (turmaIds.isEmpty()) return List.of();
 
-        return atividadeAvaliativaMapper.toAlunoResponseList(
-                atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA));
+        List<AtividadeAvaliativa> atividades =
+                atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA);
+
+        Map<Long, SubmissaoAvaliativa> submissaoPorAtividade =
+                submissaoAvaliativaRepository.findByAlunoId(alunoId).stream()
+                        .collect(Collectors.toMap(s -> s.getAtividade().getId(), s -> s));
+
+        return atividades.stream().map(a -> toAlunoResponse(a, submissaoPorAtividade.get(a.getId()))).toList();
     }
 
     public AtividadeAvaliativaAlunoResponse buscarParaAluno(Long alunoId, Long atividadeId) {
@@ -135,7 +148,27 @@ public class AtividadeAvaliativaService {
         if (!turmaAlunoRepository.existsByTurmaIdAndAlunoId(atividade.getTurma().getId(), alunoId)) {
             throw new AcessoNegadoException("Você não está matriculado nesta turma.");
         }
-        return atividadeAvaliativaMapper.toAlunoResponse(atividade);
+
+        SubmissaoAvaliativa sub = submissaoAvaliativaRepository
+                .findByAlunoIdAndAtividadeId(alunoId, atividadeId).orElse(null);
+        return toAlunoResponse(atividade, sub);
+    }
+
+    private AtividadeAvaliativaAlunoResponse toAlunoResponse(AtividadeAvaliativa a, SubmissaoAvaliativa sub) {
+        StatusAtividadeAluno statusAluno;
+        if (sub == null) {
+            statusAluno = StatusAtividadeAluno.PENDENTE;
+        } else if (sub.getStatus() == StatusSubmissao.CORRIGIDA) {
+            statusAluno = StatusAtividadeAluno.CORRIGIDA;
+        } else {
+            statusAluno = StatusAtividadeAluno.ENTREGUE;
+        }
+        return new AtividadeAvaliativaAlunoResponse(
+                a.getId(), a.getTitulo(), a.getDescricao(),
+                a.getTurma().getId(), a.getPontuacaoMaxima(),
+                a.getDataEntrega(), a.isEGeradaIa(),
+                statusAluno, a.getCriadaEm()
+        );
     }
 
     @Transactional

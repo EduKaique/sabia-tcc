@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { useGerarAtividadeIa } from "@/hooks/useGerarAtividadeIa";
 import { useTurmas } from "@/hooks/useTurmas";
-import type { SugestaoAtividadeIa } from "@/service/ia";
+import type { SugestaoAtividadeIa } from "@/services/ia";
 import type { TipoAtividade } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -66,8 +66,7 @@ export function GerarAtividadeIaPanel({
 
       setSugestao(resultado);
     } catch (err) {
-      const msg =
-        (err as { response?: { data?: { erro?: string } } })?.response?.data?.erro;
+      const msg = (err as { response?: { data?: { erro?: string } } })?.response?.data?.erro;
       setErro(msg ?? "Nao foi possivel gerar a atividade. Tente novamente.");
     }
   }

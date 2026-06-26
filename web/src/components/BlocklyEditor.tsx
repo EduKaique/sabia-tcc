@@ -27,13 +27,16 @@ interface BlocklyEditorProps {
   onCodeChange?: (code: string) => void;
   onStateChange?: (state: string) => void;
   initialState?: string;
+  workspaceOnly?: boolean;
+  onVariablePrompt?: (message: string, defaultValue: string, callback: (value: string | null) => void) => void;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, onVariablePrompt }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const onCodeChangeRef = useRef(onCodeChange);
   const onStateChangeRef = useRef(onStateChange);
+  const onVariablePromptRef = useRef(onVariablePrompt);
 
   const [generatedCode, setGeneratedCode] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -46,6 +49,10 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
   useEffect(() => {
     onStateChangeRef.current = onStateChange;
   }, [onStateChange]);
+
+  useEffect(() => {
+    onVariablePromptRef.current = onVariablePrompt;
+  }, [onVariablePrompt]);
 
   useEffect(() => {
     if (!workspaceRef.current && blocklyDiv.current) {
@@ -177,6 +184,17 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
           </xml>
         `,
         trashcan: true,
+        zoom: { controls: true, wheel: false, startScale: 1.25 },
+        grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
+        move: {wheel: true}
+      });
+
+      Blockly.dialog.setPrompt((message, defaultValue, callback) => {
+        if (onVariablePromptRef.current) {
+          onVariablePromptRef.current(message, defaultValue, callback);
+        } else {
+          callback(window.prompt(message, defaultValue));
+        }
       });
 
       workspaceRef.current.addChangeListener(() => {
@@ -240,6 +258,10 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
       window.alert = originalAlert;
     }
   };
+
+  if (workspaceOnly) {
+    return <div ref={blocklyDiv} className="w-full h-full" />;
+  }
 
   return (
     <div
