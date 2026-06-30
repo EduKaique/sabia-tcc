@@ -1,6 +1,5 @@
 # Sabiá
-
-> Plataforma de aprendizado — Trabalho de Conclusão de Curso
+Plataforma de aprendizado — Trabalho de Conclusão de Curso
 
 ## Estrutura do repositório
 
@@ -27,7 +26,7 @@ sabia-tcc/
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/<seu-usuario>/sabia-tcc.git
+git clone https://github.com/EduKaique/sabia-tcc.git
 cd sabia-tcc
 
 # Setup
