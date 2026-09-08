@@ -1,13 +1,10 @@
-package com.sabia.api.config;
+package com.sabia.auth.config;
 
-import com.sabia.api.security.JwtAuthFilter;
+import com.sabia.auth.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,7 +21,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -33,10 +29,12 @@ public class SecurityConfig {
     @Value("${sabia.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
-    // A emissão de token vive no auth-service. O monólito apenas VALIDA os JWT
-    // (mesmo segredo HMAC) — não expõe mais /api/auth/**.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/health",
+            "/api/auth/login",
+            "/api/auth/esqueci-senha",
+            "/api/auth/redefinir-senha",
+            "/api/auth/validate",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
@@ -50,9 +48,6 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
-                        .requestMatchers("/api/aluno/**").hasRole("ALUNO")
-                        .requestMatchers("/api/ia/**").hasRole("PROFESSOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -62,11 +57,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
 
     @Bean
