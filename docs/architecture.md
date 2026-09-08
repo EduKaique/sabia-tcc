@@ -2,11 +2,35 @@
 
 ## Visão geral
 
-O Sabiá é uma plataforma de aprendizado estruturada como um monorepo com frontend e backend separados.
+O Sabiá é uma plataforma de aprendizado em monorepo. A arquitetura-alvo é de
+**microsserviços Java** atrás de um API Gateway; a migração acontece de forma
+incremental a partir do monólito `api/`.
 
 ```
-Browser  ─→  Next.js (apps/web)  ─→  Spring Boot API (apps/api)  ─→  PostgreSQL
+Browser ─→ Next.js (web) ─→ API Gateway ─┬─→ auth-service      ─→ PostgreSQL (Auth DB)
+                                         ├─→ api / monólito     ─→ PostgreSQL
+                                         └─→ (gamificação, sandbox, IA …)
 ```
+
+Estado atual da migração:
+
+| Serviço | Porta | Estado |
+|---|---|---|
+| `auth-service` — Autenticação (IAM & Perfis) | 8081 | **extraído** (issue #16) |
+| `api/` — monólito (pedagógico, sandbox, IA) | 8080 | a fatiar |
+| `gamificacao-service` | — | planejado (issue #20) |
+
+### auth-service
+
+Único **emissor** de token JWT da plataforma. Os demais serviços e o Gateway
+apenas validam (segredo HMAC `JWT_SECRET` compartilhado, ou `POST /api/auth/validate`).
+Banco próprio (`sabia_auth`). Contrato completo em [`auth-service/README.md`](../auth-service/README.md).
+
+---
+
+### Legado (monólito único — em migração)
+
+O texto abaixo descreve a estrutura original de monólito e vale para o `api/`.
 
 ## Componentes
 

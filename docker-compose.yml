@@ -17,6 +17,45 @@ services:
       timeout: 5s
       retries: 5
 
+  auth-db:
+    image: postgres:16-alpine
+    container_name: sabia_auth_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sabia_auth
+      POSTGRES_USER: sabia
+      POSTGRES_PASSWORD: sabia
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: sabia_auth_service
+    restart: unless-stopped
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/sabia_auth
+      SPRING_DATASOURCE_USERNAME: sabia
+      SPRING_DATASOURCE_PASSWORD: sabia
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8081
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8081:8081"
+
   api:
     build:
       context: ./api
@@ -31,6 +70,8 @@ services:
       SPRING_DATASOURCE_USERNAME: sabia
       SPRING_DATASOURCE_PASSWORD: sabia
       SPRING_PROFILES_ACTIVE: dev
+      # MESMO segredo do auth-service — o monólito apenas valida os tokens emitidos por ele.
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8080:8080"
@@ -44,10 +85,13 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+      - auth-service
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_AUTH_URL: http://localhost:8081
     ports:
       - "3000:3000"
 
 volumes:
   postgres_data:
+  auth_postgres_data:
