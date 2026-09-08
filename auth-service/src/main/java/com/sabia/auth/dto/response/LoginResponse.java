@@ -1,4 +1,4 @@
-package com.sabia.api.dto.response;
+package com.sabia.auth.dto.response;
 
 public record LoginResponse(
         String token,

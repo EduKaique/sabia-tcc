@@ -33,9 +33,10 @@ public class SecurityConfig {
     @Value("${sabia.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
+    // A emissão de token vive no auth-service. O monólito apenas VALIDA os JWT
+    // (mesmo segredo HMAC) — não expõe mais /api/auth/**.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/health",
-            "/api/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

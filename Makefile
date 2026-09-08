@@ -7,12 +7,15 @@ dev:
 api-dev:
 	cd api && mvn spring-boot:run
 
+auth-dev:
+	cd auth-service && ./mvnw spring-boot:run
+
 web-dev:
 	cd web && pnpm dev
 
-## Sobe apenas o banco
+## Sobe apenas os bancos
 db:
-	docker compose up -d db
+	docker compose up -d db auth-db
 
 ## Para todos os containers
 stop:
@@ -26,7 +29,9 @@ docker clean:
 build-api:
 	cd api && ./mvnw clean package -DskipTests
 
+build-auth:
+	cd auth-service && ./mvnw clean package -DskipTests
+
 ## Exibe logs dos containers
 logs:
 	docker compose logs -f
-

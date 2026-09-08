@@ -6,12 +6,16 @@ Plataforma de aprendizado — Trabalho de Conclusão de Curso
 ```
 sabia-tcc/
 ├── web/              # Frontend — Next.js 16 + TypeScript + Tailwind
-├── api/              # Backend  — Java 21 + Spring Boot 3 + PostgreSQL
+├── api/              # Monólito  — Java 21 + Spring Boot + PostgreSQL (pedagógico, sandbox, IA)
+├── auth-service/     # Microsserviço de Autenticação (IAM & Perfis) — porta 8081
 ├── docs/             # Documentação técnica
 ├── .github/          # CI/CD e templates
 ├── setup.sh
 └── docker-compose.yml
 ```
+
+> A arquitetura-alvo é de microsserviços (ver [docs/architecture.md](docs/architecture.md)).
+> O `auth-service` é o primeiro serviço extraído do monólito e o **único emissor** de token JWT.
 
 ## Pré-requisitos
 
@@ -32,10 +36,14 @@ cd sabia-tcc
 # Setup
 ./setup.sh
 
-# Subir infraestrutura (banco de dados)
-docker compose up -d db
+# Subir infraestrutura (bancos de dados)
+docker compose up -d db auth-db
 
-# Backend
+# Serviço de autenticação (porta 8081)
+cd ./auth-service
+./mvnw spring-boot:run
+
+# Monólito / API (porta 8080, outro terminal)
 cd ./api
 ./mvnw spring-boot:run
 
