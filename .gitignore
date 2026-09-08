@@ -30,11 +30,20 @@ api/*.jar
 api/*.war
 api/hs_err_pid*
 api/replay_pid*
+
+auth-service/target/
+auth-service/.mvn/wrapper/maven-wrapper.jar
+auth-service/*.class
+auth-service/*.jar
+auth-service/*.war
+auth-service/hs_err_pid*
+auth-service/replay_pid*
 HELP.md
 
 *.log
 logs/
 api/logs/
+auth-service/logs/
 
 docker-compose.override.yml
 
