@@ -1,4 +1,4 @@
-import api from '@/lib/api'
+import api from '@/lib/pedagogicoApi'
 import type { Turma } from '@/types'
 
 export async function listarTurmas(): Promise<Turma[]> {
