@@ -53,6 +53,24 @@ services:
     ports:
       - "8080:8080"
 
+  pedagogico-service:
+    build:
+      context: ./pedagogico-service
+      dockerfile: Dockerfile
+    container_name: sabia_pedagogico_service
+    restart: unless-stopped
+    depends_on:
+      academico-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://academico-db:5432/academico
+      SPRING_DATASOURCE_USERNAME: academico
+      SPRING_DATASOURCE_PASSWORD: academico
+      SPRING_PROFILES_ACTIVE: dev
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    ports:
+      - "8081:8081"
+
   web:
     build:
       context: ./web
@@ -62,8 +80,10 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+      - pedagogico-service
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8081
     ports:
       - "3000:3000"
 
