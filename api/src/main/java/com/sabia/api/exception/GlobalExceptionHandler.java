@@ -19,25 +19,6 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({AtividadeNaoEncontradaException.class, SubmissaoNaoEncontradaException.class,
-            ResourceNotFoundException.class})
-    public ResponseEntity<ErroResponse> handleNotFound(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErroResponse.of(404, ex.getMessage()));
-    }
-
-    @ExceptionHandler(AcessoNegadoException.class)
-    public ResponseEntity<ErroResponse> handleAcessoNegado(AcessoNegadoException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErroResponse.of(403, ex.getMessage()));
-    }
-
-    @ExceptionHandler(OperacaoInvalidaException.class)
-    public ResponseEntity<ErroResponse> handleOperacaoInvalida(OperacaoInvalidaException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
-                .body(ErroResponse.of(422, ex.getMessage()));
-    }
-
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErroResponse> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -52,12 +33,6 @@ public class GlobalExceptionHandler {
             campos.put(field, error.getDefaultMessage());
         });
         return ResponseEntity.badRequest().body(ErroResponse.ofValidation(campos));
-    }
-
-    @ExceptionHandler(IaIndisponivelException.class)
-    public ResponseEntity<ErroResponse> handleIaIndisponivel(IaIndisponivelException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(ErroResponse.of(502, ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

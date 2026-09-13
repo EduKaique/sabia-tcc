@@ -23,13 +23,13 @@ web/build/
 web/*.tsbuildinfo
 
 
-api/target/
-api/.mvn/wrapper/maven-wrapper.jar
-api/*.class
-api/*.jar
-api/*.war
-api/hs_err_pid*
-api/replay_pid*
+*/target/
+*/.mvn/wrapper/maven-wrapper.jar
+*/*.class
+*/*.jar
+*/*.war
+*/hs_err_pid*
+*/replay_pid*
 HELP.md
 
 *.log
