@@ -21,7 +21,7 @@ spring:
             include-message: always
 
 server:
-    port: 8081
+    port: 8082
 
 springdoc:
     api-docs:
