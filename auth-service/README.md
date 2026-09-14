@@ -37,6 +37,8 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 | `POST` | `/api/auth/login` | pública | Valida credenciais e retorna JWT |
 | `GET` | `/api/auth/me` | Bearer | Usuário autenticado a partir do token |
 | `POST` | `/api/auth/validate` | pública | Verifica assinatura/validade de um token (uso do Gateway) |
+| `POST` | `/api/auth/esqueci-senha` | pública | Gera um token de recuperação (24h) e envia o link por e-mail |
+| `POST` | `/api/auth/redefinir-senha` | pública | Redefine a senha a partir de um token de recuperação válido |
 | `GET` | `/api/health` | pública | Health check |
 
 ### `POST /api/auth/login`
@@ -52,6 +54,38 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 // 200
 { "id": 2, "nome": "Ana Professora", "email": "professor@sabia.edu", "perfil": "PROFESSOR" }
 ```
+
+### `POST /api/auth/esqueci-senha`
+```jsonc
+// body
+{ "email": "professor@sabia.edu" }
+
+// 200 — sempre a mesma resposta, exista ou não o e-mail (não revela se o e-mail está cadastrado)
+{ "mensagem": "Se o e-mail informado estiver cadastrado, você receberá as instruções de recuperação em instantes." }
+```
+Se o e-mail existir, gera um token de recuperação válido por **24h** e chama o `EmailService`
+(implementação `dev`: apenas `log.info` com o link — pronta para trocar por SMTP via
+`sabia.email.provider`/`EMAIL_PROVIDER`). O link segue o formato
+`{sabia.frontend.recuperar-senha-url}?token={token}`.
+
+### `POST /api/auth/redefinir-senha`
+```jsonc
+// body
+{ "token": "...", "novaSenha": "novaSenha123", "confirmarSenha": "novaSenha123" }
+
+// 200
+{ "mensagem": "Senha redefinida com sucesso." }
+
+// 422 — senhas divergentes ou token inexistente
+{ "status": 422, "erro": "As senhas não coincidem.", "timestamp": "..." }
+{ "status": 422, "erro": "Link inválido.", "timestamp": "..." }
+
+// 410 — token expirado ou já usado
+{ "status": 410, "erro": "Este link expirou.", "timestamp": "..." }
+{ "status": 410, "erro": "Este link já foi utilizado.", "timestamp": "..." }
+```
+Ao redefinir com sucesso: grava a nova senha com BCrypt, marca o token usado (invalidando-o
+na hora) e invalida também os demais tokens de recuperação ativos do mesmo usuário.
 
 ---
 
@@ -101,9 +135,7 @@ Para o Gateway que prefira não conhecer o segredo:
 Custa uma chamada de rede por requisição — recomenda-se cache curto (TTL ≤ 60s) no Gateway.
 
 ### Rotas públicas (não exigem token, o Gateway deve deixar passar)
-`/api/auth/login`, `/api/auth/validate`, `/api/auth/esqueci-senha`*, `/api/auth/redefinir-senha`*, `/api/health`, `/swagger-ui/**`, `/v3/api-docs/**`
-
-\* implementadas na issue #17.
+`/api/auth/login`, `/api/auth/validate`, `/api/auth/esqueci-senha`, `/api/auth/redefinir-senha`, `/api/health`, `/swagger-ui/**`, `/v3/api-docs/**`
 
 ---
 
@@ -117,6 +149,8 @@ Ver [`.env.example`](.env.example). As essenciais:
 | `JWT_SECRET` | `dev-secret-change-in-production-must-be-at-least-32-chars` | **igual** no Gateway e demais serviços |
 | `JWT_EXPIRATION_MS` | `28800000` (8h) | |
 | `SERVER_PORT` | `8081` | |
+| `FRONTEND_RECUPERAR_SENHA_URL` | `http://localhost:3000/recuperar-senha` | base do link enviado em `esqueci-senha` |
+| `EMAIL_PROVIDER` | `dev` | `dev` apenas loga o link; trocar ao implementar SMTP |
 
 ## Testes
 

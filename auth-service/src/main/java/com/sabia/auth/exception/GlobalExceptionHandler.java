@@ -35,6 +35,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ErroResponse.ofValidation(campos));
     }
 
+    @ExceptionHandler(SenhaDivergenteException.class)
+    public ResponseEntity<ErroResponse> handleSenhaDivergente(SenhaDivergenteException ex) {
+        return ResponseEntity.status(422).body(ErroResponse.of(422, ex.getMessage()));
+    }
+
+    @ExceptionHandler(TokenRecuperacaoInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleTokenRecuperacaoInvalido(TokenRecuperacaoInvalidoException ex) {
+        return ResponseEntity.status(422).body(ErroResponse.of(422, ex.getMessage()));
+    }
+
+    @ExceptionHandler({TokenRecuperacaoExpiradoException.class, TokenRecuperacaoUtilizadoException.class})
+    public ResponseEntity<ErroResponse> handleTokenRecuperacaoExpiradoOuUtilizado(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.GONE).body(ErroResponse.of(410, ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> handleGeneric(Exception ex) {
         log.error("Erro inesperado: {}", ex.getMessage(), ex);
