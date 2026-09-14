@@ -38,3 +38,9 @@ sabia:
         expiration-ms: ${JWT_EXPIRATION_MS:28800000}
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+    frontend:
+        recuperar-senha-url: ${FRONTEND_RECUPERAR_SENHA_URL:http://localhost:3000/recuperar-senha}
+    email:
+        # Provedor do EmailService: "dev" apenas loga o link (padrão); trocar por
+        # um provedor SMTP real quando houver implementação.
+        provider: ${EMAIL_PROVIDER:dev}
