@@ -1,12 +1,16 @@
 package com.sabia.auth.controller;
 
+import com.sabia.auth.dto.request.EsqueciSenhaRequest;
 import com.sabia.auth.dto.request.LoginRequest;
+import com.sabia.auth.dto.request.RedefinirSenhaRequest;
 import com.sabia.auth.dto.request.ValidateRequest;
 import com.sabia.auth.dto.response.LoginResponse;
+import com.sabia.auth.dto.response.MensagemResponse;
 import com.sabia.auth.dto.response.MeResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
 import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.service.AuthService;
+import com.sabia.auth.service.RecuperacaoSenhaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final RecuperacaoSenhaService recuperacaoSenhaService;
 
     @PostMapping("/login")
     @Operation(summary = "Autentica o usuário e retorna um token JWT")
@@ -51,5 +56,18 @@ public class AuthController {
     @Operation(summary = "Verifica assinatura e validade de um token JWT (uso do API Gateway)")
     public ResponseEntity<ValidateResponse> validate(@Valid @RequestBody ValidateRequest request) {
         return ResponseEntity.ok(authService.validar(request.token()));
+    }
+
+    @PostMapping("/esqueci-senha")
+    @Operation(summary = "Envia um link de recuperação de senha por e-mail, se o e-mail existir")
+    public ResponseEntity<MensagemResponse> esqueciSenha(@Valid @RequestBody EsqueciSenhaRequest request) {
+        return ResponseEntity.ok(new MensagemResponse(recuperacaoSenhaService.esqueciSenha(request.email())));
+    }
+
+    @PostMapping("/redefinir-senha")
+    @Operation(summary = "Redefine a senha a partir de um token de recuperação válido")
+    public ResponseEntity<MensagemResponse> redefinirSenha(@Valid @RequestBody RedefinirSenhaRequest request) {
+        recuperacaoSenhaService.redefinirSenha(request.token(), request.novaSenha(), request.confirmarSenha());
+        return ResponseEntity.ok(new MensagemResponse("Senha redefinida com sucesso."));
     }
 }
