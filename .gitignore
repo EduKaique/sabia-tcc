@@ -35,6 +35,7 @@ HELP.md
 *.log
 logs/
 api/logs/
+auth-service/logs/
 
 docker-compose.override.yml
 
