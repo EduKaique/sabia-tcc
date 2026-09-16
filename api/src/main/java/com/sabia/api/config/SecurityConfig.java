@@ -50,9 +50,6 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
-                        .requestMatchers("/api/aluno/**").hasRole("ALUNO")
-                        .requestMatchers("/api/ia/**").hasRole("PROFESSOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
