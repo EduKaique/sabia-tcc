@@ -1,4 +1,4 @@
-import api from '@/lib/api'
+import api from '@/lib/pedagogicoApi'
 import type { TipoAtividade } from '@/types'
 
 export interface GerarAtividadeIaPayload {
