@@ -40,7 +40,7 @@ public class RecuperacaoSenhaService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    @Value("${sabia.frontend.recuperar-senha-url:http://localhost:3000/recuperar-senha}")
+    @Value("${sabia.frontend.recuperar-senha-url:http://localhost:3000/redefinir-senha}")
     private String recuperarSenhaUrl;
 
     @Transactional
