@@ -64,9 +64,9 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 { "mensagem": "Se o e-mail informado estiver cadastrado, você receberá as instruções de recuperação em instantes." }
 ```
 Se o e-mail existir, gera um token de recuperação válido por **24h** e chama o `EmailService`
-(implementação `dev`: apenas `log.info` com o link — pronta para trocar por SMTP via
-`sabia.email.provider`/`EMAIL_PROVIDER`). O link segue o formato
-`{sabia.frontend.recuperar-senha-url}?token={token}`.
+(implementação `dev`: apenas `log.info` com o link; implementação `smtp`: envia de verdade via
+`SmtpEmailService` — escolhida por `sabia.email.provider`/`EMAIL_PROVIDER`). O link segue o
+formato `{sabia.frontend.recuperar-senha-url}?token={token}`.
 
 ### `POST /api/auth/redefinir-senha`
 ```jsonc
@@ -145,12 +145,12 @@ Ver [`.env.example`](.env.example). As essenciais:
 
 | Var | Default (dev) | Observação |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5433/sabia_auth` | Auth DB |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5434/sabia_auth` | Auth DB |
 | `JWT_SECRET` | `dev-secret-change-in-production-must-be-at-least-32-chars` | **igual** no Gateway e demais serviços |
 | `JWT_EXPIRATION_MS` | `28800000` (8h) | |
 | `SERVER_PORT` | `8081` | |
-| `FRONTEND_RECUPERAR_SENHA_URL` | `http://localhost:3000/recuperar-senha` | base do link enviado em `esqueci-senha` |
-| `EMAIL_PROVIDER` | `dev` | `dev` apenas loga o link; trocar ao implementar SMTP |
+| `FRONTEND_RECUPERAR_SENHA_URL` | `http://localhost:3000/redefinir-senha` | link enviado em `esqueci-senha` |
+| `EMAIL_PROVIDER` | `dev` | `dev` apenas loga o link; `smtp` envia de verdade (usa `SMTP_*`/`EMAIL_FROM`) |
 
 ## Testes
 

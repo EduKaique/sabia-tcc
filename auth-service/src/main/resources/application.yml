@@ -4,7 +4,7 @@ spring:
     profiles:
         active: ${SPRING_PROFILES_ACTIVE:dev}
     datasource:
-        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/sabia_auth}
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/sabia_auth}
         username: ${SPRING_DATASOURCE_USERNAME:sabia}
         password: ${SPRING_DATASOURCE_PASSWORD:sabia}
         driver-class-name: org.postgresql.Driver
@@ -19,6 +19,17 @@ spring:
     web:
         error:
             include-message: always
+    mail:
+        host: ${SMTP_HOST:localhost}
+        port: ${SMTP_PORT:587}
+        username: ${SMTP_USERNAME:}
+        password: ${SMTP_PASSWORD:}
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
 
 server:
     port: ${SERVER_PORT:8081}
@@ -39,8 +50,9 @@ sabia:
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
     frontend:
-        recuperar-senha-url: ${FRONTEND_RECUPERAR_SENHA_URL:http://localhost:3000/recuperar-senha}
+        recuperar-senha-url: ${FRONTEND_RECUPERAR_SENHA_URL:http://localhost:3000/redefinir-senha}
     email:
-        # Provedor do EmailService: "dev" apenas loga o link (padrão); trocar por
-        # um provedor SMTP real quando houver implementação.
+        # Provedor do EmailService: "dev" apenas loga o link (padrão);
+        # "smtp" envia de fato via SmtpEmailService (usa as credenciais em spring.mail acima).
         provider: ${EMAIL_PROVIDER:dev}
+        remetente: ${EMAIL_FROM:no-reply@sabia.edu}
