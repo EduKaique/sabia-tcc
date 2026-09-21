@@ -18,27 +18,9 @@ const proxyRoutes: ProxyRoute[] = [
     protected: true,
   },
   {
-    upstream: process.env.CLIENTE_URL || 'http://localhost:8082',
-    prefix: '/api/clientes',
-    rewritePrefix: '/clientes',
-    protected: true,
-  },
-  {
-    upstream: process.env.CONTA_URL || 'http://localhost:8083',
-    prefix: '/api/contas',
-    rewritePrefix: '/contas',
-    protected: true,
-  },
-  {
-    upstream: process.env.GERENTE_URL || 'http://localhost:8084',
-    prefix: '/api/gerentes',
-    rewritePrefix: '/gerentes',
-    protected: true,
-  },
-  {
-    upstream: process.env.ADMIN_URL || 'http://localhost:8085',
-    prefix: '/api/admin',
-    rewritePrefix: '/admin',
+    upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8082',
+    prefix: '/api/pedagogico',
+    rewritePrefix: '/pedagogico',
     protected: true,
   },
 ];
