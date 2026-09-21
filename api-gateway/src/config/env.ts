@@ -4,6 +4,6 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
   upstreams: {
     // ALTERAR NA MEDIDA QUE AUMENTAREM OS MICROSSERVIÇOS
-    main:    process.env.AUTH_URL    || 'http://localhost:8081',
+    auth:    process.env.AUTH_URL    || 'http://localhost:8081',
   },
 };

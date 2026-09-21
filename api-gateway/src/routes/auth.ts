@@ -16,7 +16,7 @@ export async function registerAuthRoutes(gateway: FastifyInstance) {
     let auth: LoginMsResponseDto;
     try {
       auth = await httpClient.post<LoginMsResponseDto>(
-        `${env.upstreams.main}/login`,
+        `${env.upstreams.auth}/login`,
         { login, senha },
         { 'x-request-id': request.id },
       );
