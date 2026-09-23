@@ -18,10 +18,8 @@ await gateway.register(jwtPlugin);
 await registerAuthRoutes(gateway);
 
 await registerProxies(gateway);
-//registerHealthCheck(gateway);
+registerHealthCheck(gateway);
 registerErrorHandler(gateway);
-
-const PORT = Number(process.env.GATEWAY_PORT) || 3000;
 
 try {
   await gateway.listen({ port: env.PORT, host: '0.0.0.0' });

@@ -12,15 +12,14 @@ type ProxyRoute = {
 
 const proxyRoutes: ProxyRoute[] = [
   {
-    upstream: process.env.AUTH_URL || 'http://localhost:8081',
+    upstream: process.env.AUTH_URL || 'http://localhost:8080',
     prefix: '/api/auth',
-    rewritePrefix: '/',
-    protected: true,
+    rewritePrefix: '/api/auth',
   },
   {
-    upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8082',
+    upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
     prefix: '/api/pedagogico',
-    rewritePrefix: '/pedagogico',
+    rewritePrefix: '',
     protected: true,
   },
 ];
