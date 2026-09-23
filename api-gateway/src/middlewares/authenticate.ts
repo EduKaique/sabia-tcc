@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { UnauthorizedError, ForbiddenError } from '../hooks/errors.ts';
-import { Roles } from '../types/enum/roles.ts';
+import type { Roles } from '../types/enum/roles.ts';
 
 export async function authenticate(request: FastifyRequest, _reply: FastifyReply) {
   try {

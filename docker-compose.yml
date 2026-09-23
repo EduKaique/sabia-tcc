@@ -34,7 +34,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      
+
   auth-db:
     image: postgres:16-alpine
     container_name: sabia_auth_db
@@ -70,7 +70,7 @@ services:
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
-      CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
       EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -94,6 +94,7 @@ services:
       SPRING_DATASOURCE_USERNAME: academico
       SPRING_DATASOURCE_PASSWORD: academico
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8081
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8081:8081"
@@ -106,13 +107,35 @@ services:
     container_name: sabia_web
     restart: unless-stopped
     depends_on:
+      - api-gateway
       - auth-service
       - pedagogico-service
     environment:
-      NEXT_PUBLIC_AUTH_URL: http://localhost:8080
-      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8081
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8000/api/pedagogico
     ports:
       - "3000:3000"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: sabia_api_gateway
+    restart: unless-stopped
+    environment:
+      GATEWAY_PORT: 8000
+      AUTH_URL: http://auth-service:8080
+      PEDAGOGICO_URL: http://pedagogico-service:8081
+      CORS_ORIGINS: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
+    ports:
+      - "8000:8000"
+    depends_on:
+      auth-service:
+        condition: service_started
+      pedagogico-service:
+        condition: service_started
+
 
 volumes:
   postgres_data:
