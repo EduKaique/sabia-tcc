@@ -3,11 +3,10 @@ import cors from '@fastify/cors';
 
 export async function registerCors(gateway: FastifyInstance) {
   await gateway.register(cors, {
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:4173',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: (process.env.CORS_ORIGINS || 'http://localhost:8000')
+      .split(',')
+      .map((origin) => origin.trim()),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
 }
