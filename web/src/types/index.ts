@@ -60,7 +60,7 @@ export type StatusSubmissao = 'PENDENTE' | 'EM_CORRECAO' | 'CORRIGIDA'
 export interface SubmissaoItem {
   id: string
   alunoId: string
-  alunoNome: string
+  alunoNome: string | null
   alunoFotoUrl: string | null
   nomeArquivo: string | null
   entregueComAtraso: boolean
