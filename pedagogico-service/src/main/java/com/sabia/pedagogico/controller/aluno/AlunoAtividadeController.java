@@ -46,8 +46,9 @@ public class AlunoAtividadeController {
             Authentication auth,
             @PathVariable Long id,
             @Valid @RequestBody SubmeterAtividadeRequest request) {
+        AuthenticatedUser aluno = (AuthenticatedUser) auth.getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(submissaoAvaliativaService.submeter(alunoId(auth), id, request));
+                .body(submissaoAvaliativaService.submeter(aluno.id(), aluno.nome(), id, request));
     }
 
     private Long alunoId(Authentication auth) {

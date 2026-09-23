@@ -19,6 +19,9 @@ public abstract class Submissao {
     @Column(name = "aluno_id", nullable = false)
     private Long alunoId;
 
+    @Column(name = "aluno_nome")
+    private String alunoNome;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataEnvio;
 

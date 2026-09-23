@@ -9,14 +9,15 @@ const COLORS = [
   "bg-pink-500",
 ];
 
-function getInitials(nome: string): string {
+function getInitials(nome: string | null): string {
+  if (!nome) return '?';
   const parts = nome.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 interface Props {
-  nome: string;
+  nome: string | null;
   fotoUrl: string | null;
 }
 
@@ -25,7 +26,7 @@ export function AlunoAvatar({ nome, fotoUrl }: Props) {
     return (
       <Image
         src={fotoUrl}
-        alt={nome}
+        alt={nome ?? 'Aluno sem nome'}
         width={32}
         height={32}
         className="w-8 h-8 rounded-full object-cover shrink-0"
@@ -33,7 +34,7 @@ export function AlunoAvatar({ nome, fotoUrl }: Props) {
     );
   }
 
-  const color = COLORS[nome.charCodeAt(0) % COLORS.length];
+  const color = COLORS[(nome?.charCodeAt(0) ?? 0) % COLORS.length];
   return (
     <div
       className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 ${color}`}

@@ -1,22 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: sabia_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: sabia
-      POSTGRES_USER: sabia
-      POSTGRES_PASSWORD: sabia
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sabia"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   academico-db:
     image: postgres:16-alpine
     container_name: sabia_academico_db
@@ -30,7 +12,7 @@ services:
     volumes:
       - academico_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U academico"]
+      test: ["CMD-SHELL", "pg_isready -U academico -d academico"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +30,25 @@ services:
     volumes:
       - auth_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sabia"]
+      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: sabia_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: sabia
+      RABBITMQ_DEFAULT_PASS: sabia
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -89,6 +89,8 @@ services:
     depends_on:
       academico-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://academico-db:5432/academico
       SPRING_DATASOURCE_USERNAME: academico
@@ -96,6 +98,7 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8081
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      RABBITMQ_HOST: rabbitmq
     ports:
       - "8081:8081"
 
@@ -141,3 +144,4 @@ volumes:
   postgres_data:
   academico_postgres_data:
   auth_postgres_data:
+  rabbitmq_data:

@@ -37,7 +37,7 @@ public class SubmissaoAvaliativaService {
     // --------- ALUNO ---------
 
     @Transactional
-    public SubmissaoAvaliativaResponse submeter(Long alunoId, Long atividadeId, SubmeterAtividadeRequest request) {
+    public SubmissaoAvaliativaResponse submeter(Long alunoId, String alunoNome, Long atividadeId, SubmeterAtividadeRequest request) {
         var atividade = atividadeAvaliativaRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
@@ -60,6 +60,7 @@ public class SubmissaoAvaliativaService {
         var submissao = SubmissaoAvaliativa.builder()
                 .atividade(atividade)
                 .alunoId(alunoId)
+                .alunoNome(alunoNome)
                 .projeto(projeto)
                 .status(StatusSubmissao.PENDENTE)
                 .build();
@@ -159,13 +160,12 @@ public class SubmissaoAvaliativaService {
 
         var nota = correcao != null ? correcao.getNota() : null;
 
-        // GAP conhecido: nome do aluno era obtido via aluno.getUsuario().getNome() (JPA).
-        // Sem acesso à entidade Usuario neste serviço, fica null até existir uma forma
-        // de buscar esse dado no Serviço de Autenticação (ver docs/resultado-extracao-servico-pedagogico.md).
+        // alunoNome é um snapshot capturado do JWT do aluno no momento da submissão
+        // (submeter(...)) — submissões anteriores a essa mudança ficam null.
         return new SubmissaoListagemResponse(
                 submissao.getId(),
                 submissao.getAlunoId(),
-                null,
+                submissao.getAlunoNome(),
                 null,
                 null,
                 entregueComAtraso,

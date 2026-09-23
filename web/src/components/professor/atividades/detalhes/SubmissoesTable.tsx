@@ -40,7 +40,7 @@ export function SubmissoesTable({ atividadeId, filtroPendentes, onFiltrarPendent
   const totalPages = data?.totalPages ?? 1
 
   const filtradas = content
-    .filter((s) => s.alunoNome.toLowerCase().includes(buscaAluno.toLowerCase()))
+    .filter((s) => (s.alunoNome ?? '').toLowerCase().includes(buscaAluno.toLowerCase()))
     .filter((s) => !filtroPendentes || s.status === 'PENDENTE')
 
   const startItem = currentPage * (data?.size ?? 5) + 1
@@ -125,7 +125,7 @@ export function SubmissoesTable({ atividadeId, filtroPendentes, onFiltrarPendent
                       <div className="flex items-center gap-3">
                         <AlunoAvatar nome={s.alunoNome} fotoUrl={s.alunoFotoUrl} />
                         <div className="min-w-0">
-                          <p className="font-medium text-sm text-foreground truncate">{s.alunoNome}</p>
+                          <p className="font-medium text-sm text-foreground truncate">{s.alunoNome ?? 'Aluno sem nome'}</p>
                           {s.nomeArquivo && (
                             <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 truncate">
                               <File size={11} />

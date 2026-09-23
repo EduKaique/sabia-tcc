@@ -8,6 +8,11 @@ spring:
         username: ${DB_USER:academico}
         password: ${DB_PASS:academico}
         driver-class-name: org.postgresql.Driver
+    rabbitmq:
+        host: ${RABBITMQ_HOST:localhost}
+        port: ${RABBITMQ_PORT:5672}
+        username: ${RABBITMQ_USER:sabia}
+        password: ${RABBITMQ_PASS:sabia}
     jpa:
         hibernate:
             ddl-auto: update
@@ -21,7 +26,7 @@ spring:
             include-message: always
 
 server:
-    port: 8082
+    port: ${SERVER_PORT:8081}
 
 springdoc:
     api-docs:
@@ -40,3 +45,8 @@ sabia:
         gemini:
             api-key: ${GEMINI_API_KEY:}
             model: gemini-2.5-flash
+    mensageria:
+        correcoes:
+            exchange: sabia.correcoes.exchange
+            fila: sabia.correcoes.solicitadas.queue
+            routing-key: correcao.solicitada
