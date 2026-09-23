@@ -70,7 +70,7 @@ services:
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
-      CORS_ORIGINS: ${NEXT_PUBLIC_API_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
       EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -111,10 +111,10 @@ services:
       - auth-service
       - pedagogico-service
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3000
-      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:3000/api/pedagogico
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8000/api/pedagogico
     ports:
-      - "8000:3000"
+      - "3000:3000"
 
   api-gateway:
     build:
@@ -123,13 +123,13 @@ services:
     container_name: sabia_api_gateway
     restart: unless-stopped
     environment:
-      GATEWAY_PORT: 3000
+      GATEWAY_PORT: 8000
       AUTH_URL: http://auth-service:8080
       PEDAGOGICO_URL: http://pedagogico-service:8081
-      CORS_ORIGINS: http://localhost:8000
+      CORS_ORIGINS: http://localhost:3000
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
     ports:
-      - "3000:3000"
+      - "8000:8000"
     depends_on:
       auth-service:
         condition: service_started
