@@ -1,4 +1,4 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL
+const BASE = process.env.NEXT_PUBLIC_AUTH_URL
 
 export interface LoginRequest {
   email: string

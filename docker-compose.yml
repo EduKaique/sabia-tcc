@@ -70,7 +70,13 @@ services:
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
-      #CORS_ORIGINS: ${NEXT_PUBLIC_API_URL}
+      CORS_ORIGINS: ${NEXT_PUBLIC_API_URL}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
+      EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     ports:
       - "8080:8080"
 

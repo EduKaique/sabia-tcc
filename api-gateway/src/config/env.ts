@@ -5,5 +5,6 @@ export const env = {
   upstreams: {
     auth: process.env.AUTH_URL || 'http://localhost:8080',
     pedagogico: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
+
   },
 };
