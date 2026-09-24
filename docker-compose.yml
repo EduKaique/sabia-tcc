@@ -1,22 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: sabia_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: sabia
-      POSTGRES_USER: sabia
-      POSTGRES_PASSWORD: sabia
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sabia"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   academico-db:
     image: postgres:16-alpine
     container_name: sabia_academico_db
@@ -30,11 +12,11 @@ services:
     volumes:
       - academico_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U academico"]
+      test: ["CMD-SHELL", "pg_isready -U academico -d academico"]
       interval: 10s
       timeout: 5s
       retries: 5
-      
+
   auth-db:
     image: postgres:16-alpine
     container_name: sabia_auth_db
@@ -48,7 +30,25 @@ services:
     volumes:
       - auth_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sabia"]
+      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: sabia_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: sabia
+      RABBITMQ_DEFAULT_PASS: sabia
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,7 +70,7 @@ services:
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
-      CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
       EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -89,12 +89,16 @@ services:
     depends_on:
       academico-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://academico-db:5432/academico
       SPRING_DATASOURCE_USERNAME: academico
       SPRING_DATASOURCE_PASSWORD: academico
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8081
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      RABBITMQ_HOST: rabbitmq
     ports:
       - "8081:8081"
 
@@ -106,15 +110,38 @@ services:
     container_name: sabia_web
     restart: unless-stopped
     depends_on:
+      - api-gateway
       - auth-service
       - pedagogico-service
     environment:
-      NEXT_PUBLIC_AUTH_URL: http://localhost:8080
-      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8081
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8000/api/pedagogico
     ports:
       - "3000:3000"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: sabia_api_gateway
+    restart: unless-stopped
+    environment:
+      GATEWAY_PORT: 8000
+      AUTH_URL: http://auth-service:8080
+      PEDAGOGICO_URL: http://pedagogico-service:8081
+      CORS_ORIGINS: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
+    ports:
+      - "8000:8000"
+    depends_on:
+      auth-service:
+        condition: service_started
+      pedagogico-service:
+        condition: service_started
+
 
 volumes:
   postgres_data:
   academico_postgres_data:
   auth_postgres_data:
+  rabbitmq_data:

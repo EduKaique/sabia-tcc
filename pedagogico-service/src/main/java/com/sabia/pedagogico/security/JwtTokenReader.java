@@ -43,6 +43,10 @@ public class JwtTokenReader {
         return extractClaims(token).get("perfil", String.class);
     }
 
+    public String extractNome(String token) {
+        return extractClaims(token).get("nome", String.class);
+    }
+
     private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey())

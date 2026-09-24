@@ -35,8 +35,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (token != null && jwtTokenReader.isTokenValid(token)) {
             Long userId = jwtTokenReader.extractUserId(token);
             String perfil = jwtTokenReader.extractPerfil(token);
+            String nome = jwtTokenReader.extractNome(token);
 
-            AuthenticatedUser principal = new AuthenticatedUser(userId, perfil);
+            AuthenticatedUser principal = new AuthenticatedUser(userId, perfil, nome);
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + perfil));
 
             UsernamePasswordAuthenticationToken auth =

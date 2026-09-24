@@ -5,7 +5,8 @@ export function registerHealthCheck(gateway: FastifyInstance) {
     status: 'ok',
     timestamp: new Date().toISOString(),
     upstreams: {
-      main: process.env.AUTH_URL || 'http://localhost:8081',
+      auth: process.env.AUTH_URL || 'http://localhost:8080',
+      pedagogico: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
     },
   }));
 }

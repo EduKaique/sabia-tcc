@@ -3,7 +3,8 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-me',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
   upstreams: {
-    // ALTERAR NA MEDIDA QUE AUMENTAREM OS MICROSSERVIÇOS
-    auth:    process.env.AUTH_URL    || 'http://localhost:8081',
+    auth: process.env.AUTH_URL || 'http://localhost:8080',
+    pedagogico: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
+
   },
 };
