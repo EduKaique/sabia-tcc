@@ -20,4 +20,6 @@ public interface AtividadeAvaliativaRepository extends JpaRepository<AtividadeAv
     List<AtividadeAvaliativa> findByTurmaIdInAndStatus(List<Long> turmaIds, StatusAtividade status);
 
     List<AtividadeAvaliativa> findByTurmaIdIn(List<Long> turmaIds);
+
+    long countByTurmaId(Long turmaId);
 }

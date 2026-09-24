@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(422, ex.getMessage()));
     }
 
+    @ExceptionHandler(ConflitoException.class)
+    public ResponseEntity<ErroResponse> handleConflito(ConflitoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErroResponse.of(409, ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> campos = new LinkedHashMap<>();
