@@ -64,7 +64,6 @@ public class TurmaService {
     }
 
     private Turma buscarDoProfessor(Long professorId, Long id) {
-        // Turma de outro professor responde 404 para não revelar sua existência.
         return turmaRepository.findByIdAndProfessorId(id, professorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada."));
     }

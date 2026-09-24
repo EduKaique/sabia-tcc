@@ -36,7 +36,6 @@ import {
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Quando informado, o dialog opera em modo edição. */
   turma?: Turma | null;
 }
 
@@ -57,7 +56,6 @@ export function TurmaFormDialog({ open, onOpenChange, turma }: Props) {
     formState: { errors },
   } = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema),
-    // O pai remonta este componente (via `key`) a cada abertura, então o estado sempre começa limpo.
     defaultValues: turma
       ? {
           nome: turma.nome,

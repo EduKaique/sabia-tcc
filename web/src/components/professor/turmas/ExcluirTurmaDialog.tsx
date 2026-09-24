@@ -21,7 +21,6 @@ interface Props {
 export function ExcluirTurmaDialog({ turma, onOpenChange }: Props) {
   const excluir = useExcluirTurma();
 
-  // Botão comum (não AlertDialogAction) para o dialog não fechar sozinho em caso de 409.
   const confirmar = () => {
     if (!turma) return;
     excluir.mutate(turma.id, { onSuccess: () => onOpenChange(false) });
