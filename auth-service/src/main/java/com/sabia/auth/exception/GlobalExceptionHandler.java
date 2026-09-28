@@ -50,6 +50,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.GONE).body(ErroResponse.of(410, ex.getMessage()));
     }
 
+    @ExceptionHandler(SenhaAtualIncorretaException.class)
+    public ResponseEntity<ErroResponse> handleSenhaAtualIncorreta(SenhaAtualIncorretaException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErroResponse.of(401, ex.getMessage()));
+    }
+
+    @ExceptionHandler({CpfJaCadastradoException.class, MatriculaJaCadastradaException.class})
+    public ResponseEntity<ErroResponse> handleConflitoPerfil(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.of(409, ex.getMessage()));
+    }
+
+    @ExceptionHandler(PerfilNaoAplicavelException.class)
+    public ResponseEntity<ErroResponse> handlePerfilNaoAplicavel(PerfilNaoAplicavelException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErroResponse.of(403, ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> handleGeneric(Exception ex) {
         log.error("Erro inesperado: {}", ex.getMessage(), ex);

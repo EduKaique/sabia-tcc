@@ -11,7 +11,7 @@ public class Professor {
     @Id
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @MapsId
     @JoinColumn(name = "id")
     private Usuario usuario;
