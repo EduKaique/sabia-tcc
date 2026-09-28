@@ -4,5 +4,6 @@ public record LoginResponse(
         String token,
         String tipo,
         String perfil,
-        String nome
+        String nome,
+        boolean mustChangePassword
 ) {}
