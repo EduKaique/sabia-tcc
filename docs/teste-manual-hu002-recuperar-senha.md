@@ -22,8 +22,8 @@ print/vídeo para o professor).
 ## 1. Subir o serviço
 
 ```bash
-# 1. Auth DB
-docker compose up -d auth-db
+# Banco compartilhado
+docker compose up -d database
 
 # 2. auth-service (na raiz do repo)
 cd auth-service
@@ -129,7 +129,7 @@ Esperado: `410` — `{"erro":"Este link já foi utilizado."}`
 Difícil de simular manualmente (o token vale 24h). Duas opções:
 - Confie no teste automatizado `redefinirSenha_comTokenExpirado_retorna410`, que força a
   expiração direto no banco; ou
-- Manualmente: peça um link (2.1/2.2), depois no Postgres do `auth-db`:
+- Manualmente: peça um link (2.1/2.2), depois no schema `auth` do PostgreSQL:
   ```sql
   UPDATE token_recuperacao_senha SET expira_em = now() - interval '1 minute'
   WHERE hash_token = (SELECT hash_token FROM token_recuperacao_senha ORDER BY id DESC LIMIT 1);

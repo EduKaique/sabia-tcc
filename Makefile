@@ -15,7 +15,7 @@ web-dev:
 
 ## Sobe apenas os bancos
 db:
-	docker compose up -d db auth-db
+	docker compose up -d database
 
 ## Para todos os containers
 stop:

@@ -18,10 +18,10 @@ cd sabia-tcc
 
 ```bash
 # Frontend
-cp apps/web/.env.example apps/web/.env.local
+cp web/.env.example web/.env.local
 
 # Backend
-cp apps/api/.env.example apps/api/.env
+cp auth-service/.env.example auth-service/.env
 ```
 
 Edite os arquivos conforme necessário (as defaults já funcionam com o Docker Compose local).
@@ -29,13 +29,13 @@ Edite os arquivos conforme necessário (as defaults já funcionam com o Docker C
 ## 3. Subir o banco de dados
 
 ```bash
-docker compose up -d db
+docker compose up -d database
 ```
 
 Aguarde o PostgreSQL inicializar. Verifique com:
 
 ```bash
-docker compose logs db
+docker compose logs database
 ```
 
 ## 4. Rodar o backend

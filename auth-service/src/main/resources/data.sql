@@ -26,6 +26,14 @@ VALUES (
     'PROFESSOR', CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
+-- 3. Professor
+INSERT INTO usuario (id, instituicao_id, nome, cpf, email, senha_hash, tipo_perfil, criado_em)
+VALUES (
+    4, 1, 'Edu Teste', '12345678910', 'eduardoalberico18@gmail.com',
+    '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG',
+    'PROFESSOR', CURRENT_TIMESTAMP
+) ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO professor (id, especialidade)
 VALUES (2, 'Programação')
 ON CONFLICT (id) DO NOTHING;
