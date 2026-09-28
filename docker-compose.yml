@@ -114,8 +114,8 @@ services:
       - auth-service
       - pedagogico-service
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_PEDAGOGICO_API_URL: http://localhost:8000/api/pedagogico
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_PEDAGOGICO_API_URL: ${NEXT_PUBLIC_PEDAGOGICO_API_URL:-http://localhost:8000/api/pedagogico}
     ports:
       - "3000:3000"
 
@@ -126,10 +126,10 @@ services:
     container_name: sabia_api_gateway
     restart: unless-stopped
     environment:
-      GATEWAY_PORT: 8000
-      AUTH_URL: http://auth-service:8080
-      PEDAGOGICO_URL: http://pedagogico-service:8081
-      CORS_ORIGINS: http://localhost:3000
+      GATEWAY_PORT: ${GATEWAY_PORT:-8000}
+      AUTH_URL: ${AUTH_URL:-http://auth-service:8080}
+      PEDAGOGICO_URL: ${PEDAGOGICO_URL:-http://pedagogico-service:8081}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
     ports:
       - "8000:8000"

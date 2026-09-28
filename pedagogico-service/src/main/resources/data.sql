@@ -73,3 +73,8 @@ VALUES (
     NULL,
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
+
+-- 4. Campos da HU014 na turma seed (colunas adicionadas depois; idempotente)
+UPDATE turma
+SET ano_serie = '5º ano', turno = 'MANHA', codigo_convite = 'SABIA1'
+WHERE id = 10 AND codigo_convite IS NULL;

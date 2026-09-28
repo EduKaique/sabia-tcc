@@ -28,6 +28,16 @@ public class Turma {
     @Column(nullable = false, length = 30)
     private EtapaEnsino etapa;
 
+    @Column(name = "ano_serie", length = 50)
+    private String anoSerie;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private Turno turno;
+
+    @Column(name = "codigo_convite", unique = true, length = 8)
+    private String codigoConvite;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;
 
