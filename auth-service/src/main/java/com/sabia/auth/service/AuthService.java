@@ -1,8 +1,12 @@
 package com.sabia.auth.service;
 
 import com.sabia.auth.dto.request.LoginRequest;
+import com.sabia.auth.dto.request.TrocarSenhaRequest;
 import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
+import com.sabia.auth.exception.SenhaAtualIncorretaException;
+import com.sabia.auth.exception.SenhaDivergenteException;
+import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.repository.UsuarioRepository;
 import com.sabia.auth.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -34,7 +38,24 @@ public class AuthService {
 
         String token = jwtTokenProvider.generateToken(usuario);
         log.info("Login bem-sucedido para usuário id={}", usuario.getId());
-        return new LoginResponse(token, "Bearer", usuario.getTipoPerfil().name(), usuario.getNome());
+        return new LoginResponse(token, "Bearer", usuario.getTipoPerfil().name(), usuario.getNome(),
+                usuario.isMustChangePassword());
+    }
+
+    @Transactional
+    public void trocarSenha(Usuario usuario, TrocarSenhaRequest request) {
+        if (!passwordEncoder.matches(request.senhaAtual(), usuario.getSenhaHash())) {
+            throw new SenhaAtualIncorretaException();
+        }
+        if (!request.novaSenha().equals(request.confirmarSenha())) {
+            throw new SenhaDivergenteException();
+        }
+
+        usuario.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+        usuario.setMustChangePassword(false);
+        usuarioRepository.save(usuario);
+
+        log.info("Senha alterada (troca obrigatória) para usuário id={}", usuario.getId());
     }
 
     /**

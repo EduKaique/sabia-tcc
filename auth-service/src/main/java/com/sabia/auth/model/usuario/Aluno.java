@@ -11,7 +11,7 @@ public class Aluno {
     @Id
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @MapsId
     @JoinColumn(name = "id")
     private Usuario usuario;
@@ -19,4 +19,13 @@ public class Aluno {
     @Column(nullable = false)
     @Builder.Default
     private int pontuacaoGeral = 0;
+
+    @Column(unique = true)
+    private String matricula;
+
+    private String avatar;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean perfilCompleto = false;
 }
