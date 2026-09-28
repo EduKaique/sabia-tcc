@@ -32,12 +32,17 @@ export interface AtividadeAvaliativa {
   criadaEm: string
 }
 
+export type EtapaEnsino = 'ANOS_INICIAIS' | 'ANOS_FINAIS' | 'MEDIO' | 'TECNICO'
+
+export type Turno = 'MANHA' | 'TARDE' | 'NOITE' | 'INTEGRAL'
+
 export interface Turma {
   id: number
   nome: string
-  anoSerie?: string
-  modalidadeEnsino?: string
-  etapaEnsino?: string
+  etapa: EtapaEnsino
+  anoSerie: string | null
+  turno: Turno | null
+  codigoConvite: string | null
 }
 
 export interface AtividadeDetalhes {

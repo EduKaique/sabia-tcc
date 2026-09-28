@@ -9,4 +9,5 @@ import java.util.List;
 public interface TurmaAlunoRepository extends JpaRepository<TurmaAluno, Long> {
     List<TurmaAluno> findByAlunoId(Long alunoId);
     boolean existsByTurmaIdAndAlunoId(Long turmaId, Long alunoId);
+    long countByTurmaId(Long turmaId);
 }
