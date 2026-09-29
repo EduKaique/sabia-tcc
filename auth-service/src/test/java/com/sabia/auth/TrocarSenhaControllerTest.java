@@ -1,6 +1,5 @@
 package com.sabia.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
@@ -18,15 +17,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class AuthControllerTest {
+class TrocarSenhaControllerTest {
+
+    private static final String EMAIL = "professor@sabia.edu";
 
     @Autowired
     private WebApplicationContext context;
@@ -41,6 +42,7 @@ class AuthControllerTest {
 
     private final ObjectMapper json = new ObjectMapper();
     private MockMvc mvc;
+    private Long usuarioId;
 
     @BeforeEach
     void setUp() {
@@ -48,92 +50,89 @@ class AuthControllerTest {
         alunoRepository.deleteAll();
         professorRepository.deleteAll();
         usuarioRepository.deleteAll();
-        usuarioRepository.save(Usuario.builder()
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
                 .nome("Ana Professora")
                 .cpf("12345678901")
-                .email("professor@sabia.edu")
+                .email(EMAIL)
                 .senhaHash(passwordEncoder.encode("password"))
                 .tipoPerfil(PerfilUsuario.PROFESSOR)
+                .mustChangePassword(true)
                 .build());
+        usuarioId = usuario.getId();
     }
 
-    @Test
-    void login_comCredenciaisValidas_retorna200EToken() throws Exception {
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {"email":"professor@sabia.edu","senha":"password"}"""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.tipo").value("Bearer"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"))
-                .andExpect(jsonPath("$.nome").value("Ana Professora"));
-    }
-
-    @Test
-    void login_comSenhaIncorreta_retorna401Generico() throws Exception {
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {"email":"professor@sabia.edu","senha":"errada"}"""))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.erro").value("E-mail ou senha incorretos"));
-    }
-
-    @Test
-    void login_comEmailInvalido_retorna400() throws Exception {
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {"email":"nao-e-email","senha":""}"""))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void me_comTokenValido_retornaUsuarioAutenticado() throws Exception {
+    private String logar() throws Exception {
         String body = mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"email":"professor@sabia.edu","senha":"password"}"""))
                 .andReturn().getResponse().getContentAsString();
-        String token = json.readTree(body).get("token").asText();
-
-        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("professor@sabia.edu"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+        return json.readTree(body).get("token").asText();
     }
 
     @Test
-    void me_semToken_retorna403() throws Exception {
-        mvc.perform(get("/api/auth/me"))
+    void login_comMustChangePasswordTrue_exposeAFlag() throws Exception {
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"professor@sabia.edu","senha":"password"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mustChangePassword").value(true));
+    }
+
+    @Test
+    void trocarSenha_comCredenciaisValidas_alteraSenhaEZeraFlag() throws Exception {
+        String token = logar();
+
+        mvc.perform(post("/api/auth/trocar-senha")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"senhaAtual":"password","novaSenha":"novaSenha123","confirmarSenha":"novaSenha123"}"""))
+                .andExpect(status().isOk());
+
+        assertThat(usuarioRepository.findById(usuarioId).orElseThrow().isMustChangePassword()).isFalse();
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"professor@sabia.edu","senha":"novaSenha123"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mustChangePassword").value(false));
+    }
+
+    @Test
+    void trocarSenha_semToken_retorna403() throws Exception {
+        mvc.perform(post("/api/auth/trocar-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"senhaAtual":"password","novaSenha":"novaSenha123","confirmarSenha":"novaSenha123"}"""))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void validate_comTokenValido_retornaValidoTrue() throws Exception {
-        String body = mvc.perform(post("/api/auth/login")
+    void trocarSenha_comSenhaAtualIncorreta_retorna401() throws Exception {
+        String token = logar();
+
+        mvc.perform(post("/api/auth/trocar-senha")
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"email":"professor@sabia.edu","senha":"password"}"""))
-                .andReturn().getResponse().getContentAsString();
-        JsonNode login = json.readTree(body);
-
-        mvc.perform(post("/api/auth/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json.createObjectNode().put("token", login.get("token").asText()).toString()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.valido").value(true))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+                            {"senhaAtual":"errada","novaSenha":"novaSenha123","confirmarSenha":"novaSenha123"}"""))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.erro").value("Senha atual incorreta."));
     }
 
     @Test
-    void validate_comTokenAdulterado_retornaValidoFalse() throws Exception {
-        mvc.perform(post("/api/auth/validate")
+    void trocarSenha_comSenhasDivergentes_retorna422() throws Exception {
+        String token = logar();
+
+        mvc.perform(post("/api/auth/trocar-senha")
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"token":"abc.def.ghi"}"""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.valido").value(false));
+                            {"senhaAtual":"password","novaSenha":"novaSenha123","confirmarSenha":"outraSenha123"}"""))
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.erro").value("As senhas não coincidem."));
     }
 }
