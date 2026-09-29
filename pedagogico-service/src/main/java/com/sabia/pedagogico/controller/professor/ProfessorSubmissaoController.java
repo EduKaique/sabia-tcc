@@ -2,6 +2,7 @@ package com.sabia.pedagogico.controller.professor;
 
 import com.sabia.pedagogico.dto.request.AvaliarSubmissaoRequest;
 import com.sabia.pedagogico.dto.response.SubmissaoAvaliativaResponse;
+import com.sabia.pedagogico.dto.response.SubmissaoProfessorDetalheResponse;
 import com.sabia.pedagogico.security.AuthenticatedUser;
 import com.sabia.pedagogico.service.SubmissaoAvaliativaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +25,7 @@ public class ProfessorSubmissaoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Detalhe da submissão com avaliação (se existir)")
-    public ResponseEntity<SubmissaoAvaliativaResponse> buscar(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<SubmissaoProfessorDetalheResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(submissaoAvaliativaService.buscarParaProfessor(professorId(auth), id));
     }
 
