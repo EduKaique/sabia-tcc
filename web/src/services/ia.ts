@@ -1,13 +1,14 @@
-import api from '@/lib/pedagogicoApi'
+import api from '@/lib/api'
 import type { TipoAtividade } from '@/types'
 
 export interface GerarAtividadeIaPayload {
   idTurma: number
   tipoAtividade: TipoAtividade
   descricaoObjetivo: string
+  etapaEnsino: string
 }
 
-export interface SugestaoAtividadeIa {
+export interface GerarAtividadeIaRequest {
   titulo: string
   descricao: string
   gabaritoEstadoJson?: string
@@ -15,7 +16,7 @@ export interface SugestaoAtividadeIa {
 
 export async function gerarAtividadeComIa(
   payload: GerarAtividadeIaPayload,
-): Promise<SugestaoAtividadeIa> {
-  const { data } = await api.post<SugestaoAtividadeIa>('/api/ia/gerar-atividade', payload)
+): Promise<GerarAtividadeIaRequest> {
+  const { data } = await api.post<GerarAtividadeIaRequest>('/api/ia/atividade/gerar', payload)
   return data
 }

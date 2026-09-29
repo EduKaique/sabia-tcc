@@ -47,12 +47,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ErroResponse.ofValidation(campos));
     }
 
-    @ExceptionHandler(IaIndisponivelException.class)
-    public ResponseEntity<ErroResponse> handleIaIndisponivel(IaIndisponivelException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(ErroResponse.of(502, ex.getMessage()));
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> handleGeneric(Exception ex) {
         log.error("Erro inesperado: {}", ex.getMessage(), ex);
