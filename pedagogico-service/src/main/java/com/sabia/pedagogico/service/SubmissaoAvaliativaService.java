@@ -6,6 +6,7 @@ import com.sabia.pedagogico.dto.response.CorrecaoResponse;
 import com.sabia.pedagogico.dto.response.PageResponse;
 import com.sabia.pedagogico.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.pedagogico.dto.response.SubmissaoListagemResponse;
+import com.sabia.pedagogico.dto.response.SubmissaoProfessorDetalheResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
@@ -96,10 +97,21 @@ public class SubmissaoAvaliativaService {
         return PageResponse.from(page.map(this::toListagemResponse));
     }
 
-    public SubmissaoAvaliativaResponse buscarParaProfessor(Long professorId, Long submissaoId) {
+    public SubmissaoProfessorDetalheResponse buscarParaProfessor(Long professorId, Long submissaoId) {
         var submissao = buscarPorId(submissaoId);
         validarProfessorDaSubmissao(professorId, submissao);
-        return toResponse(submissao, submissao.getCorrecao());
+
+        var projeto = submissao.getProjeto();
+        var correcao = submissao.getCorrecao();
+        return new SubmissaoProfessorDetalheResponse(
+                submissao.getId(),
+                submissao.getAtividade().getId(),
+                submissao.getAlunoNome(),
+                submissao.getDataEnvio(),
+                submissao.getStatus(),
+                projeto != null ? projeto.getEstadoJson() : null,
+                correcao != null ? correcaoMapper.toResponse(correcao) : null
+        );
     }
 
     @Transactional

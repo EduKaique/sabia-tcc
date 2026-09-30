@@ -28,15 +28,17 @@ interface BlocklyEditorProps {
   onStateChange?: (state: string) => void;
   initialState?: string;
   workspaceOnly?: boolean;
+  readOnly?: boolean;
   onVariablePrompt?: (message: string, defaultValue: string, callback: (value: string | null) => void) => void;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, onVariablePrompt }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, readOnly, onVariablePrompt }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const onCodeChangeRef = useRef(onCodeChange);
   const onStateChangeRef = useRef(onStateChange);
   const onVariablePromptRef = useRef(onVariablePrompt);
+  const readOnlyRef = useRef(readOnly);
 
   const [generatedCode, setGeneratedCode] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -56,7 +58,13 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
 
   useEffect(() => {
     if (!workspaceRef.current && blocklyDiv.current) {
-      workspaceRef.current = Blockly.inject(blocklyDiv.current, {
+      const opcoesComuns = {
+        zoom: { controls: true, wheel: false, startScale: 1.25 },
+        grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
+        move: {wheel: true}
+      };
+
+      workspaceRef.current = Blockly.inject(blocklyDiv.current, readOnlyRef.current ? { ...opcoesComuns, readOnly: true } : {
         toolbox: `
           <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
             <category name="Entrada/Saída" colour="#a55b80">
@@ -184,9 +192,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
           </xml>
         `,
         trashcan: true,
-        zoom: { controls: true, wheel: false, startScale: 1.25 },
-        grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
-        move: {wheel: true}
+        ...opcoesComuns
       });
 
       Blockly.dialog.setPrompt((message, defaultValue, callback) => {
