@@ -44,7 +44,7 @@ class GeminiClient:
                 response.raise_for_status()
                 return self._extract_text(response.json())
         except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError) as exc:
-            raise GeminiClientError("Resposta do Gemini inválida ou indisponível.") from exc
+            raise GeminiClientError(f"Resposta do Gemini inválida ou indisponível. {exc}") from exc
 
     @staticmethod
     def _extract_text(response: dict[str, Any]) -> str:
