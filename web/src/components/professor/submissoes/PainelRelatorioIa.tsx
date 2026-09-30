@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import type { RelatorioIa } from '@/types'
+import { useRevisarSubmissaoIa } from '@/hooks/useRevisarSubmissaoIa'
+import type { RevisarSubmissaoIaPayload } from '@/services/ia'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function lerRelatorio(json: string | null | undefined): RelatorioIa | null {
@@ -27,10 +31,20 @@ function lerRelatorio(json: string | null | undefined): RelatorioIa | null {
 
 interface Props {
   relatorioIaJson: string | null | undefined
+  payload: RevisarSubmissaoIaPayload | null
 }
 
-export function PainelRelatorioIa({ relatorioIaJson }: Props) {
-  const relatorio = lerRelatorio(relatorioIaJson)
+export function PainelRelatorioIa({ relatorioIaJson, payload }: Props) {
+  const revisar = useRevisarSubmissaoIa()
+  const [relatorioGerado, setRelatorioGerado] = useState<RelatorioIa | null>(null)
+  const relatorio = relatorioGerado ?? lerRelatorio(relatorioIaJson)
+
+  function gerarRelatorio() {
+    if (!payload) return
+    revisar.mutate(payload, {
+      onSuccess: setRelatorioGerado,
+    })
+  }
 
   return (
     <Card>
@@ -39,7 +53,17 @@ export function PainelRelatorioIa({ relatorioIaJson }: Props) {
       </CardHeader>
       <CardContent className="space-y-4 text-sm text-foreground">
         {!relatorio ? (
-          <p className="text-muted-foreground">Relatório de IA ainda não disponível.</p>
+          <div className="space-y-3">
+            <p className="text-muted-foreground">Relatório de IA ainda não disponível.</p>
+            <Button onClick={gerarRelatorio} disabled={!payload || revisar.isPending}>
+              {revisar.isPending ? 'Gerando relatório...' : 'Gerar relatório com IA'}
+            </Button>
+            {revisar.isError && (
+              <p className="text-sm text-destructive">
+                Não foi possível gerar o relatório. Tente novamente.
+              </p>
+            )}
+          </div>
         ) : (
           <>
             {relatorio.notaSugerida !== undefined && (
