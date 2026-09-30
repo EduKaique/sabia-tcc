@@ -11,8 +11,7 @@ Não possui banco de dados nem acesso ao serviço pedagógico.
 {
   "idTurma": 1,
   "tipoAtividade": "ATIVIDADE_TRILHA",
-  "descricaoObjetivo": "Praticar repeticao e tomada de decisao",
-  "etapaEnsino": "ANOS_FINAIS"
+  "descricaoObjetivo": "Praticar repeticao e tomada de decisao"
 }
 ```
 

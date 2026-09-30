@@ -44,18 +44,10 @@ def parse_suggestion(generated_text: str) -> GerarAtividadeResponse:
 
 
 def build_prompt(request: GerarAtividadeRequest) -> str:
-    etapa_display = {
-        "ANOS_INICIAIS": "Anos Iniciais do Ensino Fundamental",
-        "ANOS_FINAIS": "Anos Finais do Ensino Fundamental",
-        "MEDIO": "Ensino Médio",
-        "TECNICO": "Ensino Técnico",
-    }.get(request.etapaEnsino, request.etapaEnsino)
-
     return f"""Você é um assistente pedagógico especializado em programação visual com Blockly para educação básica.
 
 Contexto da turma:
 - Tipo de atividade: {request.tipoAtividade}
-- Etapa de ensino: {etapa_display}
 
 O professor descreveu o seguinte objetivo pedagógico:
 "{request.descricaoObjetivo}"

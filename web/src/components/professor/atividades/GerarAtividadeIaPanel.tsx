@@ -62,7 +62,6 @@ export function GerarAtividadeIaPanel({
         idTurma: turmaSelecionadaId,
         tipoAtividade,
         descricaoObjetivo: descricaoObjetivo.trim(),
-        etapaEnsino: turmaSelecionada?.etapaEnsino ?? "",
       });
 
       setSugestao(resultado);

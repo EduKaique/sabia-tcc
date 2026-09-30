@@ -5,7 +5,6 @@ export interface GerarAtividadeIaPayload {
   idTurma: number
   tipoAtividade: TipoAtividade
   descricaoObjetivo: string
-  etapaEnsino: string
 }
 
 export interface GerarAtividadeIaRequest {

@@ -21,13 +21,13 @@ const proxyRoutes: ProxyRoute[] = [
   {
     upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
     prefix: '/api/pedagogico',
-    rewritePrefix: '',
+    rewritePrefix: '/',
     protected: true,
   },
   {
     upstream: process.env.IA_URL || 'http://localhost:8002',
     prefix: '/api/ia',
-    rewritePrefix: '',
+    rewritePrefix: '/',
     protected: true,
     roles: ['PROFESSOR'],
   },

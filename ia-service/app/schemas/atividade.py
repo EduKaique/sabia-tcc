@@ -5,7 +5,6 @@ class GerarAtividadeRequest(BaseModel):
     idTurma: int = Field(gt=0)
     tipoAtividade: str = Field(min_length=1)
     descricaoObjetivo: str = Field(min_length=1)
-    etapaEnsino: str = Field(min_length=1)
 
 
 class GerarAtividadeResponse(BaseModel):
