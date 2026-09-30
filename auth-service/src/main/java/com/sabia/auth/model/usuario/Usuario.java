@@ -48,6 +48,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @PrePersist
     void prePersist() {
         criadoEm = LocalDateTime.now(ZoneOffset.UTC);

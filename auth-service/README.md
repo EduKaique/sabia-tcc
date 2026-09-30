@@ -39,15 +39,20 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 | `POST` | `/api/auth/validate` | pública | Verifica assinatura/validade de um token (uso do Gateway) |
 | `POST` | `/api/auth/esqueci-senha` | pública | Gera um token de recuperação (24h) e envia o link por e-mail |
 | `POST` | `/api/auth/redefinir-senha` | pública | Redefine a senha a partir de um token de recuperação válido |
+| `POST` | `/api/auth/trocar-senha` | Bearer | Troca obrigatória de senha (quando `mustChangePassword=true`) |
+| `PUT` | `/api/auth/perfil` | Bearer | Aluno completa o perfil (nome, CPF, matrícula, avatar) |
+| `GET` | `/api/auth/perfil/status` | Bearer | `{ perfilCompleto }` do usuário autenticado |
 | `GET` | `/api/health` | pública | Health check |
 
 ### `POST /api/auth/login`
 ```jsonc
 // 200
-{ "token": "eyJ...", "tipo": "Bearer", "perfil": "PROFESSOR", "nome": "Ana Professora" }
+{ "token": "eyJ...", "tipo": "Bearer", "perfil": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
 // 401 — mensagem genérica (não revela qual campo falhou)
 { "status": 401, "erro": "E-mail ou senha incorretos", "timestamp": "..." }
 ```
+Se `mustChangePassword=true` (ex.: senha gerada pelo admin), o front deve barrar o acesso ao
+dashboard e forçar a chamada de `POST /api/auth/trocar-senha` antes de liberar o resto da app.
 
 ### `GET /api/auth/me`
 ```jsonc
@@ -86,6 +91,48 @@ formato `{sabia.frontend.recuperar-senha-url}?token={token}`.
 ```
 Ao redefinir com sucesso: grava a nova senha com BCrypt, marca o token usado (invalidando-o
 na hora) e invalida também os demais tokens de recuperação ativos do mesmo usuário.
+
+### `POST /api/auth/trocar-senha` (Bearer)
+```jsonc
+// body
+{ "senhaAtual": "senhaTemporaria", "novaSenha": "novaSenha123", "confirmarSenha": "novaSenha123" }
+
+// 200
+{ "mensagem": "Senha alterada com sucesso." }
+
+// 401 — senha atual incorreta
+{ "status": 401, "erro": "Senha atual incorreta.", "timestamp": "..." }
+
+// 422 — senhas divergentes
+{ "status": 422, "erro": "As senhas não coincidem.", "timestamp": "..." }
+```
+Grava a nova senha com BCrypt e zera `mustChangePassword`.
+
+### `PUT /api/auth/perfil` (Bearer, apenas ALUNO)
+```jsonc
+// body
+{ "nomeCompleto": "Carlos Aluno", "cpf": "98765432100", "matricula": "2026001", "avatar": "avatar-1.png" }
+
+// 200
+{ "mensagem": "Perfil atualizado com sucesso." }
+
+// 403 — usuário autenticado não é ALUNO
+{ "status": 403, "erro": "Esse recurso é exclusivo para alunos.", "timestamp": "..." }
+
+// 409 — CPF ou matrícula já usados por outro usuário
+{ "status": 409, "erro": "CPF já cadastrado.", "timestamp": "..." }
+{ "status": 409, "erro": "Matrícula já cadastrada.", "timestamp": "..." }
+```
+Atualiza `Usuario.nome`/`cpf` e `Aluno.matricula`/`avatar`, e marca `Aluno.perfilCompleto = true`.
+O passo "ingressar na turma por código" (HU003) e o status `temTurma` ficam no Serviço
+Pedagógico — o front combina os dois status antes de liberar o dashboard do aluno.
+
+### `GET /api/auth/perfil/status` (Bearer)
+```jsonc
+// 200
+{ "perfilCompleto": false }
+```
+Para PROFESSOR/ADMINISTRADOR sempre retorna `perfilCompleto: true` (não há perfil a completar).
 
 ---
 
