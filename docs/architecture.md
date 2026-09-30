@@ -3,13 +3,13 @@
 ## Visão geral
 
 O Sabiá é uma plataforma de aprendizado em monorepo. A arquitetura-alvo é de
-**microsserviços Java** atrás de um API Gateway; a migração acontece de forma
+**microsserviços** atrás de um API Gateway; a migração acontece de forma
 incremental a partir do monólito `api/`.
 
 ```
 Browser ─→ Next.js (web) ─→ API Gateway ─┬─→ auth-service      ─→ PostgreSQL (Auth DB)
-                                         ├─→ api / monólito     ─→ PostgreSQL
-                                         └─→ (gamificação, sandbox, IA …)
+                                         ├─→ pedagogico-service ─→ PostgreSQL (Acadêmico DB)
+                                         └─→ ia-service         ─→ Gemini API
 ```
 
 Estado atual da migração:
@@ -17,7 +17,9 @@ Estado atual da migração:
 | Serviço | Porta | Estado |
 |---|---|---|
 | `auth-service` — Autenticação (IAM & Perfis) | 8081 | **extraído** (issue #16) |
-| `api/` — monólito (pedagógico, sandbox, IA) | 8080 | a fatiar |
+| `pedagogico-service` — Turmas, atividades e submissões | 8081 | **extraído** |
+| `ia-service` — Geração de atividades com Gemini | 8002 | **extraído** |
+| `api/` — monólito (sandbox e legado) | 8080 | a fatiar |
 | `gamificacao-service` | — | planejado (issue #20) |
 
 ### auth-service
