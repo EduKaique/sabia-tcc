@@ -70,11 +70,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErroResponse.of(404, ex.getMessage()));
     }
     
-    @ExceptionHandler(PerfilNaoAplicavelException.class)
-    public ResponseEntity<ErroResponse> handlePerfilNaoAplicavel(PerfilNaoAplicavelException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErroResponse.of(403, ex.getMessage()));
-    }
-
     @ExceptionHandler(AcessoNegadoException.class)
     public ResponseEntity<ErroResponse> handleAcessoNegado(AcessoNegadoException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErroResponse.of(403, ex.getMessage()));
