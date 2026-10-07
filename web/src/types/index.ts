@@ -45,6 +45,18 @@ export interface Turma {
   codigoConvite: string | null
 }
 
+export interface AlunoMatriculado {
+  alunoId: number
+  alunoNome: string | null
+  ingressoEm: string
+}
+
+export interface AlunoBusca {
+  id: number
+  nome: string
+  email: string
+}
+
 export interface AtividadeDetalhes {
   id: string
   titulo: string

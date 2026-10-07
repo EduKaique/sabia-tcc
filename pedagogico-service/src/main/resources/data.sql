@@ -78,3 +78,8 @@ VALUES (
 UPDATE turma
 SET ano_serie = '5º ano', turno = 'MANHA', codigo_convite = 'SABIA1'
 WHERE id = 10 AND codigo_convite IS NULL;
+
+-- 5. Snapshot do nome do aluno na matrícula seed (coluna adicionada depois; idempotente)
+UPDATE turma_aluno
+SET aluno_nome = 'Carlos Aluno'
+WHERE id = 30 AND aluno_nome IS NULL;

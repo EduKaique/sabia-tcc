@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2, Clock, GraduationCap, KeyRound } from "lucide-react";
+import { Pencil, Trash2, Clock, GraduationCap, KeyRound, Users } from "lucide-react";
 import type { Turma } from "@/types";
 import { etapaEnsinoLabels, turnoLabels } from "@/lib/schemas/turmaSchema";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,9 +10,10 @@ interface Props {
   turma: Turma;
   onEditar: (turma: Turma) => void;
   onExcluir: (turma: Turma) => void;
+  onGerenciarAlunos: (turma: Turma) => void;
 }
 
-export function TurmaCard({ turma, onEditar, onExcluir }: Props) {
+export function TurmaCard({ turma, onEditar, onExcluir, onGerenciarAlunos }: Props) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-5">
@@ -41,6 +42,10 @@ export function TurmaCard({ turma, onEditar, onExcluir }: Props) {
         </div>
 
         <div className="flex justify-end gap-1 mt-4">
+          <Button variant="ghost" size="sm" onClick={() => onGerenciarAlunos(turma)}>
+            <Users size={14} />
+            Alunos
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => onEditar(turma)}>
             <Pencil size={14} />
             Editar

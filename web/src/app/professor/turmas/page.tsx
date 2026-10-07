@@ -7,6 +7,7 @@ import type { Turma } from '@/types'
 import { TurmaCard } from '@/components/professor/turmas/TurmaCard'
 import { TurmaFormDialog } from '@/components/professor/turmas/TurmaFormDialog'
 import { ExcluirTurmaDialog } from '@/components/professor/turmas/ExcluirTurmaDialog'
+import { GerenciarAlunosDialog } from '@/components/professor/turmas/GerenciarAlunosDialog'
 import { LoadingSkeleton } from '@/components/professor/atividades/LoadingSkeleton'
 import { Button } from '@/components/ui/button'
 
@@ -16,6 +17,7 @@ export default function TurmasPage() {
   const [formKey, setFormKey] = useState(0)
   const [turmaEmEdicao, setTurmaEmEdicao] = useState<Turma | null>(null)
   const [turmaParaExcluir, setTurmaParaExcluir] = useState<Turma | null>(null)
+  const [turmaParaGerenciarAlunos, setTurmaParaGerenciarAlunos] = useState<Turma | null>(null)
 
   const abrirCriacao = () => {
     setTurmaEmEdicao(null)
@@ -65,6 +67,7 @@ export default function TurmasPage() {
               turma={turma}
               onEditar={abrirEdicao}
               onExcluir={setTurmaParaExcluir}
+              onGerenciarAlunos={setTurmaParaGerenciarAlunos}
             />
           ))}
         </div>
@@ -80,6 +83,11 @@ export default function TurmasPage() {
         key={turmaParaExcluir?.id ?? 'nenhuma'}
         turma={turmaParaExcluir}
         onOpenChange={(open) => !open && setTurmaParaExcluir(null)}
+      />
+      <GerenciarAlunosDialog
+        key={turmaParaGerenciarAlunos?.id ?? 'nenhuma'}
+        turma={turmaParaGerenciarAlunos}
+        onOpenChange={(open) => !open && setTurmaParaGerenciarAlunos(null)}
       />
     </div>
   )

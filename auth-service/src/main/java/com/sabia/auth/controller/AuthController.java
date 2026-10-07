@@ -1,17 +1,20 @@
 package com.sabia.auth.controller;
 
+import com.sabia.auth.dto.request.BuscarAlunoRequest;
 import com.sabia.auth.dto.request.EsqueciSenhaRequest;
 import com.sabia.auth.dto.request.LoginRequest;
 import com.sabia.auth.dto.request.PerfilRequest;
 import com.sabia.auth.dto.request.RedefinirSenhaRequest;
 import com.sabia.auth.dto.request.TrocarSenhaRequest;
 import com.sabia.auth.dto.request.ValidateRequest;
+import com.sabia.auth.dto.response.AlunoBuscaResponse;
 import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.MensagemResponse;
 import com.sabia.auth.dto.response.MeResponse;
 import com.sabia.auth.dto.response.PerfilStatusResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.service.AlunoService;
 import com.sabia.auth.service.AuthService;
 import com.sabia.auth.service.PerfilService;
 import com.sabia.auth.service.RecuperacaoSenhaService;
@@ -38,6 +41,7 @@ public class AuthController {
     private final AuthService authService;
     private final RecuperacaoSenhaService recuperacaoSenhaService;
     private final PerfilService perfilService;
+    private final AlunoService alunoService;
 
     @PostMapping("/login")
     @Operation(summary = "Autentica o usuário e retorna um token JWT")
@@ -103,5 +107,14 @@ public class AuthController {
     public ResponseEntity<PerfilStatusResponse> statusPerfil(Authentication authentication) {
         Usuario usuario = (Usuario) authentication.getPrincipal();
         return ResponseEntity.ok(perfilService.status(usuario));
+    }
+
+    @GetMapping("/alunos/busca")
+    @Operation(summary = "Busca um aluno por e-mail, CPF ou matrícula (uso exclusivo de professores)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<AlunoBuscaResponse> buscarAluno(Authentication authentication,
+                                                          @Valid BuscarAlunoRequest request) {
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        return ResponseEntity.ok(alunoService.buscar(usuario, request.termo()));
     }
 }
