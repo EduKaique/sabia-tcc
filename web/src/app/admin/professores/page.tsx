@@ -175,7 +175,7 @@ export default function AdminProfessoresPage() {
                   {professor.mustChangePassword && <span className="hidden rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 md:inline">Troca de senha pendente</span>}
                   <Button variant={professor.ativo ? 'destructive' : 'outline'} size="sm" disabled={alterarStatus.isPending} onClick={() => toggleStatus(professor)}>
                     {alterarStatus.isPending ? <Loader2 size={15} className="animate-spin" /> : professor.ativo ? <ShieldOff size={15} /> : <CheckCircle2 size={15} />}
-                    {professor.ativo ? 'Desativar' : 'Reativar'}''
+                    {professor.ativo ? 'Desativar' : 'Reativar'}
                   </Button>
                 </div>
               </div>

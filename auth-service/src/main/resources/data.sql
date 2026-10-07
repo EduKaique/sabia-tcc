@@ -6,12 +6,6 @@
 -- ================================================================
 
 
-SELECT setval(
-    pg_get_serial_sequence('usuario', 'id'),
-    COALESCE((SELECT MAX(id) FROM usuario), 1),
-    true
-);
-
 -- 1. Instituição
 INSERT INTO instituicao (id, nome, cnpj, criada_em)
 VALUES (1, 'Universidade Federal do Brasil', '00.000.000/0001-00', CURRENT_TIMESTAMP)
@@ -74,3 +68,11 @@ INSERT INTO aluno (id, pontuacao_geral, matricula, perfil_completo) VALUES
     (8, 0, '20260004', true),
     (9, 0, '20260005', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Os seeds usam IDs explícitos; sincroniza a sequence depois de todos os inserts
+-- para que novos professores recebam o próximo ID disponível.
+SELECT setval(
+    pg_get_serial_sequence('usuario', 'id'),
+    COALESCE((SELECT MAX(id) FROM usuario), 1),
+    true
+);
