@@ -23,6 +23,10 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
     throw new Error('INVALID_CREDENTIALS')
   }
 
+  if (res.status === 403) {
+    throw new Error('ACCOUNT_INACTIVE')
+  }
+
   if (!res.ok) {
     throw new Error('SERVER_ERROR')
   }

@@ -6,7 +6,9 @@ import { login } from "@/services/auth";
 import { salvarToken, redirecionarPorPerfil } from "@/lib/auth-helpers";
 
 export function useLogin(router: { push: (path: string) => void }) {
-  const [erroAutenticacao, setErroAutenticacao] = useState(false);
+  const [erroAutenticacao, setErroAutenticacao] = useState<
+    "INVALID_CREDENTIALS" | "ACCOUNT_INACTIVE" | null
+  >(null);
 
   const mutation = useMutation({
     mutationFn: login,
@@ -15,8 +17,11 @@ export function useLogin(router: { push: (path: string) => void }) {
       redirecionarPorPerfil(data, router);
     },
     onError: (error: Error) => {
-      if (error.message === "INVALID_CREDENTIALS") {
-        setErroAutenticacao(true);
+      if (
+        error.message === "INVALID_CREDENTIALS" ||
+        error.message === "ACCOUNT_INACTIVE"
+      ) {
+        setErroAutenticacao(error.message);
       }
     },
   });

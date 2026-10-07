@@ -36,7 +36,7 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit((data) => mutate(data))}
-      onChange={() => setErroAutenticacao(false)}
+      onChange={() => setErroAutenticacao(null)}
       noValidate
     >
       {/* E-mail */}
@@ -85,10 +85,12 @@ export function LoginForm() {
         )}
       </div>
 
-      {/* Erro de autenticação (API 401) */}
+      {/* Erro de autenticação */}
       {erroAutenticacao && (
         <div className="mt-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          E-mail ou senha incorretos
+          {erroAutenticacao === 'ACCOUNT_INACTIVE'
+            ? 'Entre em contato com um administrador.'
+            : 'E-mail ou senha incorretos'}
         </div>
       )}
 
