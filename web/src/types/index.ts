@@ -45,6 +45,18 @@ export interface Turma {
   codigoConvite: string | null
 }
 
+export interface AlunoMatriculado {
+  alunoId: number
+  alunoNome: string | null
+  ingressoEm: string
+}
+
+export interface AlunoBusca {
+  id: number
+  nome: string
+  email: string
+}
+
 export interface AtividadeDetalhes {
   id: string
   titulo: string
@@ -72,4 +84,49 @@ export interface SubmissaoItem {
   status: StatusSubmissao
   nota: number | null
   dataEnvio: string | null
+}
+
+export interface CorrigirSubmissaoPayload {
+  nota: number
+  feedbackProfessor: string
+}
+
+export interface Correcao {
+  id: number
+  nota: number
+  feedbackProfessor: string | null
+  relatorioIaJson: string | null
+  avaliadaEm: string
+}
+
+export interface SubmissaoAvaliativa {
+  id: number
+  atividadeId: number
+  dataEnvio: string
+  status: StatusSubmissao
+  correcao: Correcao | null
+}
+
+export interface SubmissaoProfessorDetalhe {
+  id: number
+  atividadeId: number
+  alunoNome: string | null
+  dataEnvio: string
+  status: StatusSubmissao
+  estadoJson: string | null
+  correcao: Correcao | null
+}
+
+export interface ErroApi {
+  status: number
+  erro: string
+  timestamp: string
+  campos?: Record<string, string>
+}
+
+export interface RelatorioIa {
+  notaSugerida?: number
+  acertos?: string[]
+  erros?: { descricao: string; severidade?: string }[]
+  resumo?: string
 }

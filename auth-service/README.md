@@ -14,8 +14,8 @@ do Sabiá — os demais serviços e o API Gateway apenas **validam**.
 ## Rodar localmente
 
 ```bash
-# 1. Auth DB (via compose, na raiz do repo)
-docker compose up -d auth-db
+# Banco compartilhado (via compose, na raiz do repo)
+docker compose up -d database
 
 # 2. serviço
 cd auth-service
@@ -247,7 +247,7 @@ Ver [`.env.example`](.env.example). As essenciais:
 
 | Var | Default (dev) | Observação |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5434/sabia_auth` | Auth DB |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5433/sabia?currentSchema=auth` | Schema `auth` no banco compartilhado |
 | `JWT_SECRET` | `dev-secret-change-in-production-must-be-at-least-32-chars` | **igual** no Gateway e demais serviços |
 | `JWT_EXPIRATION_MS` | `28800000` (8h) | |
 | `SERVER_PORT` | `8080` | |
