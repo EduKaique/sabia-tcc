@@ -66,7 +66,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.tipo").value("Bearer"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"))
+                .andExpect(jsonPath("$.role").value("PROFESSOR"))
                 .andExpect(jsonPath("$.nome").value("Ana Professora"));
     }
 
@@ -101,7 +101,7 @@ class AuthControllerTest {
         mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("professor@sabia.edu"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+                .andExpect(jsonPath("$.role").value("PROFESSOR"));
     }
 
     @Test
@@ -124,7 +124,7 @@ class AuthControllerTest {
                         .content(json.createObjectNode().put("token", login.get("token").asText()).toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valido").value(true))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+                .andExpect(jsonPath("$.role").value("PROFESSOR"));
     }
 
     @Test

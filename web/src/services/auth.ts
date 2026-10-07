@@ -8,7 +8,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string
   tipo: string
-  perfil: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
+  role: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
   nome: string
 }
 

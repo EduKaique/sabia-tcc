@@ -41,3 +41,9 @@ VALUES (
 INSERT INTO aluno (id, pontuacao_geral)
 VALUES (3, 0)
 ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(
+    pg_get_serial_sequence('usuario', 'id'),
+    COALESCE((SELECT MAX(id) FROM usuario), 1),
+    true
+);

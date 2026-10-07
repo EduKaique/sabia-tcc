@@ -26,7 +26,7 @@ public class JwtTokenProvider {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(usuario.getId().toString())
-                .claim("perfil", usuario.getTipoPerfil().name())
+                .claim("role", usuario.getTipoPerfil().name())
                 .claim("nome", usuario.getNome())
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + jwtProperties.expirationMs()))

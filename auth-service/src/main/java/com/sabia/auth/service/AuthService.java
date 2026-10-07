@@ -81,8 +81,8 @@ public class AuthService {
 
             return new ValidateResponse(
                     true,
-                    usuarioId,
-                    claims.get("perfil", String.class),
+                    Long.valueOf(claims.getSubject()),
+                    claims.get("role", String.class),
                     claims.get("nome", String.class),
                     claims.getExpiration().toInstant()
             );

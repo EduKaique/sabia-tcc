@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Sem hit no banco (diferente do filtro equivalente em {@code api}): o {@code sub} e a
- * claim {@code perfil} do próprio JWT já são suficientes para autenticar/autorizar, já que
+ * claim {@code role} do próprio JWT já são suficientes para autenticar/autorizar, já que
  * não existe entidade Usuario neste módulo.
  */
 @Component
@@ -34,11 +34,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = extractToken(request);
         if (token != null && jwtTokenReader.isTokenValid(token)) {
             Long userId = jwtTokenReader.extractUserId(token);
-            String perfil = jwtTokenReader.extractPerfil(token);
+            String role = jwtTokenReader.extractRole(token);
             String nome = jwtTokenReader.extractNome(token);
 
-            AuthenticatedUser principal = new AuthenticatedUser(userId, perfil, nome);
-            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + perfil));
+            AuthenticatedUser principal = new AuthenticatedUser(userId, role, nome);
+            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(principal, null, authorities);

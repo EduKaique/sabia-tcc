@@ -51,7 +51,7 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 ### `POST /api/auth/login`
 ```jsonc
 // 200
-{ "token": "eyJ...", "tipo": "Bearer", "perfil": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
+{ "token": "eyJ...", "tipo": "Bearer", "role": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
 // 401 — mensagem genérica (não revela qual campo falhou)
 { "status": 401, "erro": "E-mail ou senha incorretos", "timestamp": "..." }
 
@@ -64,7 +64,7 @@ dashboard e forçar a chamada de `POST /api/auth/trocar-senha` antes de liberar 
 ### `GET /api/auth/me`
 ```jsonc
 // 200
-{ "id": 2, "nome": "Ana Professora", "email": "professor@sabia.edu", "perfil": "PROFESSOR" }
+{ "id": 2, "nome": "Ana Professora", "email": "professor@sabia.edu", "role": "PROFESSOR" }
 ```
 
 ### `POST /api/auth/esqueci-senha`
@@ -191,7 +191,7 @@ O token é um **JWT HS256**. Estrutura das claims:
 | Claim | Conteúdo |
 |---|---|
 | `sub` | id do usuário (numérico, como string) |
-| `perfil` | `ADMINISTRADOR` \| `PROFESSOR` \| `ALUNO` |
+| `role` | `ADMINISTRADOR` \| `PROFESSOR` \| `ALUNO` |
 | `nome` | nome do usuário |
 | `iat` / `exp` | emissão / expiração (padrão: 8h — `JWT_EXPIRATION_MS`) |
 
@@ -206,7 +206,7 @@ Todos os serviços e o Gateway compartilham a variável **`JWT_SECRET`** (a mesm
 2. verifica a assinatura HS256 com `JWT_SECRET`;
 3. rejeita com **401** se assinatura inválida ou `exp` no passado;
 4. repassa a requisição adicionando headers de identidade para os serviços downstream:
-   `X-User-Id: <sub>`, `X-User-Perfil: <perfil>`.
+   `X-User-Id: <sub>`, `X-User-Role: <role>`.
 
 > O `auth-service` e o monólito `api/` já usam exatamente esse esquema
 > (`sabia.jwt.secret` / env `JWT_SECRET`). Basta o Gateway usar o mesmo valor.
@@ -220,11 +220,11 @@ Para o Gateway que prefira não conhecer o segredo:
 { "token": "eyJ..." }
 
 // 200 — token válido
-{ "valido": true, "usuarioId": 2, "perfil": "PROFESSOR", "nome": "Ana Professora",
+{ "valido": true, "usuarioId": 2, "role": "PROFESSOR", "nome": "Ana Professora",
   "expiraEm": "2026-09-09T02:00:00Z" }
 
 // 200 — token inválido/expirado (nunca lança erro)
-{ "valido": false, "usuarioId": null, "perfil": null, "nome": null, "expiraEm": null }
+{ "valido": false, "usuarioId": null, "role": null, "nome": null, "expiraEm": null }
 ```
 
 Custa uma chamada de rede por requisição — recomenda-se cache curto (TTL ≤ 60s) no Gateway.
