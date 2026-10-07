@@ -1,0 +1,699 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sabiá — Serviço de Autenticação",
+    "description": "IAM & Perfis: login, sessão e emissão de token JWT para a plataforma Sabiá.",
+    "version": "v0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local (dev)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Verificação de saúde do serviço"
+    },
+    {
+      "name": "Admin — Professores",
+      "description": "Gestão de contas de professor (exclusivo ADMINISTRADOR)"
+    },
+    {
+      "name": "Autenticação",
+      "description": "Login, sessão e verificação de token"
+    }
+  ],
+  "paths": {
+    "/api/auth/perfil": {
+      "put": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Completa o perfil do aluno (nome, CPF, matrícula e avatar)",
+        "operationId": "atualizarPerfil",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PerfilRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/validate": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Verifica assinatura e validade de um token JWT (uso do API Gateway)",
+        "operationId": "validate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/trocar-senha": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Troca a senha do usuário autenticado (uso obrigatório quando mustChangePassword=true)",
+        "operationId": "trocarSenha",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrocarSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/redefinir-senha": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Redefine a senha a partir de um token de recuperação válido",
+        "operationId": "redefinirSenha",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedefinirSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Autentica o usuário e retorna um token JWT",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/esqueci-senha": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Envia um link de recuperação de senha por e-mail, se o e-mail existir",
+        "operationId": "esqueciSenha",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EsqueciSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/professores": {
+      "get": {
+        "tags": [
+          "Admin — Professores"
+        ],
+        "summary": "Lista professores, opcionalmente filtrando por status ativo/inativo",
+        "operationId": "listar",
+        "parameters": [
+          {
+            "name": "ativo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProfessorResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin — Professores"
+        ],
+        "summary": "Cadastra um professor com senha temporária (mustChangePassword=true)",
+        "operationId": "criar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarProfessorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/professores/{id}/reativar": {
+      "patch": {
+        "tags": [
+          "Admin — Professores"
+        ],
+        "summary": "Reativa o acesso do professor",
+        "operationId": "reativar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/professores/{id}/desativar": {
+      "patch": {
+        "tags": [
+          "Admin — Professores"
+        ],
+        "summary": "Desativa o acesso do professor (soft delete — mantém turmas e atividades)",
+        "operationId": "desativar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Verifica se o serviço de autenticação está no ar",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/perfil/status": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Indica se o aluno autenticado já completou o perfil",
+        "operationId": "statusPerfil",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PerfilStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Retorna o usuário autenticado a partir do token",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PerfilRequest": {
+        "type": "object",
+        "properties": {
+          "nomeCompleto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cpf": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11
+          },
+          "matricula": {
+            "type": "string",
+            "minLength": 1
+          },
+          "avatar": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "avatar",
+          "cpf",
+          "matricula",
+          "nomeCompleto"
+        ]
+      },
+      "MensagemResponse": {
+        "type": "object",
+        "properties": {
+          "mensagem": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidateRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "ValidateResponse": {
+        "type": "object",
+        "properties": {
+          "valido": {
+            "type": "boolean"
+          },
+          "usuarioId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "perfil": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "expiraEm": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TrocarSenhaRequest": {
+        "type": "object",
+        "properties": {
+          "senhaAtual": {
+            "type": "string",
+            "minLength": 1
+          },
+          "novaSenha": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 8
+          },
+          "confirmarSenha": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "confirmarSenha",
+          "novaSenha",
+          "senhaAtual"
+        ]
+      },
+      "RedefinirSenhaRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "novaSenha": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 8
+          },
+          "confirmarSenha": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "confirmarSenha",
+          "novaSenha",
+          "token"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "senha": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "senha"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EsqueciSenhaRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "CriarProfessorRequest": {
+        "type": "object",
+        "properties": {
+          "nomeCompleto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cpf": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 11
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "cpf",
+          "email",
+          "nomeCompleto"
+        ]
+      },
+      "ProfessorResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PerfilStatusResponse": {
+        "type": "object",
+        "properties": {
+          "perfilCompleto": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

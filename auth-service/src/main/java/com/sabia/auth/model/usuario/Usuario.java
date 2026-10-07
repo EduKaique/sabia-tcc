@@ -52,6 +52,10 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private boolean mustChangePassword = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    @Builder.Default
+    private boolean ativo = true;
+
     @PrePersist
     void prePersist() {
         criadoEm = LocalDateTime.now(ZoneOffset.UTC);
@@ -72,5 +76,10 @@ public class Usuario implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ativo;
     }
 }

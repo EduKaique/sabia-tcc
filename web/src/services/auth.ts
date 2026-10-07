@@ -8,7 +8,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string
   tipo: string
-  perfil: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
+  role: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
   nome: string
 }
 
@@ -21,6 +21,10 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 
   if (res.status === 401) {
     throw new Error('INVALID_CREDENTIALS')
+  }
+
+  if (res.status === 403) {
+    throw new Error('ACCOUNT_INACTIVE')
   }
 
   if (!res.ok) {

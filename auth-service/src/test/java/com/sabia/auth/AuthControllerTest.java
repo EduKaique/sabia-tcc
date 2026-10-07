@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.repository.AlunoRepository;
+import com.sabia.auth.repository.ProfessorRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,10 @@ class AuthControllerTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
+    private AlunoRepository alunoRepository;
+    @Autowired
+    private ProfessorRepository professorRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private final ObjectMapper json = new ObjectMapper();
@@ -39,6 +45,8 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+        alunoRepository.deleteAll();
+        professorRepository.deleteAll();
         usuarioRepository.deleteAll();
         usuarioRepository.save(Usuario.builder()
                 .nome("Ana Professora")
@@ -58,7 +66,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.tipo").value("Bearer"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"))
+                .andExpect(jsonPath("$.role").value("PROFESSOR"))
                 .andExpect(jsonPath("$.nome").value("Ana Professora"));
     }
 
@@ -93,7 +101,7 @@ class AuthControllerTest {
         mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("professor@sabia.edu"))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+                .andExpect(jsonPath("$.role").value("PROFESSOR"));
     }
 
     @Test
@@ -116,7 +124,7 @@ class AuthControllerTest {
                         .content(json.createObjectNode().put("token", login.get("token").asText()).toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valido").value(true))
-                .andExpect(jsonPath("$.perfil").value("PROFESSOR"));
+                .andExpect(jsonPath("$.role").value("PROFESSOR"));
     }
 
     @Test
