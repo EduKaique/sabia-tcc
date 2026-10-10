@@ -38,8 +38,8 @@ cd sabia-tcc
 # Setup
 ./setup.sh
 
-# Subir a stack
-docker compose up -d db auth-db
+# Subir infraestrutura (banco compartilhado)
+docker compose up -d database
 
 # Serviço de autenticação (porta 8081)
 cd ./auth-service

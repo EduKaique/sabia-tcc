@@ -1,36 +1,19 @@
 services:
-  academico-db:
+  database:
     image: postgres:16-alpine
-    container_name: sabia_academico_db
+    container_name: sabia_database
     restart: unless-stopped
     environment:
-      POSTGRES_DB: academico
-      POSTGRES_USER: academico
-      POSTGRES_PASSWORD: academico
-    ports:
-      - "5433:5432"
-    volumes:
-      - academico_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U academico -d academico"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  auth-db:
-    image: postgres:16-alpine
-    container_name: sabia_auth_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: sabia_auth
+      POSTGRES_DB: sabia
       POSTGRES_USER: sabia
       POSTGRES_PASSWORD: sabia
     ports:
-      - "5434:5432"
+      - "5433:5432"
     volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia_auth"]
+      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,10 +43,10 @@ services:
     container_name: sabia_auth_service
     restart: unless-stopped
     depends_on:
-      auth-db:
+      database:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/sabia_auth
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=auth
       SPRING_DATASOURCE_USERNAME: sabia
       SPRING_DATASOURCE_PASSWORD: sabia
       SPRING_PROFILES_ACTIVE: dev
@@ -87,14 +70,14 @@ services:
     container_name: sabia_pedagogico_service
     restart: unless-stopped
     depends_on:
-      academico-db:
+      database:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://academico-db:5432/academico
-      SPRING_DATASOURCE_USERNAME: academico
-      SPRING_DATASOURCE_PASSWORD: academico
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=pedagogico
+      SPRING_DATASOURCE_USERNAME: sabia
+      SPRING_DATASOURCE_PASSWORD: sabia
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8081
       RABBITMQ_HOST: rabbitmq
@@ -157,6 +140,4 @@ services:
 
 volumes:
   postgres_data:
-  academico_postgres_data:
-  auth_postgres_data:
   rabbitmq_data:
