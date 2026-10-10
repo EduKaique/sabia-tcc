@@ -1,10 +1,12 @@
 'use client'
 
-import { use } from 'react'
+import { use, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useSubmissaoProfessor, mensagemErroSubmissao } from '@/hooks/useSubmissaoProfessor'
+import { useAtividade } from '@/hooks/useAtividades'
 import BlocklyEditor from '@/components/BlocklyEditor'
+import { PainelEntradaSaida } from '@/components/aluno/editor/PainelEntradaSaida'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -31,7 +33,9 @@ export default function CorrigirSubmissaoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
+  const codeRef = useRef('')
   const { data: submissao, isLoading, error, refetch } = useSubmissaoProfessor(id)
+  const { data: atividade } = useAtividade(submissao ? String(submissao.atividadeId) : '')
 
   if (isLoading) {
     return (
@@ -81,8 +85,16 @@ export default function CorrigirSubmissaoPage({
             </CardHeader>
             <CardContent>
               {submissao.estadoJson ? (
-                <div className="h-120 overflow-hidden rounded-md border border-border">
-                  <BlocklyEditor workspaceOnly readOnly initialState={submissao.estadoJson} />
+                <div className="flex h-120 overflow-hidden rounded-md border border-border">
+                  <div className="min-w-0 flex-1">
+                    <BlocklyEditor
+                      workspaceOnly
+                      readOnly
+                      initialState={submissao.estadoJson}
+                      onCodeChange={(code) => { codeRef.current = code }}
+                    />
+                  </div>
+                  <PainelEntradaSaida getCode={() => codeRef.current} />
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">Projeto do aluno indisponível.</p>
@@ -97,7 +109,22 @@ export default function CorrigirSubmissaoPage({
           )}
         </div>
 
-        <PainelRelatorioIa relatorioIaJson={submissao.correcao?.relatorioIaJson} />
+        <PainelRelatorioIa
+          relatorioIaJson={submissao.correcao?.relatorioIaJson}
+          payload={
+            atividade && submissao.estadoJson
+              ? {
+                  atividade: {
+                    titulo: atividade.titulo,
+                    descricao: atividade.descricao,
+                    pontuacaoMaxima: atividade.pontuacaoMaxima,
+                    gabaritoEstadoJson: atividade.gabaritoEstadoJson,
+                  },
+                  submissaoEstadoJson: submissao.estadoJson,
+                }
+              : null
+          }
+        />
       </div>
     </div>
   )

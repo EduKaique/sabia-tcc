@@ -13,7 +13,8 @@ export async function authenticate(request: FastifyRequest, _reply: FastifyReply
 export function authorize(...roles: Array<Roles>) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     await authenticate(request, reply);
-    if (!roles.includes(request.user.role)) {
+    const role = request.user.role ?? (request.user.perfil === 'ADMINISTRADOR' ? 'ADMIN' : request.user.perfil);
+    if (!role || !roles.includes(role)) {
       throw new ForbiddenError();
     }
   };

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { useGerarAtividadeIa } from "@/hooks/useGerarAtividadeIa";
 import { useTurmas } from "@/hooks/useTurmas";
-import type { SugestaoAtividadeIa } from "@/services/ia";
+import type { GerarAtividadeIaRequest } from "@/services/ia";
 import type { TipoAtividade } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ interface Props {
   open: boolean;
   tipoAtividade: TipoAtividade;
   tipoAtividadeLabel: string;
-  onAccept: (sugestao: SugestaoAtividadeIa, turmaId: number) => void;
+  onAccept: (sugestao: GerarAtividadeIaRequest, turmaId: number) => void;
   onClose: () => void;
 }
 
@@ -34,7 +34,7 @@ export function GerarAtividadeIaPanel({
 }: Props) {
   const [turmaSelecionadaId, setTurmaSelecionadaId] = useState<number | null>(null);
   const [descricaoObjetivo, setDescricaoObjetivo] = useState("");
-  const [sugestao, setSugestao] = useState<SugestaoAtividadeIa | null>(null);
+  const [sugestao, setSugestao] = useState<GerarAtividadeIaRequest | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const gerarAtividade = useGerarAtividadeIa();
   const { data: turmas = [] } = useTurmas();

@@ -125,8 +125,8 @@ export interface ErroApi {
 }
 
 export interface RelatorioIa {
+  resumo?: string
   notaSugerida?: number
   acertos?: string[]
   erros?: { descricao: string; severidade?: string }[]
-  resumo?: string
 }
