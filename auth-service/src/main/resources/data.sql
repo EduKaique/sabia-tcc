@@ -46,9 +46,14 @@ VALUES (
     'ALUNO', CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO aluno (id, pontuacao_geral)
-VALUES (3, 0)
+INSERT INTO aluno (id, pontuacao_geral, perfil_completo)
+VALUES (3, 0, true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Bases criadas antes deste ajuste já têm o aluno 3 com perfil incompleto (idempotente)
+UPDATE aluno
+SET perfil_completo = true
+WHERE id = 3 AND perfil_completo = false;
 
 -- 5. Alunos sem turma (para testar a matrícula pelo professor)
 --    Senha: password · perfil completo (CPF e matrícula preenchidos)
@@ -67,3 +72,25 @@ INSERT INTO aluno (id, pontuacao_geral, matricula, perfil_completo) VALUES
     (8, 0, '20260004', true),
     (9, 0, '20260005', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- 6. Sincroniza as sequences com os ids fixos do seed (idempotente; roda a cada reinício)
+--    Os INSERTs acima usam ids explícitos, que não avançam as sequences IDENTITY.
+--    Alvo = maior entre max(id) e o last_value atual: a sequence NUNCA recua.
+--    Como não há FK entre schemas, reaproveitar ids de registros apagados poderia
+--    associar linhas órfãs de outro serviço (ex.: turma_aluno) a um registro novo.
+--    last_value é NULL em sequence nunca usada; tabela vazia volta a começar em 1.
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM instituicao), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('instituicao', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
+
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM usuario), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('usuario', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
