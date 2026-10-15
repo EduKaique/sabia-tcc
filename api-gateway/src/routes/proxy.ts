@@ -25,6 +25,13 @@ const proxyRoutes: ProxyRoute[] = [
     protected: true,
   },
   {
+    // Rotas públicas do pedagógico (ex.: validação do código de convite): sem autenticação
+    // e sem remover o prefixo, pois o serviço expõe /api/publico/**.
+    upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
+    prefix: '/api/publico',
+    rewritePrefix: '/api/publico',
+  },
+  {
     upstream: process.env.IA_URL || 'http://localhost:8002',
     prefix: '/api/ia',
     rewritePrefix: '/',
