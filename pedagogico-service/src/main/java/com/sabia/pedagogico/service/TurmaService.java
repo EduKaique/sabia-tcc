@@ -1,6 +1,7 @@
 package com.sabia.pedagogico.service;
 
 import com.sabia.pedagogico.dto.request.TurmaRequest;
+import com.sabia.pedagogico.dto.response.ConviteValidoResponse;
 import com.sabia.pedagogico.dto.response.TurmaResponse;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,9 @@ public class TurmaService {
     private static final String ALFABETO_CODIGO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int TAMANHO_CODIGO = 6;
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final Pattern FORMATO_CODIGO = Pattern.compile("^[A-Z0-9]{6}$");
+    // Mesma mensagem para formato inválido e código inexistente: não dar pistas.
+    private static final String MSG_CODIGO_INVALIDO = "Código de turma inválido. Verifique com seu professor.";
 
     private final TurmaRepository turmaRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
@@ -32,6 +38,16 @@ public class TurmaService {
         return turmaRepository.findByProfessorId(professorId).stream()
                 .map(TurmaResponse::from)
                 .toList();
+    }
+
+    public ConviteValidoResponse validarCodigoConvite(String codigoBruto) {
+        String codigo = codigoBruto == null ? "" : codigoBruto.trim().toUpperCase(Locale.ROOT);
+        if (!FORMATO_CODIGO.matcher(codigo).matches()) {
+            throw new ResourceNotFoundException(MSG_CODIGO_INVALIDO);
+        }
+        Turma turma = turmaRepository.findByCodigoConvite(codigo)
+                .orElseThrow(() -> new ResourceNotFoundException(MSG_CODIGO_INVALIDO));
+        return new ConviteValidoResponse(turma.getCodigoConvite(), turma.getNome());
     }
 
     @Transactional
