@@ -60,6 +60,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      PEDAGOGICO_URL: ${PEDAGOGICO_URL:-http://pedagogico-service:8081}
     ports:
       - "8080:8080"
 

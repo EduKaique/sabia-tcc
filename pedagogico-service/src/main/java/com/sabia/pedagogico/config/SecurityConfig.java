@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
                         .requestMatchers("/api/aluno/**").hasRole("ALUNO")
+                        // Token de serviço emitido só pelo auth-service (primeiro acesso do aluno)
+                        .requestMatchers("/api/interno/**").hasRole("SISTEMA")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

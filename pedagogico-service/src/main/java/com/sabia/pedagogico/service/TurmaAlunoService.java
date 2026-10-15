@@ -34,8 +34,19 @@ public class TurmaAlunoService {
 
     @Transactional
     public TurmaAlunoResponse matricular(Long professorId, Long turmaId, MatricularAlunoRequest request) {
-        Turma turma = buscarDoProfessor(professorId, turmaId);
-        if (turmaAlunoRepository.existsByTurmaIdAndAlunoId(turmaId, request.alunoId())) {
+        return vincular(buscarDoProfessor(professorId, turmaId), request);
+    }
+
+    /** Matrícula feita pelo auth-service no primeiro acesso do aluno: sem checagem de professor. */
+    @Transactional
+    public TurmaAlunoResponse matricularPeloSistema(Long turmaId, MatricularAlunoRequest request) {
+        Turma turma = turmaRepository.findById(turmaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada."));
+        return vincular(turma, request);
+    }
+
+    private TurmaAlunoResponse vincular(Turma turma, MatricularAlunoRequest request) {
+        if (turmaAlunoRepository.existsByTurmaIdAndAlunoId(turma.getId(), request.alunoId())) {
             throw new ConflitoException(MSG_JA_MATRICULADO);
         }
         TurmaAluno matricula = TurmaAluno.builder()

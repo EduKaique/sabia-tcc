@@ -4,6 +4,7 @@ import com.sabia.auth.dto.request.BuscarAlunoRequest;
 import com.sabia.auth.dto.request.EsqueciSenhaRequest;
 import com.sabia.auth.dto.request.LoginRequest;
 import com.sabia.auth.dto.request.PerfilRequest;
+import com.sabia.auth.dto.request.PrimeiroAcessoRequest;
 import com.sabia.auth.dto.request.RedefinirSenhaRequest;
 import com.sabia.auth.dto.request.TrocarSenhaRequest;
 import com.sabia.auth.dto.request.ValidateRequest;
@@ -12,17 +13,20 @@ import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.MensagemResponse;
 import com.sabia.auth.dto.response.MeResponse;
 import com.sabia.auth.dto.response.PerfilStatusResponse;
+import com.sabia.auth.dto.response.PrimeiroAcessoResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
 import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.service.AlunoService;
 import com.sabia.auth.service.AuthService;
 import com.sabia.auth.service.PerfilService;
+import com.sabia.auth.service.PrimeiroAcessoService;
 import com.sabia.auth.service.RecuperacaoSenhaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,11 +46,18 @@ public class AuthController {
     private final RecuperacaoSenhaService recuperacaoSenhaService;
     private final PerfilService perfilService;
     private final AlunoService alunoService;
+    private final PrimeiroAcessoService primeiroAcessoService;
 
     @PostMapping("/login")
     @Operation(summary = "Autentica o usuário e retorna um token JWT")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/primeiro-acesso")
+    @Operation(summary = "Cria a conta do aluno pelo código de convite, vincula à turma e retorna o token JWT")
+    public ResponseEntity<PrimeiroAcessoResponse> primeiroAcesso(@Valid @RequestBody PrimeiroAcessoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(primeiroAcessoService.cadastrar(request));
     }
 
     @GetMapping("/me")

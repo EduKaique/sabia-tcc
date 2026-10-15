@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface AlunoRepository extends JpaRepository<Aluno, Long> {
     boolean existsByMatriculaAndIdNot(String matricula, Long id);
+    boolean existsByMatricula(String matricula);
     Optional<Aluno> findByMatricula(String matricula);
 }
