@@ -29,7 +29,8 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        var usuario = usuarioRepository.findByEmail(request.email())
+        // O e-mail já chega normalizado (LoginRequest); a busca case-insensitive cobre contas antigas.
+        var usuario = usuarioRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new BadCredentialsException("E-mail ou senha incorretos"));
 
         if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
@@ -65,6 +66,10 @@ public class AuthService {
     public ValidateResponse validar(String token) {
         try {
             Claims claims = jwtTokenProvider.extractClaims(token);
+            if (jwtTokenProvider.isServiceToken(claims)) {
+                // Token de serviço não é sessão de usuário.
+                return ValidateResponse.invalido();
+            }
             return new ValidateResponse(
                     true,
                     Long.valueOf(claims.getSubject()),

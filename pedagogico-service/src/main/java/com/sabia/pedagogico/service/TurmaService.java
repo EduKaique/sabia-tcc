@@ -2,6 +2,7 @@ package com.sabia.pedagogico.service;
 
 import com.sabia.pedagogico.dto.request.TurmaRequest;
 import com.sabia.pedagogico.dto.response.ConviteValidoResponse;
+import com.sabia.pedagogico.dto.response.TurmaPorCodigoResponse;
 import com.sabia.pedagogico.dto.response.TurmaResponse;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
@@ -41,13 +42,13 @@ public class TurmaService {
     }
 
     public ConviteValidoResponse validarCodigoConvite(String codigoBruto) {
-        String codigo = codigoBruto == null ? "" : codigoBruto.trim().toUpperCase(Locale.ROOT);
-        if (!FORMATO_CODIGO.matcher(codigo).matches()) {
-            throw new ResourceNotFoundException(MSG_CODIGO_INVALIDO);
-        }
-        Turma turma = turmaRepository.findByCodigoConvite(codigo)
-                .orElseThrow(() -> new ResourceNotFoundException(MSG_CODIGO_INVALIDO));
+        Turma turma = buscarPorCodigoConvite(codigoBruto);
         return new ConviteValidoResponse(turma.getCodigoConvite(), turma.getNome());
+    }
+
+    public TurmaPorCodigoResponse buscarPorCodigoInterno(String codigoBruto) {
+        Turma turma = buscarPorCodigoConvite(codigoBruto);
+        return new TurmaPorCodigoResponse(turma.getId(), turma.getNome());
     }
 
     @Transactional
@@ -77,6 +78,16 @@ public class TurmaService {
                     + " alunos e " + atividades + " atividades vinculados.");
         }
         turmaRepository.delete(turma);
+    }
+
+    /** Normaliza (trim + maiúsculas) e valida o formato antes de ir ao banco; 404 com mensagem única. */
+    private Turma buscarPorCodigoConvite(String codigoBruto) {
+        String codigo = codigoBruto == null ? "" : codigoBruto.trim().toUpperCase(Locale.ROOT);
+        if (!FORMATO_CODIGO.matcher(codigo).matches()) {
+            throw new ResourceNotFoundException(MSG_CODIGO_INVALIDO);
+        }
+        return turmaRepository.findByCodigoConvite(codigo)
+                .orElseThrow(() -> new ResourceNotFoundException(MSG_CODIGO_INVALIDO));
     }
 
     private Turma buscarDoProfessor(Long professorId, Long id) {

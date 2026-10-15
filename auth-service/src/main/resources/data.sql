@@ -5,6 +5,10 @@
 -- para que o mesmo token JWT resolva nos dois serviços durante a transição.
 -- ================================================================
 
+-- 0. CPF opcional para ALUNO (primeiro acesso por convite, HU003.2). O ddl-auto: update
+--    não relaxa NOT NULL em coluna existente; em base nova a coluna já nasce nullable (idempotente).
+ALTER TABLE usuario ALTER COLUMN cpf DROP NOT NULL;
+
 -- 1. Instituição
 INSERT INTO instituicao (id, nome, cnpj, criada_em)
 VALUES (1, 'Universidade Federal do Brasil', '00.000.000/0001-00', CURRENT_TIMESTAMP)
