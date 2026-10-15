@@ -83,3 +83,33 @@ WHERE id = 10 AND codigo_convite IS NULL;
 UPDATE turma_aluno
 SET aluno_nome = 'Carlos Aluno'
 WHERE id = 30 AND aluno_nome IS NULL;
+
+-- 6. Sincroniza as sequences com os ids fixos do seed (idempotente; roda a cada reinício)
+--    Os INSERTs acima usam ids explícitos, que não avançam as sequences IDENTITY.
+--    Alvo = maior entre max(id) e o last_value atual: a sequence NUNCA recua.
+--    Como não há FK entre schemas, reaproveitar ids de registros apagados poderia
+--    associar linhas órfãs de outro serviço (ex.: turma_aluno) a um registro novo.
+--    last_value é NULL em sequence nunca usada; tabela vazia volta a começar em 1.
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('turma', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
+
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma_aluno), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('turma_aluno', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
+
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM atividade_avaliativa), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('atividade_avaliativa', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
