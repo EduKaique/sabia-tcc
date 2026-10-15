@@ -50,6 +50,74 @@
   mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 70%, transparent 100%);
 }
 
+/* ---------- Entrada do aluno ----------
+   A ilha client (EntradaAluno) marca o painel com [data-painel-aberto]; o hero, que é
+   Server Component, reage só com CSS (:has), sem estado no servidor. Com o painel aberto
+   a arte de blocos sai do fluxo e o título encolhe, para o formulário caber acima da dobra. */
+
+.page:has([data-painel-aberto]) .heroArt {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: min(70vw, 520px);
+  margin-bottom: -6%;
+  opacity: 0.3;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page:has([data-painel-aberto]) .titulo {
+  font-size: 3rem;
+}
+
+.page:has([data-painel-aberto]) .conteudo {
+  padding-bottom: 3rem;
+}
+
+@media (max-width: 767px) {
+  .page:has([data-painel-aberto]) .heroArt,
+  .page:has([data-painel-aberto]) .subtitulo {
+    display: none;
+  }
+
+  .page:has([data-painel-aberto]) .titulo {
+    font-size: 1.75rem;
+  }
+
+  .page:has([data-painel-aberto]) .conteudo {
+    padding-top: 1.25rem;
+    padding-bottom: 2rem;
+  }
+
+  .page:has([data-painel-aberto]) .brandBlock {
+    margin-bottom: 1rem;
+  }
+
+  .page:has([data-painel-aberto]) .acao {
+    margin-top: 1.25rem;
+  }
+}
+
+/* Telas baixas (tablet na horizontal, notebook pequeno) */
+@media (min-width: 768px) and (max-height: 760px) {
+  .page:has([data-painel-aberto]) .subtitulo {
+    display: none;
+  }
+
+  .page:has([data-painel-aberto]) .conteudo {
+    padding-top: 2rem;
+  }
+
+  .page:has([data-painel-aberto]) .titulo {
+    font-size: 2.5rem;
+  }
+
+  .page:has([data-painel-aberto]) .acao {
+    margin-top: 1.5rem;
+  }
+}
+
 /* ---------- Movimento ---------- */
 
 @keyframes rise {
@@ -129,11 +197,53 @@
   transform-box: fill-box;
 }
 
+/* Boas-vindas: o avatar "estoura" uma vez e três estrelinhas piscam (sem confete pesado) */
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes brilho {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) rotate(20deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.pop {
+  animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.brilho {
+  animation: brilho 0.6s ease-out both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rise,
   .float,
   .pulse,
-  .twinkle {
+  .twinkle,
+  .pop,
+  .brilho {
     animation: none;
   }
 
