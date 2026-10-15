@@ -30,7 +30,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false, unique = true, length = 11)
+    // Opcional só para ALUNO (primeiro acesso por convite); obrigatório para os demais perfis,
+    // garantido em validarCpfObrigatorio(). Bancos existentes: ver ALTER no data.sql.
+    @Column(unique = true, length = 11)
     private String cpf;
 
     private LocalDate dataNascimento;
@@ -54,7 +56,19 @@ public class Usuario implements UserDetails {
 
     @PrePersist
     void prePersist() {
+        validarCpfObrigatorio();
         criadoEm = LocalDateTime.now(ZoneOffset.UTC);
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        validarCpfObrigatorio();
+    }
+
+    private void validarCpfObrigatorio() {
+        if (tipoPerfil != PerfilUsuario.ALUNO && (cpf == null || cpf.isBlank())) {
+            throw new IllegalStateException("CPF é obrigatório para o perfil " + tipoPerfil + ".");
+        }
     }
 
     // --- UserDetails ---
