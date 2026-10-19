@@ -16,11 +16,8 @@ export type AvatarId = (typeof AVATAR_IDS)[number]
 
 export interface Avatar {
   id: AvatarId
-  /** Rótulo acessível, lido por leitores de tela. */
   rotulo: string
-  /** Cor do sabiá provisório (SVG). */
   cor: string
-  /** Imagem final. Enquanto for null, a UI desenha o sabiá provisório em SVG. */
   imagem: StaticImageData | null
 }
 

@@ -2,7 +2,7 @@ package com.sabia.auth.exception;
 
 import lombok.Getter;
 
-/** 409 do primeiro acesso, indicando o campo em conflito (e-mail ou matrícula). */
+/** 409 do primeiro acesso, indicando o campo em conflito (matrícula). */
 @Getter
 public class CadastroDuplicadoException extends RuntimeException {
 
@@ -11,10 +11,6 @@ public class CadastroDuplicadoException extends RuntimeException {
     private CadastroDuplicadoException(String campo, String mensagem) {
         super(mensagem);
         this.campo = campo;
-    }
-
-    public static CadastroDuplicadoException email() {
-        return new CadastroDuplicadoException("email", "E-mail já cadastrado.");
     }
 
     public static CadastroDuplicadoException matricula() {

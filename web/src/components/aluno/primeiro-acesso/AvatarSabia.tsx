@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils'
 
 interface AvatarSabiaProps {
   id: string
-  /** Lado em px. */
   tamanho?: number
   className?: string
-  /** true quando o avatar aparece sozinho (ex.: boas-vindas) e precisa ser anunciado. */
   anunciar?: boolean
 }
 

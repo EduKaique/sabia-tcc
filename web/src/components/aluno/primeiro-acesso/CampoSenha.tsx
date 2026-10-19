@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { campo } from './estilos'
+import { campo } from '@/lib/estilos'
 
 type CampoSenhaProps = Omit<React.ComponentProps<'input'>, 'type'> & { id: string }
 
 /**
- * Senha com botão mostrar/ocultar (mesmo padrão do LoginForm, com ícone Eye/EyeOff).
- * Diferente do login, o botão entra na ordem de Tab e tem área de toque de 48px.
+ * Senha com botão mostrar/ocultar (ícone Eye/EyeOff).
+ * O botão entra na ordem de Tab e tem área de toque de 48px.
  */
 export function CampoSenha({ id, className, ...props }: CampoSenhaProps) {
   const [mostrar, setMostrar] = useState(false)

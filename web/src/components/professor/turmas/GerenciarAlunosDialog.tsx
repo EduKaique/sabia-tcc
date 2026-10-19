@@ -107,7 +107,9 @@ export function GerenciarAlunosDialog({ turma, onOpenChange }: Props) {
               <AlunoAvatar nome={encontrado.nome} fotoUrl={null} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">{encontrado.nome}</p>
-                <p className="truncate text-xs text-muted-foreground">{encontrado.email}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {encontrado.email ?? `Matrícula ${encontrado.matricula}`}
+                </p>
               </div>
               <Button size="sm" onClick={onMatricular} disabled={matricular.isPending}>
                 <UserPlus size={14} />

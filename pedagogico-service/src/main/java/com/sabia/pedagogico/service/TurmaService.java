@@ -81,7 +81,7 @@ public class TurmaService {
     }
 
     /** Normaliza (trim + maiúsculas) e valida o formato antes de ir ao banco; 404 com mensagem única. */
-    private Turma buscarPorCodigoConvite(String codigoBruto) {
+    public Turma buscarPorCodigoConvite(String codigoBruto) {
         String codigo = codigoBruto == null ? "" : codigoBruto.trim().toUpperCase(Locale.ROOT);
         if (!FORMATO_CODIGO.matcher(codigo).matches()) {
             throw new ResourceNotFoundException(MSG_CODIGO_INVALIDO);
