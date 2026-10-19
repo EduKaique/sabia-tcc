@@ -9,6 +9,9 @@
 --    não relaxa NOT NULL em coluna existente; em base nova a coluna já nasce nullable (idempotente).
 ALTER TABLE usuario ALTER COLUMN cpf DROP NOT NULL;
 
+-- 0.1 E-mail opcional para ALUNO (entra pela matrícula). Mesmo motivo do ALTER acima.
+ALTER TABLE usuario ALTER COLUMN email DROP NOT NULL;
+
 -- 1. Instituição
 INSERT INTO instituicao (id, nome, cnpj, criada_em)
 VALUES (1, 'Universidade Federal do Brasil', '00.000.000/0001-00', CURRENT_TIMESTAMP)
@@ -76,6 +79,13 @@ INSERT INTO aluno (id, pontuacao_geral, matricula, perfil_completo) VALUES
     (8, 0, '20260004', true),
     (9, 0, '20260005', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- 5.1 Matrícula normalizada (sem espaços nas pontas, em maiúsculas), como o cadastro grava.
+--     Idempotente; pula a linha que colidiria com outra matrícula já normalizada.
+UPDATE aluno a
+SET matricula = upper(btrim(a.matricula))
+WHERE a.matricula <> upper(btrim(a.matricula))
+  AND NOT EXISTS (SELECT 1 FROM aluno b WHERE b.id <> a.id AND b.matricula = upper(btrim(a.matricula)));
 
 -- 6. Sincroniza as sequences com os ids fixos do seed (idempotente; roda a cada reinício)
 --    Os INSERTs acima usam ids explícitos, que não avançam as sequences IDENTITY.

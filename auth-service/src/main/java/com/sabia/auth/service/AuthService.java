@@ -6,7 +6,10 @@ import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
 import com.sabia.auth.exception.SenhaAtualIncorretaException;
 import com.sabia.auth.exception.SenhaDivergenteException;
+import com.sabia.auth.model.usuario.Aluno;
+import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import com.sabia.auth.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -18,29 +21,43 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
 
+    private static final String MSG_CREDENCIAIS_INVALIDAS = "Dados de acesso incorretos";
+
     private final UsuarioRepository usuarioRepository;
+    private final AlunoRepository alunoRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        // O e-mail já chega normalizado (LoginRequest); a busca case-insensitive cobre contas antigas.
-        var usuario = usuarioRepository.findByEmailIgnoreCase(request.email())
-                .orElseThrow(() -> new BadCredentialsException("E-mail ou senha incorretos"));
+        var usuario = buscarPorLogin(request.login())
+                .orElseThrow(() -> new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS));
 
         if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
-            throw new BadCredentialsException("E-mail ou senha incorretos");
+            throw new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS);
         }
 
         String token = jwtTokenProvider.generateToken(usuario);
         log.info("Login bem-sucedido para usuário id={}", usuario.getId());
         return new LoginResponse(token, "Bearer", usuario.getTipoPerfil().name(), usuario.getNome(),
                 usuario.isMustChangePassword());
+    }
+
+    private Optional<Usuario> buscarPorLogin(String login) {
+        if (login.contains("@")) {
+            return usuarioRepository.findByEmailIgnoreCase(login.toLowerCase(Locale.ROOT));
+        }
+        return alunoRepository.findByMatricula(Aluno.normalizarMatricula(login))
+                .map(Aluno::getUsuario)
+                .filter(u -> u.getTipoPerfil() == PerfilUsuario.ALUNO);
     }
 
     @Transactional

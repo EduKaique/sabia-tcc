@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { Calendar, Star, ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
+import { fredoka } from '@/lib/fontesHome'
+import { botaoPrincipal, cartao, linkDiscreto } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
 import { StatusBadge } from './StatusBadge'
 import { getInfoUrgencia } from './IndicadorUrgencia'
@@ -12,76 +13,62 @@ interface Props {
   atividade: AtividadeAlunoDTO
 }
 
+const aviso = 'rounded-2xl border-2 p-5 text-base font-semibold text-tinta'
+
 export function PainelDetalhe({ atividade }: Props) {
   const { text: dateText, urgent } = getInfoUrgencia(atividade.dataEntrega, atividade.status)
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
-      <Link
-        href="/aluno/atividades"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-      >
-        <ArrowLeft size={16} />
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      <Link href="/aluno/atividades" className={cn(linkDiscreto, 'mb-4 gap-1.5 px-0')}>
+        <ArrowLeft size={18} aria-hidden="true" />
         Voltar para atividades
       </Link>
 
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-4 flex items-center gap-3">
         <StatusBadge status={atividade.status} />
       </div>
 
-      <h1 className="text-3xl font-bold text-foreground mb-3">{atividade.titulo}</h1>
+      <h1 className={cn(fredoka.className, 'mb-3 text-3xl font-bold text-tinta')}>{atividade.titulo}</h1>
 
-      <div className="flex items-center gap-5 mb-6 text-sm text-muted-foreground">
-        <span
-          className={`flex items-center gap-1.5 ${urgent ? 'text-red-500 font-medium' : ''}`}
-        >
-          <Calendar size={14} />
+      <div className="mb-6 flex flex-wrap items-center gap-3 text-sm font-semibold text-tinta-apoio">
+        <span className={cn('flex items-center gap-1.5', urgent && 'text-sabia-erro')}>
+          <Calendar size={16} aria-hidden="true" />
           {dateText}
         </span>
-        <span className="flex items-center gap-1.5 text-amber-500 font-semibold">
-          <Star size={14} className="fill-amber-400 text-amber-400" />
+        <span className="flex items-center gap-1 rounded-full bg-sabia-amarelo/30 px-3 py-1 font-bold text-tinta">
+          <Star size={14} className="fill-sabia-amarelo text-sabia-amarelo" aria-hidden="true" />
           {atividade.pontuacaoMaxima} XP
         </span>
       </div>
 
-      <Card className="mb-6">
-        <CardContent className="p-5">
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
-            Descrição
-          </h2>
-          <div
-            className="prose prose-sm max-w-none text-foreground"
-            dangerouslySetInnerHTML={{ __html: atividade.descricao }}
-          />
-        </CardContent>
-      </Card>
+      <section className={cn(cartao, 'mb-6 p-5')}>
+        <h2 className={cn(fredoka.className, 'mb-3 text-lg font-bold text-tinta')}>Descrição</h2>
+        <div
+          className="prose prose-sm max-w-none text-tinta"
+          dangerouslySetInnerHTML={{ __html: atividade.descricao }}
+        />
+      </section>
 
       {(atividade.status === 'PENDENTE' || atividade.status === 'EM_ANDAMENTO') && (
-        <Link href={`/aluno/atividades/${atividade.id}/editor`}>
-          <Button size="lg" className="w-full sm:w-auto">
-            {atividade.status === 'EM_ANDAMENTO' ? 'Continuar' : 'Iniciar Atividade'}
-          </Button>
+        <Link
+          href={`/aluno/atividades/${atividade.id}/editor`}
+          className={cn(botaoPrincipal, fredoka.className, 'w-full sm:w-auto')}
+        >
+          {atividade.status === 'EM_ANDAMENTO' ? 'Continuar' : 'Iniciar Atividade'}
         </Link>
       )}
 
       {atividade.status === 'CORRIGIDA' && (
-        <Card className="border-emerald-200 bg-emerald-50">
-          <CardContent className="p-5">
-            <p className="text-sm text-emerald-800">
-              Atividade corrigida. Acesse sua submissão para ver nota e feedback.
-            </p>
-          </CardContent>
-        </Card>
+        <div className={cn(aviso, 'border-sabia-verde bg-sabia-verde/15')}>
+          Atividade corrigida. Acesse sua submissão para ver nota e feedback.
+        </div>
       )}
 
       {atividade.status === 'ENTREGUE' && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-5">
-            <p className="text-sm text-yellow-800">
-              Sua atividade foi entregue e aguarda avaliação do professor.
-            </p>
-          </CardContent>
-        </Card>
+        <div className={cn(aviso, 'border-sabia-laranja bg-sabia-laranja/10')}>
+          Sua atividade foi entregue e aguarda avaliação do professor.
+        </div>
       )}
     </div>
   )

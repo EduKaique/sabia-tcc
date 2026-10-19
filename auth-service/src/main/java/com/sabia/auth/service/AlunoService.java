@@ -48,11 +48,12 @@ public class AlunoService {
 
         return usuario
                 .filter(u -> u.getTipoPerfil() == PerfilUsuario.ALUNO)
-                .map(u -> new AlunoBuscaResponse(u.getId(), u.getNome(), u.getEmail()))
+                .map(u -> new AlunoBuscaResponse(u.getId(), u.getNome(), u.getEmail(),
+                        alunoRepository.findById(u.getId()).map(Aluno::getMatricula).orElse(null)))
                 .orElseThrow(AlunoNaoEncontradoException::new);
     }
 
     private Optional<Usuario> buscarPorMatricula(String matricula) {
-        return alunoRepository.findByMatricula(matricula).map(Aluno::getUsuario);
+        return alunoRepository.findByMatricula(Aluno.normalizarMatricula(matricula)).map(Aluno::getUsuario);
     }
 }

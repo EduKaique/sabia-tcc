@@ -6,12 +6,13 @@ import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import styles from '@/styles/home.module.css'
 import { AvatarSabia } from './AvatarSabia'
-import { botaoPrincipal, textoApoio } from './estilos'
+import { botaoPrincipal, textoApoio } from '@/lib/estilos'
 
 interface TelaBoasVindasProps {
   nome: string
   turmaNome: string
-  avatar: string
+  /** Ausente no login de aluno existente (o avatar não vem no token). */
+  avatar?: string
   onContinuar: () => void
 }
 
@@ -22,12 +23,14 @@ export function TelaBoasVindas({ nome, turmaNome, avatar, onContinuar }: TelaBoa
 
   return (
     <div className="flex flex-col items-center gap-4 text-center">
-      <div className="relative">
-        <div className={styles.pop}>
-          <AvatarSabia id={avatar} tamanho={112} anunciar />
+      {avatar && (
+        <div className="relative">
+          <div className={styles.pop}>
+            <AvatarSabia id={avatar} tamanho={112} anunciar />
+          </div>
+          <Estrelinhas />
         </div>
-        <Estrelinhas />
-      </div>
+      )}
 
       <h2
         id="pa-titulo-sucesso"

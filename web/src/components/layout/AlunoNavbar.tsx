@@ -2,72 +2,84 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bird, BookOpen, Map, Code2, Users, Bell, LogOut } from 'lucide-react'
+import { BookOpen, Bell, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { encerrarSessao } from '@/lib/auth-helpers'
+import { cn } from '@/lib/utils'
+import { fredoka } from '@/lib/fontesHome'
+import styles from '@/styles/home.module.css'
 
-const navItems = [
-  { href: '/aluno', label: 'Início', exact: true },
-  { href: '/aluno/atividades', label: 'Avaliações', icon: BookOpen },
-  { href: '/aluno/trilha', label: 'Trilha de Aprendizado', icon: Map },
-  { href: '/aluno/sandbox', label: 'Sandbox', icon: Code2 },
-  { href: '/aluno/turma', label: 'Minha turma', icon: Users },
-]
+const navItems = [{ href: '/aluno/atividades', label: 'Avaliações' }]
+
+const botaoIcone =
+  'flex size-12 items-center justify-center rounded-full text-tinta-apoio transition-colors hover:bg-sabia-azul-claro hover:text-tinta outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul'
 
 export function AlunoNavbar() {
   const pathname = usePathname()
   const { user } = useAuth()
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    window.location.href = '/login'
+    encerrarSessao()
+    window.location.href = '/'
   }
 
   const initial = user?.nome?.charAt(0).toUpperCase() ?? '?'
 
   return (
-    <header className="flex items-center h-14 px-6 bg-white border-b border-border shrink-0">
-      <div className="flex items-center gap-2 mr-8">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-          <Bird size={16} className="text-primary-foreground" />
-        </div>
-        <div className="leading-none">
-          <p className="text-sm font-bold">Sabiá</p>
-          <p className="text-xs text-muted-foreground">Estudante</p>
-        </div>
-      </div>
-
-      <nav className="flex items-center gap-1 flex-1">
-        {navItems.map(({ href, label, exact }) => {
-          const active = exact ? pathname === href : pathname.startsWith(href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              {label}
-            </Link>
-          )
-        })}
-      </nav>
-
-      <div className="flex items-center gap-3">
-        <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground">
-          <Bell size={18} />
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
-          title="Sair"
+    <header className="sticky top-0 z-30 shrink-0 border-b-2 border-tinta bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+        <Link
+          href="/aluno/atividades"
+          className={cn(
+            styles.brandBlock,
+            fredoka.className,
+            // brandBlock lê --home-blue, que só existe dentro do .page da home.
+            '[--home-blue:var(--color-sabia-azul)]',
+            'inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-1 text-base font-semibold text-white outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul focus-visible:ring-offset-2',
+          )}
         >
-          <LogOut size={16} />
-        </button>
-        <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold shrink-0">
-          {initial}
+          <BookOpen size={18} aria-hidden="true" />
+          Sabiá
+        </Link>
+
+        <nav aria-label="Principal" className="flex flex-1 items-center gap-2">
+          {navItems.map(({ href, label }) => {
+            const active = pathname.startsWith(href)
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  fredoka.className,
+                  'inline-flex min-h-12 items-center rounded-full border-2 px-4 text-base font-semibold transition-colors outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul',
+                  active
+                    ? 'border-tinta bg-sabia-amarelo text-tinta'
+                    : 'border-transparent text-tinta-apoio hover:bg-sabia-azul-claro hover:text-tinta',
+                )}
+              >
+                {label}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <button type="button" aria-label="Notificações" className={cn(botaoIcone, 'hidden sm:flex')}>
+            <Bell size={20} aria-hidden="true" />
+          </button>
+          <button type="button" onClick={handleLogout} aria-label="Sair" title="Sair" className={botaoIcone}>
+            <LogOut size={20} aria-hidden="true" />
+          </button>
+          <div
+            aria-hidden="true"
+            className={cn(
+              fredoka.className,
+              'flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-tinta bg-sabia-amarelo text-base font-bold text-tinta',
+            )}
+          >
+            {initial}
+          </div>
         </div>
       </div>
     </header>

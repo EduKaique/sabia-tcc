@@ -5,7 +5,7 @@ import type { UseFormRegisterReturn } from 'react-hook-form'
 import { AVATARES } from '@/lib/avatares'
 import { cn } from '@/lib/utils'
 import { AvatarSabia } from './AvatarSabia'
-import { rotulo, textoErro } from './estilos'
+import { rotulo, textoErro } from '@/lib/estilos'
 
 interface SeletorAvatarProps {
   registro: UseFormRegisterReturn<'avatar'>

@@ -84,10 +84,9 @@ class PrimeiroAcessoControllerTest {
         return json.createObjectNode()
                 .put("codigoTurma", " sabia1 ")
                 .put("nomeCompleto", " Maria Souza ")
-                .put("matricula", "2026100")
+                .put("matricula", " 2026a100 ")
                 .put("dataNascimento", "2015-03-10")
                 .put("avatar", "sabia-azul")
-                .put("email", " Maria.Souza@Escola.EDU ")
                 .put("senha", "senhaForte1")
                 .put("confirmarSenha", "senhaForte1");
     }
@@ -103,10 +102,9 @@ class PrimeiroAcessoControllerTest {
         assertThat(alunoRepository.count()).isZero();
     }
 
-    private Usuario salvarAluno(String email, String matricula) {
+    private Usuario salvarAluno(String matricula) {
         Usuario u = usuarioRepository.save(Usuario.builder()
                 .nome("Aluno Existente")
-                .email(email)
                 .senhaHash(passwordEncoder.encode("password"))
                 .tipoPerfil(PerfilUsuario.ALUNO)
                 .build());
@@ -115,7 +113,7 @@ class PrimeiroAcessoControllerTest {
     }
 
     @Test
-    void primeiroAcesso_comDadosValidos_retorna201TokenEPersisteAlunoSemCpf() throws Exception {
+    void primeiroAcesso_comDadosValidos_retorna201TokenEPersisteAlunoSemCpfESemEmail() throws Exception {
         String body = enviar(corpo())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isNotEmpty())
@@ -126,15 +124,15 @@ class PrimeiroAcessoControllerTest {
                 .andExpect(jsonPath("$.turma.nome").value("Programação I — 2025/1"))
                 .andReturn().getResponse().getContentAsString();
 
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCase("maria.souza@escola.edu").orElseThrow();
-        assertThat(usuario.getEmail()).isEqualTo("maria.souza@escola.edu");
+        Aluno aluno = alunoRepository.findByMatricula("2026A100").orElseThrow();
+        Usuario usuario = aluno.getUsuario();
+        assertThat(usuario.getEmail()).isNull();
         assertThat(usuario.getCpf()).isNull();
         assertThat(usuario.getTipoPerfil()).isEqualTo(PerfilUsuario.ALUNO);
         assertThat(usuario.getDataNascimento()).isEqualTo(LocalDate.of(2015, 3, 10));
         assertThat(passwordEncoder.matches("senhaForte1", usuario.getSenhaHash())).isTrue();
 
-        Aluno aluno = alunoRepository.findById(usuario.getId()).orElseThrow();
-        assertThat(aluno.getMatricula()).isEqualTo("2026100");
+        assertThat(aluno.getMatricula()).isEqualTo("2026A100");
         assertThat(aluno.getAvatar()).isEqualTo("sabia-azul");
         assertThat(aluno.isPerfilCompleto()).isTrue();
         assertThat(aluno.getPontuacaoGeral()).isZero();
@@ -193,27 +191,25 @@ class PrimeiroAcessoControllerTest {
     }
 
     @Test
-    void primeiroAcesso_comEmailJaCadastradoEmMaiusculas_retorna409CampoEmail() throws Exception {
-        salvarAluno("maria.souza@escola.edu", "2026999");
-
-        enviar(corpo().put("email", "MARIA.SOUZA@ESCOLA.EDU"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.erro").value("E-mail já cadastrado."))
-                .andExpect(jsonPath("$.campos.email").value("E-mail já cadastrado."));
-
-        assertThat(usuarioRepository.count()).isEqualTo(1);
-        verify(pedagogicoClient, never()).matricular(anyLong(), anyLong(), anyString());
-    }
-
-    @Test
-    void primeiroAcesso_comMatriculaJaCadastrada_retorna409CampoMatricula() throws Exception {
-        salvarAluno("outro@escola.edu", "2026100");
+    void primeiroAcesso_comMatriculaJaCadastradaEmOutraCaixa_retorna409CampoMatricula() throws Exception {
+        salvarAluno("2026A100");
 
         enviar(corpo())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.campos.matricula").value("Matrícula já cadastrada."));
 
         assertThat(usuarioRepository.count()).isEqualTo(1);
+        verify(pedagogicoClient, never()).matricular(anyLong(), anyLong(), anyString());
+    }
+
+    @Test
+    void primeiroAcesso_comArrobaNaMatricula_retorna400CampoMatricula() throws Exception {
+        enviar(corpo().put("matricula", "maria@escola"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos.matricula").value("A matrícula não pode conter @."));
+
+        assertNadaCriado();
+        verifyNoInteractions(pedagogicoClient);
     }
 
     @Test
@@ -264,7 +260,7 @@ class PrimeiroAcessoControllerTest {
                 .andExpect(jsonPath("$.campos.matricula").exists())
                 .andExpect(jsonPath("$.campos.dataNascimento").exists())
                 .andExpect(jsonPath("$.campos.avatar").exists())
-                .andExpect(jsonPath("$.campos.email").exists())
+                .andExpect(jsonPath("$.campos.email").doesNotExist())
                 .andExpect(jsonPath("$.campos.senha").exists())
                 .andExpect(jsonPath("$.campos.confirmarSenha").exists());
 
@@ -272,13 +268,13 @@ class PrimeiroAcessoControllerTest {
     }
 
     @Test
-    void login_aposPrimeiroAcesso_comEmailEmMaiusculas_retorna200() throws Exception {
+    void login_aposPrimeiroAcesso_pelaMatriculaEmMinusculas_retorna200() throws Exception {
         enviar(corpo()).andExpect(status().isCreated());
 
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.createObjectNode()
-                                .put("email", "Maria.Souza@ESCOLA.edu")
+                                .put("login", "2026a100")
                                 .put("senha", "senhaForte1").toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.perfil").value("ALUNO"));

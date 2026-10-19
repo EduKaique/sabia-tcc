@@ -33,7 +33,8 @@ export const primeiroAcessoSchema = z
       .string()
       .trim()
       .min(1, 'Escreva sua matrícula.')
-      .max(255, 'A matrícula pode ter no máximo 255 caracteres.'),
+      .max(255, 'A matrícula pode ter no máximo 255 caracteres.')
+      .refine((v) => !v.includes('@'), 'A matrícula não pode ter @.'),
     dataNascimento: z
       .string()
       .min(1, 'Escolha sua data de nascimento.')
@@ -41,12 +42,6 @@ export const primeiroAcessoSchema = z
       .refine((v) => v >= limitesDataNascimento().min, 'Confira o ano de nascimento.'),
     // Retorno anotado como boolean: um type guard estreitaria o tipo e o default '' não caberia.
     avatar: z.string().refine((v): boolean => isAvatarId(v), 'Escolha um avatar.'),
-    email: z
-      .string()
-      .trim()
-      .min(1, 'Escreva um e-mail.')
-      .email('Confira o e-mail. Ele precisa ser assim: nome@email.com')
-      .max(255, 'O e-mail pode ter no máximo 255 caracteres.'),
     senha: z.string().min(8, 'A senha precisa ter pelo menos 8 caracteres.'),
     confirmarSenha: z.string().min(1, 'Digite a senha de novo.'),
   })
@@ -64,14 +59,13 @@ export type PrimeiroAcessoFormData = z.infer<typeof primeiroAcessoSchema>
 export type CampoPrimeiroAcesso = keyof PrimeiroAcessoFormData
 
 export const CAMPOS_PASSO_1 = ['nomeCompleto', 'matricula', 'dataNascimento', 'avatar'] as const
-export const CAMPOS_PASSO_2 = ['email', 'senha', 'confirmarSenha'] as const
+export const CAMPOS_PASSO_2 = ['senha', 'confirmarSenha'] as const
 
 export const VALORES_INICIAIS: PrimeiroAcessoFormData = {
   nomeCompleto: '',
   matricula: '',
   dataNascimento: '',
   avatar: '',
-  email: '',
   senha: '',
   confirmarSenha: '',
 }

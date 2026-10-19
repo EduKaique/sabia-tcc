@@ -54,7 +54,8 @@ export interface AlunoMatriculado {
 export interface AlunoBusca {
   id: number
   nome: string
-  email: string
+  email: string | null
+  matricula: string | null
 }
 
 export interface AtividadeDetalhes {

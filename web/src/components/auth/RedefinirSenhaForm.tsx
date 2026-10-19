@@ -59,7 +59,7 @@ export function RedefinirSenhaForm() {
       <div className="rounded-md bg-primary/10 p-3 text-sm text-foreground">
         Senha redefinida com sucesso.
         <div className="mt-2">
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             Ir para o login
           </Link>
         </div>

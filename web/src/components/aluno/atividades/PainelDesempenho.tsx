@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+import { fredoka } from '@/lib/fontesHome'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
 
 interface Props {
@@ -15,31 +17,31 @@ export function PainelDesempenho({ atividades }: Props) {
     atividades.length > 0 ? Math.round((corrigidas / atividades.length) * 100) : 0
 
   return (
-    <aside className="w-72 shrink-0">
-      <div className="bg-primary rounded-xl p-5 text-primary-foreground">
-        <h2 className="text-sm font-semibold mb-4">Seu Desempenho</h2>
+    <aside className="w-full shrink-0 lg:w-72">
+      <div className="rounded-[1.5rem] border-2 border-tinta bg-sabia-azul p-5 text-white shadow-[0_4px_0_var(--color-tinta)]">
+        <h2 className={cn(fredoka.className, 'mb-4 text-lg font-bold')}>Seu Desempenho</h2>
 
         <div className="mb-4">
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="opacity-80">Meta Semanal</span>
-            <span className="font-semibold">{metaSemanal}%</span>
+          <div className="mb-1.5 flex items-center justify-between text-sm">
+            <span className="font-semibold">Meta Semanal</span>
+            <span className="font-bold">{metaSemanal}%</span>
           </div>
-          <div className="w-full bg-primary-foreground/20 rounded-full h-2">
+          <div className="h-3 w-full rounded-full border-2 border-tinta bg-white/30">
             <div
-              className="bg-emerald-400 h-2 rounded-full transition-all"
+              className="h-full rounded-full bg-sabia-amarelo transition-all"
               style={{ width: `${metaSemanal}%` }}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-primary-foreground/10 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold">{corrigidas}</p>
-            <p className="text-xs opacity-70 mt-0.5">Corrigidas</p>
+          <div className="rounded-2xl bg-white/15 p-3 text-center">
+            <p className={cn(fredoka.className, 'text-3xl font-bold')}>{corrigidas}</p>
+            <p className="mt-0.5 text-sm font-semibold">Corrigidas</p>
           </div>
-          <div className="bg-primary-foreground/10 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold">{String(pendentes).padStart(2, '0')}</p>
-            <p className="text-xs opacity-70 mt-0.5">Pendentes</p>
+          <div className="rounded-2xl bg-white/15 p-3 text-center">
+            <p className={cn(fredoka.className, 'text-3xl font-bold')}>{String(pendentes).padStart(2, '0')}</p>
+            <p className="mt-0.5 text-sm font-semibold">Pendentes</p>
           </div>
         </div>
       </div>

@@ -1,23 +1,24 @@
 'use client'
 
-import Link from 'next/link'
 import { ArrowLeft, Loader2, RotateCcw, Users } from 'lucide-react'
-import { useFormContext } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import { limitesDataNascimento, type PrimeiroAcessoFormData } from '@/lib/schemas/primeiroAcessoSchema'
+import { CampoData } from './CampoData'
 import { CampoFormulario } from './CampoFormulario'
 import { CampoSenha } from './CampoSenha'
 import { SeletorAvatar } from './SeletorAvatar'
-import { alertaErro, botaoPrincipal, botaoSecundario, campo, linkDiscreto } from './estilos'
+import { alertaErro, botaoPrincipal, botaoSecundario, campo, linkDiscreto } from '@/lib/estilos'
 
 interface FormularioDadosProps {
   turmaNome: string
   passo: 1 | 2
   enviando: boolean
   erroGeral: string | null
-  /** Campos com 409 (e-mail/matrícula já cadastrados): oferecem "Já tenho conta? Entrar". */
+  /** Campos com 409 (matrícula já cadastrada): oferecem "Já tenho conta? Entrar". */
   conflitos: ReadonlySet<string>
+  onJaTenhoConta: () => void
   onAvancar: () => void
   onVoltar: () => void
   onEnviar: () => void
@@ -29,23 +30,25 @@ export function FormularioDados({
   enviando,
   erroGeral,
   conflitos,
+  onJaTenhoConta,
   onAvancar,
   onVoltar,
   onEnviar,
 }: FormularioDadosProps) {
   const {
     register,
+    control,
     watch,
     formState: { errors },
   } = useFormContext<PrimeiroAcessoFormData>()
   const avatar = watch('avatar')
   const { min, max } = limitesDataNascimento()
 
-  const linkJaTenhoConta = (campoConflito: 'email' | 'matricula') =>
-    conflitos.has(campoConflito) && errors[campoConflito] ? (
-      <Link href="/login" className={cn(linkDiscreto, 'self-start px-0')}>
+  const linkJaTenhoConta =
+    conflitos.has('matricula') && errors.matricula ? (
+      <button type="button" onClick={onJaTenhoConta} className={cn(linkDiscreto, 'self-start px-0')}>
         Já tenho conta? Entrar
-      </Link>
+      </button>
     ) : null
 
   return (
@@ -101,9 +104,9 @@ export function FormularioDados({
         <CampoFormulario
           id="pa-matricula"
           label="Matrícula"
-          dica="Se não souber, pergunte ao professor."
+          dica="Você vai usar sua matrícula para entrar. Se não souber, pergunte ao professor."
           erro={errors.matricula?.message}
-          extra={linkJaTenhoConta('matricula')}
+          extra={linkJaTenhoConta}
         >
           {(a11y) => (
             <input
@@ -120,14 +123,19 @@ export function FormularioDados({
 
         <CampoFormulario id="pa-dataNascimento" label="Data de nascimento" erro={errors.dataNascimento?.message}>
           {(a11y) => (
-            <input
-              {...a11y}
-              type="date"
-              min={min}
-              max={max}
-              autoComplete="bday"
-              className={cn(campo, 'appearance-none')}
-              {...register('dataNascimento')}
+            <Controller
+              control={control}
+              name="dataNascimento"
+              render={({ field }) => (
+                <CampoData
+                  {...a11y}
+                  valor={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  min={min}
+                  max={max}
+                />
+              )}
             />
           )}
         </CampoFormulario>
@@ -136,28 +144,6 @@ export function FormularioDados({
       </div>
 
       <div className={cn('flex flex-col gap-5', passo !== 2 && 'hidden')}>
-        <CampoFormulario
-          id="pa-email"
-          label="E-mail (seu ou do seu responsável)"
-          dica="Você vai usar este e-mail para entrar no Sabiá."
-          erro={errors.email?.message}
-          extra={linkJaTenhoConta('email')}
-        >
-          {(a11y) => (
-            <input
-              {...a11y}
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              className={campo}
-              {...register('email')}
-            />
-          )}
-        </CampoFormulario>
-
         <CampoFormulario
           id="pa-senha"
           label="Senha"

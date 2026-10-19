@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<ErroResponse> handleBadCredentials(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErroResponse.of(401, "E-mail ou senha incorretos"));
+                .body(ErroResponse.of(401, "Dados de acesso incorretos"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormProvider, useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,6 +11,8 @@ import { fredoka } from '@/lib/fontesHome'
 import { AVATARES } from '@/lib/avatares'
 import { redirecionarPorPerfil, salvarToken } from '@/lib/auth-helpers'
 import { ErroRequisicao } from '@/lib/erroRequisicao'
+import { botaoPrincipal } from '@/lib/estilos'
+import type { LoginFormData } from '@/lib/schemas/loginSchema'
 import {
   CAMPOS_PASSO_1,
   CAMPOS_PASSO_2,
@@ -21,25 +22,34 @@ import {
   type PrimeiroAcessoFormData,
 } from '@/lib/schemas/primeiroAcessoSchema'
 import { MENSAGEM_CODIGO_INVALIDO, type ConviteValido } from '@/services/convites'
-import type { PrimeiroAcessoResponse } from '@/services/auth'
+import type { LoginResponse } from '@/services/auth'
 import { useValidarConvite } from '@/hooks/useValidarConvite'
 import { usePrimeiroAcesso } from '@/hooks/usePrimeiroAcesso'
+import { useLogin } from '@/hooks/useLogin'
+import { useEntrarNaTurma } from '@/hooks/useTurmasAluno'
 import styles from '@/styles/home.module.css'
 import { PainelCodigo, TAMANHO_CODIGO, limparCodigo, type MensagemCodigo } from './PainelCodigo'
 import { FormularioDados } from './FormularioDados'
+import { PainelEscolha } from './PainelEscolha'
+import { PainelLogin } from './PainelLogin'
 import { TelaBoasVindas } from './TelaBoasVindas'
 import { idOpcaoAvatar } from './SeletorAvatar'
 
 /**
- * Estados: inicial → codigo → (validando) → dados[passo 1 → passo 2] → sucesso.
+ * Estados: inicial → codigo → (validando) → escolha → dados[passo 1 → passo 2] → sucesso
+ *                                                   ↘ entrar → (vinculando) → sucesso | aviso
+ * "Sou professor ou administrador" e "Já tenho conta" (sem código) levam direto a "entrar".
  * "/convite/[codigo]" começa em "validando" com o código do link.
  */
-type Etapa = 'inicial' | 'codigo' | 'validando' | 'dados' | 'sucesso'
+type Etapa = 'inicial' | 'codigo' | 'validando' | 'escolha' | 'dados' | 'entrar' | 'vinculando' | 'sucesso' | 'aviso'
 
 const MSG_AJUDA_CODIGO = 'O código tem 6 letras e números.'
 const MSG_FALHA_VALIDACAO = 'Não foi possível verificar agora. Tente novamente.'
 const MSG_FALHA_ENVIO = 'Não foi possível concluir agora. Tente de novo.'
 const MSG_MUITAS_TENTATIVAS = 'Muitas tentativas. Aguarde alguns minutos.'
+const MSG_DADOS_INCORRETOS = 'Dados de acesso incorretos.'
+const MSG_FALHA_LOGIN = 'Não foi possível entrar agora. Tente de novo.'
+const MSG_FALHA_VINCULO = 'Você entrou, mas não foi possível entrar na turma agora. Tente pelo painel da sua conta.'
 
 const ORDEM_CAMPOS: readonly CampoPrimeiroAcesso[] = [...CAMPOS_PASSO_1, ...CAMPOS_PASSO_2]
 
@@ -47,8 +57,15 @@ const passoDoCampo = (campo: CampoPrimeiroAcesso): 1 | 2 =>
   (CAMPOS_PASSO_1 as readonly string[]).includes(campo) ? 1 : 2
 
 interface Sucesso {
-  resposta: PrimeiroAcessoResponse
-  avatar: string
+  resposta: LoginResponse
+  turmaNome: string
+  avatar?: string
+}
+
+/** Login feito, mas o vínculo com a turma do convite não aconteceu (409/404/falha). */
+interface Aviso {
+  resposta: LoginResponse
+  texto: string
 }
 
 export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
@@ -61,10 +78,15 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
   const [erroGeral, setErroGeral] = useState<string | null>(null)
   const [conflitos, setConflitos] = useState<ReadonlySet<string>>(new Set())
   const [sucesso, setSucesso] = useState<Sucesso | null>(null)
+  const [aviso, setAviso] = useState<Aviso | null>(null)
+  const [erroLogin, setErroLogin] = useState<string | null>(null)
+  const [voltarDoLogin, setVoltarDoLogin] = useState<Etapa>('inicial')
   const [anuncio, setAnuncio] = useState('')
 
   const validacao = useValidarConvite()
   const envio = usePrimeiroAcesso()
+  const login = useLogin()
+  const entradaTurma = useEntrarNaTurma()
 
   // Dados do formulário ficam só em memória (nada em localStorage/sessionStorage).
   const form = useForm<PrimeiroAcessoFormData>({
@@ -101,9 +123,8 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
       onSuccess: (convite) => {
         setTurma(convite)
         setMensagemCodigo(null)
-        setPasso(1)
-        setEtapa('dados')
-        focar('pa-titulo-passo')
+        setEtapa('escolha')
+        focar('pa-titulo-escolha')
       },
       onError: (erro) => {
         const invalido = erro instanceof ErroRequisicao && erro.status === 404
@@ -140,6 +161,79 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
     }
   }
 
+  // ---------- Escolha ----------
+  const irParaPrimeiroAcesso = () => {
+    setPasso(1)
+    setEtapa('dados')
+    focar('pa-titulo-passo')
+  }
+
+  const trocarCodigo = () => {
+    setCodigo(turma?.codigo ?? codigo)
+    setMensagemCodigo(null)
+    setEtapa('codigo')
+    focar('pa-codigo')
+  }
+
+  // ---------- Login ----------
+  /** `origem` é para onde o Voltar do login leva; sem turma (código) não há vínculo pós-login. */
+  const irParaLogin = (origem: Etapa) => {
+    if (origem !== 'escolha') setTurma(null)
+    setErroLogin(null)
+    setVoltarDoLogin(origem)
+    setEtapa('entrar')
+    focar('pa-titulo-entrar')
+  }
+
+  const voltarLogin = () => {
+    setEtapa(voltarDoLogin)
+    if (voltarDoLogin === 'codigo') focar('pa-codigo')
+    if (voltarDoLogin === 'escolha') focar('pa-titulo-escolha')
+  }
+
+  const vincularAposLogin = (resposta: LoginResponse, convite: ConviteValido) => {
+    setEtapa('vinculando')
+    entradaTurma.mutate(convite.codigo, {
+      onSuccess: (turmaVinculada) => {
+        setSucesso({ resposta, turmaNome: turmaVinculada.nome })
+        setEtapa('sucesso')
+        focar('pa-titulo-sucesso')
+      },
+      onError: (erro) => {
+        const e = erro instanceof ErroRequisicao ? erro : null
+        const texto =
+          e?.status === 409 ? e.message : e?.status === 404 ? MENSAGEM_CODIGO_INVALIDO : MSG_FALHA_VINCULO
+        setAviso({ resposta, texto })
+        setEtapa('aviso')
+        focar('pa-titulo-aviso')
+      },
+    })
+  }
+
+  const entrar = (dados: LoginFormData) => {
+    setErroLogin(null)
+    login.mutate(
+      { login: dados.login.trim(), senha: dados.senha },
+      {
+        onSuccess: (resposta) => {
+          salvarToken(resposta.token)
+          if (resposta.perfil === 'ALUNO' && turma) {
+            vincularAposLogin(resposta, turma)
+          } else {
+            redirecionarPorPerfil(resposta, router)
+          }
+        },
+        onError: (erro) => {
+          const status = erro instanceof ErroRequisicao ? erro.status : 0
+          setErroLogin(
+            status === 401 ? MSG_DADOS_INCORRETOS : status === 429 ? MSG_MUITAS_TENTATIVAS : MSG_FALHA_LOGIN,
+          )
+          focar('pa-erro-login')
+        },
+      },
+    )
+  }
+
   // ---------- Dados ----------
   const focarCampo = (campo: CampoPrimeiroAcesso) => {
     if (campo === 'avatar') {
@@ -173,11 +267,9 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
       focar('pa-titulo-passo')
       return
     }
-    // Passo 1 → painel do código, com o código atual preenchido (o formulário continua em memória).
-    setCodigo(turma?.codigo ?? codigo)
-    setMensagemCodigo(null)
-    setEtapa('codigo')
-    focar('pa-codigo')
+    // Passo 1 → escolha (o formulário continua em memória).
+    setEtapa('escolha')
+    focar('pa-titulo-escolha')
   }
 
   const tratarErroEnvio = (erro: unknown) => {
@@ -218,11 +310,11 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
     setErroGeral(null)
     setConflitos(new Set())
     envio.mutate(
-      { ...dados, email: dados.email.toLowerCase(), codigoTurma: turma.codigo },
+      { ...dados, codigoTurma: turma.codigo },
       {
         onSuccess: (resposta) => {
           salvarToken(resposta.token)
-          setSucesso({ resposta, avatar: dados.avatar })
+          setSucesso({ resposta, turmaNome: resposta.turma.nome, avatar: dados.avatar })
           form.reset(VALORES_INICIAIS) // senhas não ficam na memória do formulário
           setEtapa('sucesso')
           focar('pa-titulo-sucesso')
@@ -254,10 +346,10 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
               className={cn(
                 buttonVariants({ size: 'lg' }),
                 fredoka.className,
-                'h-auto rounded-full border-2 border-[#1e2546] bg-[#f9bd15] font-bold text-[#1e2546]',
+                'h-auto rounded-full border-2 border-tinta bg-sabia-amarelo font-bold text-tinta',
                 'transition-[transform,box-shadow,background-color] duration-150',
-                'hover:-translate-y-0.5 hover:bg-[#ffc933]',
-                'focus-visible:border-[#1e2546] focus-visible:ring-4 focus-visible:ring-[#426cda] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f6f9ff]',
+                'hover:-translate-y-0.5 hover:bg-sabia-amarelo-hover',
+                'focus-visible:border-tinta focus-visible:ring-4 focus-visible:ring-sabia-azul focus-visible:ring-offset-4 focus-visible:ring-offset-[#f6f9ff]',
                 painelAberto
                   ? 'min-h-12 px-5 py-2 text-base shadow-[0_3px_0_#1e2546] hover:shadow-[0_4px_0_#1e2546] active:translate-y-0.5 active:shadow-[0_1px_0_#1e2546]'
                   : 'min-h-14 min-w-56 px-9 py-3 text-xl shadow-[0_6px_0_#1e2546] hover:shadow-[0_8px_0_#1e2546] active:translate-y-1 active:shadow-[0_2px_0_#1e2546]',
@@ -266,18 +358,19 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
               Sou aluno
             </button>
           </div>
-          <Link
-            href="/login"
+          <button
+            type="button"
+            onClick={() => irParaLogin(etapa)}
             className={cn(
               fredoka.className,
-              'inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[#1e2546] bg-white/80 text-center font-bold text-[#1e2546]',
+              'inline-flex min-h-12 items-center justify-center rounded-full border-2 border-tinta bg-white/80 text-center font-bold text-tinta',
               'transition-colors duration-150 hover:bg-white',
-              'outline-none focus-visible:ring-4 focus-visible:ring-[#426cda] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f6f9ff]',
+              'outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul focus-visible:ring-offset-4 focus-visible:ring-offset-[#f6f9ff]',
               painelAberto ? 'px-4 py-1.5 text-base leading-tight' : 'min-w-56 px-7 py-2.5 text-lg',
             )}
           >
             Sou professor ou administrador
-          </Link>
+          </button>
         </div>
       )}
 
@@ -290,10 +383,10 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
         {painelAberto && (
           <section
             key={etapa === 'sucesso' ? 'sucesso' : 'fluxo'}
-            aria-label="Entrar na turma"
+            aria-label="Acesso ao Sabiá"
             className={cn(
               styles.rise,
-              'mx-auto w-full max-w-md rounded-[2rem] border-2 border-[#1e2546] bg-white p-5 text-left shadow-[0_6px_0_#1e2546] sm:max-w-lg sm:p-7',
+              'mx-auto w-full max-w-md rounded-[2rem] border-2 border-tinta bg-white p-5 text-left shadow-[0_6px_0_#1e2546] sm:max-w-lg sm:p-7',
             )}
           >
             {etapa === 'codigo' && (
@@ -306,10 +399,37 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
                 mensagem={mensagemCodigo}
                 validando={validacao.isPending}
                 onEnviar={enviarCodigo}
+                onJaTenhoConta={() => irParaLogin('codigo')}
               />
             )}
 
-            {etapa === 'validando' && <CarregandoConvite />}
+            {etapa === 'validando' && <Carregando texto="Verificando o convite…" />}
+
+            {etapa === 'escolha' && turma && (
+              <PainelEscolha
+                turmaNome={turma.turmaNome}
+                onPrimeiroAcesso={irParaPrimeiroAcesso}
+                onJaTenhoConta={() => irParaLogin('escolha')}
+                onVoltar={trocarCodigo}
+              />
+            )}
+
+            {etapa === 'entrar' && (
+              <PainelLogin
+                turmaNome={turma?.turmaNome}
+                enviando={login.isPending}
+                erro={erroLogin}
+                onEntrar={entrar}
+                onVoltar={voltarLogin}
+                onLimparErro={() => setErroLogin(null)}
+              />
+            )}
+
+            {etapa === 'vinculando' && <Carregando texto="Entrando na turma…" />}
+
+            {etapa === 'aviso' && aviso && (
+              <TelaAviso texto={aviso.texto} onContinuar={() => redirecionarPorPerfil(aviso.resposta, router)} />
+            )}
 
             {etapa === 'dados' && turma && (
               <FormProvider {...form}>
@@ -319,6 +439,7 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
                   enviando={envio.isPending}
                   erroGeral={erroGeral}
                   conflitos={conflitos}
+                  onJaTenhoConta={() => irParaLogin('escolha')}
                   onAvancar={avancar}
                   onVoltar={voltar}
                   onEnviar={enviar}
@@ -329,7 +450,7 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
             {etapa === 'sucesso' && sucesso && (
               <TelaBoasVindas
                 nome={sucesso.resposta.nome}
-                turmaNome={sucesso.resposta.turma.nome}
+                turmaNome={sucesso.turmaNome}
                 avatar={sucesso.avatar}
                 onContinuar={() => redirecionarPorPerfil(sucesso.resposta, router)}
               />
@@ -345,16 +466,36 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
   )
 }
 
-function CarregandoConvite() {
+function Carregando({ texto }: { texto: string }) {
   return (
     <div role="status" aria-live="polite" className="flex flex-col items-center gap-4 py-2 text-center">
-      <Loader2 size={32} className="animate-spin text-[#426cda] motion-reduce:animate-none" aria-hidden="true" />
-      <p className="text-lg font-bold text-[#1e2546]">Verificando o convite…</p>
+      <Loader2 size={32} className="animate-spin text-sabia-azul motion-reduce:animate-none" aria-hidden="true" />
+      <p className="text-lg font-bold text-tinta">{texto}</p>
       <div className="flex w-full flex-col gap-3" aria-hidden="true">
-        <div className="h-12 w-full animate-pulse rounded-2xl bg-[#1e2546]/10 motion-reduce:animate-none" />
-        <div className="h-12 w-full animate-pulse rounded-2xl bg-[#1e2546]/10 motion-reduce:animate-none" />
-        <div className="mx-auto h-14 w-2/3 animate-pulse rounded-full bg-[#1e2546]/10 motion-reduce:animate-none" />
+        <div className="h-12 w-full animate-pulse rounded-2xl bg-tinta/10 motion-reduce:animate-none" />
+        <div className="h-12 w-full animate-pulse rounded-2xl bg-tinta/10 motion-reduce:animate-none" />
+        <div className="mx-auto h-14 w-2/3 animate-pulse rounded-full bg-tinta/10 motion-reduce:animate-none" />
       </div>
+    </div>
+  )
+}
+
+function TelaAviso({ texto, onContinuar }: { texto: string; onContinuar: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-4 text-center">
+      <h2
+        id="pa-titulo-aviso"
+        tabIndex={-1}
+        className={cn(fredoka.className, 'text-2xl font-bold text-tinta outline-none')}
+      >
+        Você entrou no Sabiá
+      </h2>
+      <p role="status" className="text-lg font-semibold text-tinta">
+        {texto}
+      </p>
+      <button type="button" onClick={onContinuar} className={cn(botaoPrincipal, fredoka.className, 'w-full')}>
+        Continuar
+      </button>
     </div>
   )
 }

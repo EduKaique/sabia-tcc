@@ -1,16 +1,18 @@
 package com.sabia.auth.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-import java.util.Locale;
-
+/**
+ * {@code login} é a matrícula (aluno) ou o e-mail (qualquer perfil); a regra fica no AuthService.
+ * {@code email} é o nome antigo do campo, aceito só durante a transição do front.
+ */
 public record LoginRequest(
-        @NotBlank @Email String email,
+        @NotBlank(message = "Informe a matrícula ou o e-mail.") String login,
+        String email,
         @NotBlank String senha
 ) {
-    /** Teclados de tablet capitalizam a primeira letra: o e-mail é sempre comparado em minúsculas. */
     public LoginRequest {
-        email = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+        String valor = login == null || login.isBlank() ? email : login;
+        login = valor == null ? null : valor.trim();
     }
 }
