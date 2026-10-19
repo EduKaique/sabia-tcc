@@ -12,6 +12,13 @@ export function salvarToken(token: string) {
   });
 }
 
+export function encerrarSessao() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+  }
+  Cookies.remove("sabia_token");
+}
+
 export function redirecionarPorPerfil(
   data: LoginResponse,
   router: { push: (path: string) => void }

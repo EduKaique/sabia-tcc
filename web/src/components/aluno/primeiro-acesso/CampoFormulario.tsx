@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { rotulo, textoApoio, textoErro } from './estilos'
+import { rotulo, textoApoio, textoErro } from '@/lib/estilos'
 
 export interface PropsAcessibilidadeCampo {
   id: string

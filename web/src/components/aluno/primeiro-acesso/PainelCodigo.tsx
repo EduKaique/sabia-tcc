@@ -1,10 +1,9 @@
 'use client'
 
-import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
-import { botaoPrincipal, campo, linkDiscreto, rotulo, textoApoio, textoErro } from './estilos'
+import { botaoPrincipal, campo, linkDiscreto, rotulo, textoApoio, textoErro } from '@/lib/estilos'
 
 export const TAMANHO_CODIGO = 6
 
@@ -27,9 +26,18 @@ interface PainelCodigoProps {
   mensagem: MensagemCodigo | null
   validando: boolean
   onEnviar: () => void
+  /** Quando informado, mostra "Já tenho conta" (troca o card para o login). */
+  onJaTenhoConta?: () => void
 }
 
-export function PainelCodigo({ codigo, onCodigoChange, mensagem, validando, onEnviar }: PainelCodigoProps) {
+export function PainelCodigo({
+  codigo,
+  onCodigoChange,
+  mensagem,
+  validando,
+  onEnviar,
+  onJaTenhoConta,
+}: PainelCodigoProps) {
   const invalido = mensagem?.tipo === 'erro'
 
   return (
@@ -109,9 +117,11 @@ export function PainelCodigo({ codigo, onCodigoChange, mensagem, validando, onEn
             'Entrar na turma'
           )}
         </button>
-        <Link href="/login" className={linkDiscreto}>
-          Já tenho conta
-        </Link>
+        {onJaTenhoConta && (
+          <button type="button" onClick={onJaTenhoConta} className={linkDiscreto}>
+            Já tenho conta
+          </button>
+        )}
       </div>
     </form>
   )

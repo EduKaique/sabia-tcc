@@ -65,7 +65,7 @@ export function RecuperarSenhaForm() {
       )}
 
       <div className="mt-3 text-right">
-        <Link href="/login" className="text-sm text-primary hover:underline">
+        <Link href="/" className="text-sm text-primary hover:underline">
           Voltar para o login
         </Link>
       </div>

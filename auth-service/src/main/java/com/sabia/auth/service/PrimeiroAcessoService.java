@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * Primeiro acesso do aluno pelo convite (HU003.2): cria usuário + aluno e vincula à turma
  * numa única operação. A matrícula remota acontece depois do flush local; se ela falhar,
  * a exceção dá rollback e nenhuma conta fica criada.
- * Nunca logar e-mail, matrícula, data de nascimento nem o corpo do request — só ids.
+ * Nunca logar matrícula, data de nascimento nem o corpo do request — só ids.
  */
 @Service
 @RequiredArgsConstructor
@@ -59,10 +59,7 @@ public class PrimeiroAcessoService {
         }
         TurmaConvite turma = pedagogicoClient.buscarTurmaPorCodigo(request.codigoTurma());
 
-        // 2. Duplicidade (e-mail sem diferenciar maiúsculas).
-        if (usuarioRepository.existsByEmailIgnoreCase(request.email())) {
-            throw CadastroDuplicadoException.email();
-        }
+        // 2. Duplicidade (matrícula já chega normalizada).
         if (alunoRepository.existsByMatricula(request.matricula())) {
             throw CadastroDuplicadoException.matricula();
         }
@@ -72,7 +69,6 @@ public class PrimeiroAcessoService {
         try {
             usuario = usuarioRepository.saveAndFlush(Usuario.builder()
                     .nome(request.nomeCompleto())
-                    .email(request.email())
                     .senhaHash(passwordEncoder.encode(request.senha()))
                     .tipoPerfil(PerfilUsuario.ALUNO)
                     .dataNascimento(request.dataNascimento())
@@ -85,7 +81,7 @@ public class PrimeiroAcessoService {
                     .pontuacaoGeral(0)
                     .build());
         } catch (DataIntegrityViolationException e) {
-            // Corrida entre dois cadastros simultâneos com o mesmo e-mail ou matrícula.
+            // Corrida entre dois cadastros simultâneos com a mesma matrícula.
             throw conflitoDe(e);
         }
 
@@ -124,9 +120,6 @@ public class PrimeiroAcessoService {
         String causa = String.valueOf(e.getMostSpecificCause().getMessage()).toLowerCase(Locale.ROOT);
         if (causa.contains("matricula")) {
             return CadastroDuplicadoException.matricula();
-        }
-        if (causa.contains("email")) {
-            return CadastroDuplicadoException.email();
         }
         return e;
     }

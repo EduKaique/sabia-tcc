@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { BookOpen, LogOut, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { encerrarSessao } from '@/lib/auth-helpers'
 
 const navItems = [
   { href: '/professor/atividades', label: 'Atividades', icon: BookOpen },
@@ -16,8 +17,8 @@ export function ProfessorSidebar() {
   const { user } = useAuth()
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    router.push('/login')
+    encerrarSessao()
+    router.push('/')
   }
 
   const initial = user?.nome?.charAt(0).toUpperCase() ?? '?'

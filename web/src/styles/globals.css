@@ -46,6 +46,20 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --color-tinta: #1e2546;
+  --color-tinta-apoio: #3a4266;
+  --color-sabia-amarelo: #f9bd15;
+  --color-sabia-amarelo-hover: #ffc933;
+  --color-sabia-azul: #426cda;
+  --color-sabia-azul-escuro: #2f55c0;
+  --color-sabia-azul-claro: #eef3ff;
+  --color-sabia-laranja: #fe7629;
+  --color-sabia-verde: #60bb75;
+  --color-sabia-roxo: #8d4ce6;
+  --color-sabia-erro: #b3261e;
+  --color-sabia-erro-escuro: #8c1d18;
+  --color-sabia-erro-claro: #fdecea;
 }
 
 :root {

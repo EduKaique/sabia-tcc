@@ -30,14 +30,12 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String nome;
 
-    // Opcional só para ALUNO (primeiro acesso por convite); obrigatório para os demais perfis,
-    // garantido em validarCpfObrigatorio(). Bancos existentes: ver ALTER no data.sql.
     @Column(unique = true, length = 11)
     private String cpf;
 
     private LocalDate dataNascimento;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -57,17 +55,25 @@ public class Usuario implements UserDetails {
     @PrePersist
     void prePersist() {
         validarCpfObrigatorio();
+        validarEmailObrigatorio();
         criadoEm = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     @PreUpdate
     void preUpdate() {
         validarCpfObrigatorio();
+        validarEmailObrigatorio();
     }
 
     private void validarCpfObrigatorio() {
         if (tipoPerfil != PerfilUsuario.ALUNO && (cpf == null || cpf.isBlank())) {
             throw new IllegalStateException("CPF é obrigatório para o perfil " + tipoPerfil + ".");
+        }
+    }
+
+    private void validarEmailObrigatorio() {
+        if (tipoPerfil != PerfilUsuario.ALUNO && (email == null || email.isBlank())) {
+            throw new IllegalStateException("E-mail é obrigatório para o perfil " + tipoPerfil + ".");
         }
     }
 
@@ -85,6 +91,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        // Aluno pode não ter e-mail: o id identifica o usuário no JwtAuthFilter.
+        return email != null ? email : String.valueOf(id);
     }
 }
