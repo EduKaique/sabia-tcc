@@ -1,10 +1,11 @@
 'use client'
 
 import { ArrowLeft, Loader2, RotateCcw, Users } from 'lucide-react'
-import { useFormContext } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import { limitesDataNascimento, type PrimeiroAcessoFormData } from '@/lib/schemas/primeiroAcessoSchema'
+import { CampoData } from './CampoData'
 import { CampoFormulario } from './CampoFormulario'
 import { CampoSenha } from './CampoSenha'
 import { SeletorAvatar } from './SeletorAvatar'
@@ -36,6 +37,7 @@ export function FormularioDados({
 }: FormularioDadosProps) {
   const {
     register,
+    control,
     watch,
     formState: { errors },
   } = useFormContext<PrimeiroAcessoFormData>()
@@ -121,14 +123,19 @@ export function FormularioDados({
 
         <CampoFormulario id="pa-dataNascimento" label="Data de nascimento" erro={errors.dataNascimento?.message}>
           {(a11y) => (
-            <input
-              {...a11y}
-              type="date"
-              min={min}
-              max={max}
-              autoComplete="bday"
-              className={cn(campo, 'appearance-none')}
-              {...register('dataNascimento')}
+            <Controller
+              control={control}
+              name="dataNascimento"
+              render={({ field }) => (
+                <CampoData
+                  {...a11y}
+                  valor={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  min={min}
+                  max={max}
+                />
+              )}
             />
           )}
         </CampoFormulario>
