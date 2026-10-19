@@ -16,7 +16,7 @@ export const botaoPrincipal = [
   foco,
 ].join(' ')
 
-/** Botão de contorno (ações secundárias: Voltar, Sou professor ou diretor). */
+/** Botão de contorno (ações secundárias: Voltar, Sou professor ou administrador). */
 export const botaoSecundario = [
   'inline-flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-[#1e2546] bg-white px-6 py-2.5 text-base font-bold text-[#1e2546]',
   'transition-colors duration-150 hover:bg-[#eef3ff]',

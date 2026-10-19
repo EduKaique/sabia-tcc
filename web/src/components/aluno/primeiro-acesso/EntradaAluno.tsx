@@ -276,7 +276,7 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
               painelAberto ? 'px-4 py-1.5 text-base leading-tight' : 'min-w-56 px-7 py-2.5 text-lg',
             )}
           >
-            Sou professor ou diretor
+            Sou professor ou administrador
           </Link>
         </div>
       )}
