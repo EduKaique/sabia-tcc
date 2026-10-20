@@ -8,9 +8,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { fredoka, nunito } from "@/lib/fontesHome";
+import { botaoPrincipal, botaoSecundario, campo, cartao, rotulo } from "@/lib/estilos";
 
 interface Props {
   open: boolean;
@@ -36,12 +36,16 @@ function ModalContent({ message, defaultValue, onConfirm, onCancel }: Omit<Props
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Nova Variável</DialogTitle>
+        <DialogTitle className={cn(fredoka.className, "text-2xl font-bold text-tinta")}>
+          Nova Variável
+        </DialogTitle>
       </DialogHeader>
 
       <div className="space-y-2 py-2">
-        <Label htmlFor="var-name">{message}</Label>
-        <Input
+        <label htmlFor="var-name" className={cn(rotulo, "block")}>
+          {message}
+        </label>
+        <input
           id="var-name"
           ref={inputRef}
           autoFocus
@@ -49,16 +53,26 @@ function ModalContent({ message, defaultValue, onConfirm, onCancel }: Omit<Props
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Nome da variável"
+          className={campo}
         />
       </div>
 
       <DialogFooter>
-        <Button variant="outline" onClick={onCancel}>
+        <button type="button" onClick={onCancel} className={botaoSecundario}>
           Cancelar
-        </Button>
-        <Button onClick={handleConfirm} disabled={!value.trim()}>
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={!value.trim()}
+          className={cn(
+            botaoPrincipal,
+            fredoka.className,
+            "min-h-12 py-2 text-base disabled:cursor-not-allowed disabled:opacity-60"
+          )}
+        >
           Criar
-        </Button>
+        </button>
       </DialogFooter>
     </>
   );
@@ -72,7 +86,7 @@ export function ModalNomeVariavel({ open, message, defaultValue, onConfirm, onCa
         if (!isOpen) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className={cn(nunito.className, cartao, "ring-0 text-tinta sm:max-w-sm")}>
         <ModalContent
           key={defaultValue + String(open)}
           message={message}
