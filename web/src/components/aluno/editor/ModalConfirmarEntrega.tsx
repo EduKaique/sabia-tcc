@@ -8,9 +8,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { fredoka, nunito } from '@/lib/fontesHome'
+import { botaoPrincipal, botaoSecundario, cartao } from '@/lib/estilos'
 
 interface Props {
   open: boolean
@@ -22,21 +23,28 @@ interface Props {
 export function ModalConfirmarEntrega({ open, onClose, onConfirm, isLoading }: Props) {
   return (
     <AlertDialog open={open} onOpenChange={(v) => { if (!v && !isLoading) onClose() }}>
-      <AlertDialogContent>
+      <AlertDialogContent className={cn(nunito.className, cartao, 'ring-0 text-tinta')}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Entregar Atividade?</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className={cn(fredoka.className, 'text-2xl font-bold text-tinta')}>
+            Entregar Atividade?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-base font-medium text-tinta-apoio">
             Tem certeza que deseja entregar? Após a entrega não será possível editar.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading} onClick={onClose}>
+          <button type="button" disabled={isLoading} onClick={onClose} className={botaoSecundario}>
             Cancelar
-          </AlertDialogCancel>
-          <Button onClick={onConfirm} disabled={isLoading} className="gap-2">
-            {isLoading && <Loader2 size={14} className="animate-spin" />}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isLoading}
+            className={cn(botaoPrincipal, fredoka.className, 'min-h-12 py-2 text-base')}
+          >
+            {isLoading && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
             {isLoading ? 'Enviando...' : 'Confirmar'}
-          </Button>
+          </button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

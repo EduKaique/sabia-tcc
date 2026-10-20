@@ -1,8 +1,10 @@
 'use client'
 
 import { use, useRef, useState } from 'react'
+import type { WorkspaceSvg } from 'blockly/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
+import { textoErro } from '@/lib/estilos'
 import { useAtividadeAluno } from '@/hooks/useAtividadesAluno'
 import { submeterAtividade } from '@/services/atividadesAlunoService'
 import { CabecalhoEditor } from '@/components/aluno/editor/CabecalhoEditor'
@@ -34,6 +36,7 @@ export default function EditorPage({ params }: Props) {
 
   const estadoJsonRef = useRef<string>('')
   const codeRef = useRef<string>('')
+  const workspaceRef = useRef<WorkspaceSvg | null>(null)
 
   const [showModal, setShowModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -51,6 +54,7 @@ export default function EditorPage({ params }: Props) {
       setTimeout(() => setEmptyAlert(false), 3000)
       return
     }
+    workspaceRef.current?.getFlyout()?.hide()
     setShowModal(true)
   }
 
@@ -75,10 +79,10 @@ export default function EditorPage({ params }: Props) {
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <div className="h-14 border-b flex items-center px-4 gap-4">
+        <div className="h-16 border-b-2 border-tinta bg-white flex items-center px-4 gap-4">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-4 w-48 flex-1" />
-          <Skeleton className="h-8 w-32 rounded-md" />
+          <Skeleton className="h-12 w-44 rounded-full" />
         </div>
         <div className="flex flex-1 overflow-hidden">
           <Skeleton className="w-72 h-full" />
@@ -92,7 +96,7 @@ export default function EditorPage({ params }: Props) {
   if (error || !atividade) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-destructive">Atividade não encontrada.</p>
+        <p className={textoErro}>Atividade não encontrada.</p>
       </div>
     )
   }
@@ -106,7 +110,7 @@ export default function EditorPage({ params }: Props) {
       />
 
       {emptyAlert && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2 rounded-lg shadow">
+        <div role="status" className="absolute top-20 left-1/2 -translate-x-1/2 z-50 rounded-2xl border-2 border-sabia-laranja bg-[#fff4ec] px-4 py-3 text-base font-bold text-tinta shadow-[0_4px_0_var(--color-tinta)]">
           Adicione pelo menos um bloco antes de entregar.
         </div>
       )}
@@ -117,6 +121,8 @@ export default function EditorPage({ params }: Props) {
         <div className="relative flex-1 h-full">
           <BlocklyEditor
             workspaceOnly
+            tema="scratch"
+            workspaceExternoRef={workspaceRef}
             onStateChange={(s) => { estadoJsonRef.current = s }}
             onCodeChange={(c) => { codeRef.current = c }}
             onVariablePrompt={(message, defaultValue, callback) =>
@@ -128,7 +134,7 @@ export default function EditorPage({ params }: Props) {
           )}
         </div>
 
-        <PainelEntradaSaida getCode={() => codeRef.current} />
+        <PainelEntradaSaida tema="scratch" getCode={() => codeRef.current} />
       </div>
 
       <ModalConfirmarEntrega
