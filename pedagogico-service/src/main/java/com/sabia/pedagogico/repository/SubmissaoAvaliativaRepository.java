@@ -16,6 +16,8 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
 
     boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
+    boolean existsByAtividadeId(Long atividadeId);
+
     Optional<SubmissaoAvaliativa> findByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
     List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);

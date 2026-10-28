@@ -13,6 +13,7 @@ import java.util.List;
 public interface AtividadeAvaliativaMapper {
 
     @Mapping(target = "turmaId", source = "turma.id")
+    @Mapping(target = "modo", source = "modo", defaultValue = "BLOCOS")
     AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade);
 
     List<AtividadeAvaliativaProfessorResponse> toProfessorResponseList(List<AtividadeAvaliativa> atividades);

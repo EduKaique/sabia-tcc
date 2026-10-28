@@ -19,6 +19,28 @@ export type TipoAtividade =
   | 'ATIVIDADE_AVALIATIVA'
   | 'ATIVIDADE_TRILHA'
 
+/** Modo de apresentação da atividade, ortogonal ao tipo. `null` no backend é tratado como BLOCOS. */
+export type ModoAtividade = 'BLOCOS' | 'JOGO_ROBO'
+
+export type TipoBlocoRobo = 'robo_mover' | 'robo_repetir'
+
+export interface PosicaoRobo {
+  linha: number
+  coluna: number
+}
+
+/** Conteúdo de `cenarioJson` nas atividades do modo Jogo do Robô. */
+export interface CenarioRobo {
+  versao: number
+  linhas: number
+  colunas: number
+  inicio: PosicaoRobo
+  destino: PosicaoRobo
+  obstaculos: PosicaoRobo[]
+  blocosPermitidos: TipoBlocoRobo[]
+  maxBlocos?: number
+}
+
 export interface AtividadeAvaliativa {
   id: string
   titulo: string
@@ -30,6 +52,8 @@ export interface AtividadeAvaliativa {
   gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
+  modo: ModoAtividade
+  cenarioJson: string | null
 }
 
 export type EtapaEnsino = 'ANOS_INICIAIS' | 'ANOS_FINAIS' | 'MEDIO' | 'TECNICO'
