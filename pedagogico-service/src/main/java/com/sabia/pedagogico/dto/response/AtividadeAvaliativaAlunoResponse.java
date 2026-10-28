@@ -2,6 +2,7 @@ package com.sabia.pedagogico.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
 
 public record AtividadeAvaliativaAlunoResponse(
@@ -13,5 +14,7 @@ public record AtividadeAvaliativaAlunoResponse(
         LocalDateTime dataEntrega,
         boolean eGeradaIa,
         StatusAtividadeAluno status,
-        LocalDateTime criadaEm
+        LocalDateTime criadaEm,
+        ModoAtividade modo,
+        String cenarioJson
 ) {}

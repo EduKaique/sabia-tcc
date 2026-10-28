@@ -39,6 +39,20 @@ export const atividadeSchema = z.object({
       .optional()
   ),
   gabaritoEstadoJson: z.string().optional(),
+  modo: z.enum(["BLOCOS", "JOGO_ROBO"]).optional(),
+  presetCenario: z.string().optional(),
+  maxBlocos: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.coerce
+      .number({ invalid_type_error: "Informe um número inteiro" })
+      .int("Informe um número inteiro")
+      .min(1, "Mínimo 1 bloco")
+      .optional()
+  ),
+}).superRefine((data, ctx) => {
+  if (data.modo === "JOGO_ROBO" && !data.presetCenario) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["presetCenario"], message: "Escolha um cenário." });
+  }
 });
 
 export type AtividadeFormInput = z.input<typeof atividadeSchema>

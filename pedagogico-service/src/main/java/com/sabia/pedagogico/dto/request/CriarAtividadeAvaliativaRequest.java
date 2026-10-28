@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
+import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 
 public record CriarAtividadeAvaliativaRequest(
@@ -15,5 +16,7 @@ public record CriarAtividadeAvaliativaRequest(
         @NotNull Long turmaId,
         @Min(1) int pontuacaoMaxima,
         LocalDateTime dataEntrega,
-        String gabaritoEstadoJson
+        String gabaritoEstadoJson,
+        ModoAtividade modo,
+        String cenarioJson
 ) {}

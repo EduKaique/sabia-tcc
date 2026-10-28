@@ -27,9 +27,11 @@ import {
 interface Props {
   submissaoId: string
   atividadeId: number
+  /** Nota calculada pela simulação (Jogo do Robô). Só preenche o campo; a confirmação não muda. */
+  notaSugerida?: number
 }
 
-export function FormCorrecao({ submissaoId, atividadeId }: Props) {
+export function FormCorrecao({ submissaoId, atividadeId, notaSugerida }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const corrigir = useCorrigirSubmissao()
@@ -41,6 +43,7 @@ export function FormCorrecao({ submissaoId, atividadeId }: Props) {
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<CorrecaoFormInput, unknown, CorrecaoFormData>({
     resolver: zodResolver(correcaoSchema),
@@ -94,6 +97,23 @@ export function FormCorrecao({ submissaoId, atividadeId }: Props) {
               <p className="text-xs text-muted-foreground">
                 Pontuação máxima da atividade: {atividade.pontuacaoMaxima}
               </p>
+            )}
+            {notaSugerida !== undefined && (
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-muted-foreground">
+                  Nota sugerida pela simulação: {notaSugerida}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setValue('nota', String(notaSugerida), { shouldValidate: true, shouldDirty: true })
+                  }
+                >
+                  Usar nota sugerida
+                </Button>
+              </div>
             )}
             {errors.nota && <p className="text-xs text-destructive">{errors.nota.message}</p>}
           </div>

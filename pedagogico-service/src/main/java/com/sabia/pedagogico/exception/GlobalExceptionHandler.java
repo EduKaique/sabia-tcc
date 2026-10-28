@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(422, ex.getMessage()));
     }
 
+    @ExceptionHandler(CenarioInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleCenarioInvalido(CenarioInvalidoException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErroResponse.of(400, ex.getMessage()));
+    }
+
     @ExceptionHandler(ConflitoException.class)
     public ResponseEntity<ErroResponse> handleConflito(ConflitoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

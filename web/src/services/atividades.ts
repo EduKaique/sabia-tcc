@@ -1,5 +1,5 @@
 import api from '@/lib/pedagogicoApi'
-import type { AtividadeAvaliativa, AtividadeDetalhes, StatusAtividade } from '@/types'
+import type { AtividadeAvaliativa, AtividadeDetalhes, ModoAtividade, StatusAtividade } from '@/types'
 
 export interface CriarAtividadePayload {
   titulo: string
@@ -9,6 +9,8 @@ export interface CriarAtividadePayload {
   dataEntrega: string | undefined
   status: StatusAtividade
   gabaritoEstadoJson?: string
+  modo?: ModoAtividade
+  cenarioJson?: string
 }
 
 export async function listarAtividades(): Promise<AtividadeAvaliativa[]> {

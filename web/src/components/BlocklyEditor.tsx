@@ -5,6 +5,7 @@ import "blockly/blocks";
 import { javascriptGenerator, Order } from "blockly/javascript";
 import * as ptBr from "blockly/msg/pt-br";
 import { atributosCategoriaScratch, opcoesScratch, type CategoriaToolbox } from "@/lib/temaBlocklyScratch";
+import { registrarBlocosRobo } from "@/lib/blocosRobo";
 
 //@ts-expect-error ignorando tipagem do locale
 Blockly.setLocale(ptBr);
@@ -46,9 +47,13 @@ interface BlocklyEditorProps {
   tema?: "padrao" | "scratch";
   /** Recebe o workspace depois do inject (ex.: para fechar o flyout antes de abrir um modal). */
   workspaceExternoRef?: React.MutableRefObject<Blockly.WorkspaceSvg | null>;
+  /** Substitui a toolbox padrão (ex.: toolboxRobo). Lida só na criação do workspace. */
+  toolbox?: Blockly.utils.toolbox.ToolboxDefinition;
+  /** Opções do inject mescladas por último (ex.: maxBlocks). Lidas só na criação do workspace. */
+  opcoesExtras?: Blockly.BlocklyOptions;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, readOnly, onVariablePrompt, tema = "padrao", workspaceExternoRef }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, readOnly, onVariablePrompt, tema = "padrao", workspaceExternoRef, toolbox, opcoesExtras }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const onCodeChangeRef = useRef(onCodeChange);
@@ -57,6 +62,8 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
   const readOnlyRef = useRef(readOnly);
   const temaRef = useRef(tema);
   const workspaceExternoRefRef = useRef(workspaceExternoRef);
+  const toolboxRef = useRef(toolbox);
+  const opcoesExtrasRef = useRef(opcoesExtras);
 
   const [generatedCode, setGeneratedCode] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -76,12 +83,15 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
 
   useEffect(() => {
     const workspaceExterno = workspaceExternoRefRef.current;
+    // Registrados sempre (fora da toolbox padrão) para o modo somente leitura carregar estados do robô.
+    registrarBlocosRobo();
     if (!workspaceRef.current && blocklyDiv.current) {
       const opcoesComuns = {
         zoom: { controls: true, wheel: false, startScale: 1.25 },
         grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
         move: {wheel: true},
         ...(temaRef.current === "scratch" ? opcoesScratch : {}),
+        ...opcoesExtrasRef.current,
       };
       const cor = (categoria: CategoriaToolbox) =>
         temaRef.current === "scratch"
@@ -89,7 +99,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
           : `colour="${CORES_PADRAO[categoria]}"`;
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, readOnlyRef.current ? { ...opcoesComuns, readOnly: true } : {
-        toolbox: `
+        toolbox: toolboxRef.current ?? `
           <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
             <category name="Entrada/Saída" ${cor("entrada_saida")}>
               <block type="get_input"></block>

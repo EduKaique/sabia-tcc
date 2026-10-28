@@ -44,6 +44,13 @@ public class AtividadeAvaliativa {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String gabaritoEstadoJson;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ModoAtividade modo;
+
+    @Column(columnDefinition = "TEXT")
+    private String cenarioJson;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;
 
