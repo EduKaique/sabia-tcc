@@ -27,7 +27,11 @@ const paleta = {
   listas: { colourPrimary: '#FF661A', colourSecondary: '#FF5500', colourTertiary: '#E64D00' },
   variaveis: { colourPrimary: '#FF8C1A', colourSecondary: '#FF8000', colourTertiary: '#DB6E00' },
   meusBlocos: { colourPrimary: '#FF6680', colourSecondary: '#FF4D6A', colourTertiary: '#FF3355' },
+  robo: { colourPrimary: '#0F8B8D', colourSecondary: '#0C7A7C', colourTertiary: '#096668' },
 }
+
+/** Estilo dos blocos do robô; também registrado no tema padrão por `registrarBlocosRobo`. */
+export const estiloBlocosRobo = paleta.robo
 
 const corCategoria: Record<CategoriaToolbox, keyof typeof paleta> = {
   entrada_saida: 'sensores',
@@ -52,6 +56,7 @@ export const temaScratch = Blockly.Theme.defineTheme('sabia-scratch', {
     variable_blocks: paleta.variaveis,
     variable_dynamic_blocks: paleta.variaveis,
     procedure_blocks: paleta.meusBlocos,
+    robo_blocks: paleta.robo,
   },
   categoryStyles: Object.fromEntries(
     Object.entries(corCategoria).map(([categoria, cor]) => [
@@ -73,8 +78,6 @@ export const temaScratch = Blockly.Theme.defineTheme('sabia-scratch', {
     selectedGlowColour: '#FFF200',
     selectedGlowOpacity: 0.6,
   },
-  // Pilha de fontes de sistema (a mesma do Scratch): o Blockly mede o texto ao criar os blocos,
-  // e uma webfont ainda não carregada deixaria a largura errada.
   fontStyle: {
     family: '"Helvetica Neue", Helvetica, Arial, sans-serif',
     weight: 'bold',

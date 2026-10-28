@@ -6,9 +6,12 @@ import com.sabia.pedagogico.dto.response.AtividadeAvaliativaAlunoResponse;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaProfessorResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
+import com.sabia.pedagogico.exception.CenarioInvalidoException;
+import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
+import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
 import com.sabia.pedagogico.model.atividade.StatusSubmissao;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +41,7 @@ public class AtividadeAvaliativaService {
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final AtividadeAvaliativaMapper atividadeAvaliativaMapper;
     private final SubmissaoAvaliativaRepository submissaoAvaliativaRepository;
+    private final CenarioRoboValidador cenarioRoboValidador;
 
     // --------- PROFESSOR ---------
 
@@ -73,6 +78,8 @@ public class AtividadeAvaliativaService {
                 .pontuacaoMaxima(request.pontuacaoMaxima())
                 .status(request.status())
                 .gabaritoEstadoJson(request.gabaritoEstadoJson())
+                .modo(request.modo())
+                .cenarioJson(cenarioDoModo(request.modo(), request.cenarioJson()))
                 .build();
 
         atividade = atividadeRepository.save(atividade);
@@ -93,6 +100,18 @@ public class AtividadeAvaliativaService {
         if (request.pontuacaoMaxima() != null) atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
         if (request.dataEntrega() != null)    atividade.setDataEntrega(request.dataEntrega());
         if (request.gabaritoEstadoJson() != null)     atividade.setGabaritoEstadoJson(request.gabaritoEstadoJson());
+
+        if (request.modo() != null || request.cenarioJson() != null) {
+            var modo = request.modo() != null ? request.modo() : atividade.getModo();
+            var cenario = cenarioDoModo(modo,
+                    request.cenarioJson() != null ? request.cenarioJson() : atividade.getCenarioJson());
+            if (!mesmoCenario(atividade.getCenarioJson(), cenario)
+                    && submissaoAvaliativaRepository.existsByAtividadeId(atividadeId)) {
+                throw new ConflitoException("Não é possível alterar o cenário: a atividade já tem submissões.");
+            }
+            atividade.setModo(modo);
+            atividade.setCenarioJson(cenario);
+        }
 
         return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
     }
@@ -167,7 +186,9 @@ public class AtividadeAvaliativaService {
                 a.getId(), a.getTitulo(), a.getDescricao(),
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
                 a.getDataEntrega(), a.isEGeradaIa(),
-                statusAluno, a.getCriadaEm()
+                statusAluno, a.getCriadaEm(),
+                a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
+                a.getCenarioJson()
         );
     }
 
@@ -178,6 +199,20 @@ public class AtividadeAvaliativaService {
     }
 
     // --------- helpers ---------
+
+    private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
+        if (modo != ModoAtividade.JOGO_ROBO) return null;
+        if (cenarioJson == null || cenarioJson.isBlank()) {
+            throw new CenarioInvalidoException("Atividades no modo Jogo do Robô precisam de um cenário.");
+        }
+        cenarioRoboValidador.validar(cenarioJson);
+        return cenarioJson;
+    }
+
+    private boolean mesmoCenario(String atual, String novo) {
+        if (atual == null || novo == null) return Objects.equals(atual, novo);
+        return cenarioRoboValidador.ler(atual).equals(cenarioRoboValidador.ler(novo));
+    }
 
     private AtividadeAvaliativa validarProprietario(Long professorId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
