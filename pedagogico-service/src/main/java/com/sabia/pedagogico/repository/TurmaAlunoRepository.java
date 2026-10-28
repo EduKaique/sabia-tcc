@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface TurmaAlunoRepository extends JpaRepository<TurmaAluno, Long> {
     List<TurmaAluno> findByAlunoId(Long alunoId);
+    List<TurmaAluno> findByTurmaId(Long turmaId);
     boolean existsByTurmaIdAndAlunoId(Long turmaId, Long alunoId);
     long countByTurmaId(Long turmaId);
     List<TurmaAluno> findByTurmaIdOrderByIngressoEmDesc(Long turmaId);

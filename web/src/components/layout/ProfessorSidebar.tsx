@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BookOpen, LogOut, Users } from 'lucide-react'
+import { BarChart3, BookOpen, LogOut, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 
 const navItems = [
   { href: '/professor/atividades', label: 'Atividades', icon: BookOpen },
   { href: '/professor/turmas', label: 'Turmas', icon: Users },
+  { href: '/professor/relatorios', label: 'Relatórios', icon: BarChart3 },
 ]
 
 export function ProfessorSidebar() {
