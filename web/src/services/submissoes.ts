@@ -7,6 +7,8 @@ import type {
   SubmissaoProfessorDetalhe,
 } from '@/types'
 
+import type { RelatorioProfessor, RelatorioRequest } from '@/types'
+
 export async function listarSubmissoes(
   atividadeId: string,
   page = 0,
@@ -31,5 +33,21 @@ export async function corrigirSubmissao(
     `/api/professor/submissoes/${id}/corrigir`,
     payload,
   )
+  return data
+}
+
+export async function buscarRelatorioProfessor(
+  request: RelatorioRequest = {},
+): Promise<RelatorioProfessor> {
+  const { data } = await api.get<RelatorioProfessor>('/api/professor/relatorio', {
+    params: {
+      tipo: request.tipo,
+      turmaId: request.turmaId,
+      atividadeId: request.atividadeId,
+      dataInicio: request.dataInicio,
+      dataFim: request.dataFim,
+      incluirDetalhes: request.incluirDetalhes ?? true,
+    },
+  })
   return data
 }
