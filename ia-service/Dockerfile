@@ -8,8 +8,16 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
+RUN groupadd -r -g 1001 sabia && useradd -r -u 1001 -g sabia sabia
+
+COPY --chown=sabia:sabia app ./app
+
+USER sabia
 
 EXPOSE 8002
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+# Sem curl/wget na imagem slim: checagem via Python.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8002/health', timeout=4).status == 200 else 1)"
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--workers", "1"]

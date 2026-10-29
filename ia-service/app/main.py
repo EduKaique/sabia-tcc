@@ -7,7 +7,13 @@ from app.routes.revisao import create_revisao_router
 from app.services.atividade import AtividadeService
 from app.services.revisao import RevisaoService
 
-app = FastAPI(title="Sabiá - Serviço de IA", version="0.1.0")
+app = FastAPI(
+    title="Sabiá - Serviço de IA",
+    version="0.1.0",
+    docs_url="/docs" if settings.docs_enabled else None,
+    redoc_url="/redoc" if settings.docs_enabled else None,
+    openapi_url="/openapi.json" if settings.docs_enabled else None,
+)
 gemini_client = GeminiClient(
     api_key=settings.gemini_api_key,
     model=settings.gemini_model,
