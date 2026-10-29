@@ -1,6 +1,7 @@
+import { API_URL } from '@/lib/apiBase'
 import { ErroRequisicao, erroDaResposta, erroDeRede } from '@/lib/erroRequisicao'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL
+const BASE = API_URL
 
 export const MENSAGEM_CODIGO_INVALIDO = 'Código de turma inválido. Verifique com seu professor.'
 export const FORMATO_CODIGO = /^[A-Z0-9]{6}$/
