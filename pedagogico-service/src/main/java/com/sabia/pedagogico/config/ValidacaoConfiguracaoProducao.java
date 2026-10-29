@@ -29,7 +29,9 @@ public class ValidacaoConfiguracaoProducao implements EnvironmentPostProcessor, 
         List<String> faltando = new ArrayList<>();
         exigir(env, faltando, "JWT_SECRET");
         exigir(env, faltando, "SPRING_DATASOURCE_PASSWORD", "DB_PASS");
-        exigir(env, faltando, "RABBITMQ_PASS");
+        if (!"false".equalsIgnoreCase(env.getProperty("RABBITMQ_ENABLED", "true").trim())) {
+            exigir(env, faltando, "RABBITMQ_PASS");
+        }
         if (!faltando.isEmpty()) {
             throw new IllegalStateException(
                     "Variáveis obrigatórias no profile prod não definidas: " + String.join(", ", faltando));

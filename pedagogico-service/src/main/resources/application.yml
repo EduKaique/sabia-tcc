@@ -42,6 +42,9 @@ sabia:
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
     mensageria:
+        # false: não conecta nem declara topologia no RabbitMQ (ele ainda não é usado
+        # por nenhum fluxo); em prod dispensa RABBITMQ_PASS.
+        rabbitmq-enabled: ${RABBITMQ_ENABLED:true}
         correcoes:
             exchange: sabia.correcoes.exchange
             fila: sabia.correcoes.solicitadas.queue
