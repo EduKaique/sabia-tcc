@@ -8,7 +8,9 @@ export function salvarToken(token: string) {
   Cookies.set("sabia_token", token, {
     expires: 1,
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    // Pelo protocolo real: acessado por HTTP (antes do certificado), um cookie secure
+    // não seria gravado e o login entraria em loop.
+    secure: typeof window !== "undefined" && window.location.protocol === "https:",
   });
 }
 
