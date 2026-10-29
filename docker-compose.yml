@@ -122,6 +122,7 @@ services:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
+      target: dev
     container_name: sabia_api_gateway
     restart: unless-stopped
     environment:

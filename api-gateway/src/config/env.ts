@@ -22,7 +22,7 @@ function jwtSecret(): string {
 }
 
 export const env = {
-  PORT: Number(process.env.GATEWAY_PORT) || 3000,
+  PORT: Number(process.env.GATEWAY_PORT) || 8000,
   JWT_SECRET: jwtSecret(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
   upstreams: {
