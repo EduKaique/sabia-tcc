@@ -1,0 +1,29 @@
+# Só HTTP (porta 80), para o smoke test antes do certificado ou em contingência.
+# Em HTTP o clipboard do navegador e o cookie Secure não funcionam, e o token trafega
+# sem criptografia: não use com alunos.
+:80 {
+	encode zstd gzip
+
+	request_body {
+		max_size 5MB
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	handle /api/health {
+		rewrite * /health
+		reverse_proxy api-gateway:8000
+	}
+
+	handle /api/* {
+		reverse_proxy api-gateway:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
