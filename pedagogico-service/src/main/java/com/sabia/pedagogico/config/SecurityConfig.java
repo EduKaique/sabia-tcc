@@ -30,6 +30,7 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/health",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
