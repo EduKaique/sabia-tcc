@@ -22,7 +22,7 @@ cd auth-service
 ./mvnw spring-boot:run
 ```
 
-Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `password`
+Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `senha123`
 
 | E-mail | Perfil |
 |---|---|
