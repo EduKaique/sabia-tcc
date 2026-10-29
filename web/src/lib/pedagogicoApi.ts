@@ -1,7 +1,8 @@
 import axios from "axios";
+import { PEDAGOGICO_API_URL } from "@/lib/apiBase";
 
 const pedagogicoApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_PEDAGOGICO_API_URL ?? "http://localhost:3000/api/pedagogico",
+  baseURL: PEDAGOGICO_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
