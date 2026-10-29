@@ -1,0 +1,40 @@
+# Produção: HTTPS por IP com certificado do Let's Encrypt (perfil "shortlived", ~6 dias,
+# renovado automaticamente). Exige as portas 80 e 443 alcançáveis da internet.
+# Primeiro teste: ACME_CA=https://acme-staging-v02.api.letsencrypt.org/directory
+{$SITE_ADDRESS} {
+	# Emissor explícito: sem ele, o Caddy usaria a CA interna para um endereço IP.
+	tls {
+		issuer acme {
+			dir {$ACME_CA:https://acme-v02.api.letsencrypt.org/directory}
+			profile shortlived
+		}
+	}
+
+	encode zstd gzip
+
+	request_body {
+		max_size 5MB
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		# HSTS curto, sem preload: permite voltar ao HTTP em contingência.
+		Strict-Transport-Security "max-age=3600"
+		-Server
+	}
+
+	# Health público: o /health do gateway fica fora de /api/*.
+	handle /api/health {
+		rewrite * /health
+		reverse_proxy api-gateway:8000
+	}
+
+	handle /api/* {
+		reverse_proxy api-gateway:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
