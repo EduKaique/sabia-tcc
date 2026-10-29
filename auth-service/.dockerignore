@@ -1,0 +1,24 @@
+# Build/dependências locais
+target
+node_modules
+dist
+venv
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+
+# Segredos e configuração local
+.env
+.env.*
+
+# VCS, logs e IDE
+.git
+.gitignore
+*.log
+.idea
+.vscode
+*.iml
+
+Dockerfile
+.dockerignore
