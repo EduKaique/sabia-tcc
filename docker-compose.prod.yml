@@ -1,0 +1,173 @@
+# Produção: só imagens do GHCR (o build nunca acontece no servidor).
+# Use pelos scripts em deploy/ (deploy.sh, backup.sh...), que passam o .env.prod.
+# Somente o caddy publica portas. O api-gateway usa trustProxy: NUNCA publique-o.
+name: sabia-prod
+
+x-comum: &comum
+  restart: unless-stopped
+  init: true
+  networks: [backend]
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+# Herda o comando de healthcheck da imagem; só acelera a primeira verificação.
+x-health-rapido: &health-rapido
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 90s
+  start_interval: 5s
+
+x-java-env: &java-env
+  SPRING_PROFILES_ACTIVE: prod
+  JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k}
+  SPRING_DATASOURCE_USERNAME: sabia
+  SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env.prod}
+  SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
+  JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env.prod (openssl rand -base64 48)}
+  JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
+  CORS_ORIGINS: ${CORS_ORIGINS:?defina CORS_ORIGINS (https://<IP>)}
+
+services:
+  caddy:
+    <<: *comum
+    image: caddy:2.11.7-alpine
+    mem_limit: ${MEM_CADDY:-64m}
+    ports:
+      - "80:80"
+      - "443:443/tcp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?defina SITE_ADDRESS (o IP público do servidor)}
+      ACME_CA: ${ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}
+    volumes:
+      # CADDYFILE=Caddyfile.http só para smoke test/contingência em HTTP.
+      - ./deploy/${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/config/"]
+      <<: *health-rapido
+      start_period: 20s
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
+  web:
+    <<: *comum
+    image: ${REGISTRY:-ghcr.io/edukaique}/sabia-web:${IMAGE_TAG:?defina IMAGE_TAG}
+    mem_limit: ${MEM_WEB:-384m}
+    healthcheck:
+      <<: *health-rapido
+      start_period: 30s
+
+  api-gateway:
+    <<: *comum
+    image: ${REGISTRY:-ghcr.io/edukaique}/sabia-api-gateway:${IMAGE_TAG:?defina IMAGE_TAG}
+    mem_limit: ${MEM_GATEWAY:-160m}
+    environment:
+      NODE_ENV: production
+      GATEWAY_PORT: "8000"
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env.prod (openssl rand -base64 48)}
+      CORS_ORIGINS: ${CORS_ORIGINS:?defina CORS_ORIGINS (https://<IP>)}
+      AUTH_URL: http://auth-service:8080
+      PEDAGOGICO_URL: http://pedagogico-service:8081
+      IA_URL: http://ia-service:8002
+    healthcheck:
+      <<: *health-rapido
+      start_period: 20s
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      pedagogico-service:
+        condition: service_healthy
+      ia-service:
+        condition: service_healthy
+
+  auth-service:
+    <<: *comum
+    image: ${REGISTRY:-ghcr.io/edukaique}/sabia-auth-service:${IMAGE_TAG:?defina IMAGE_TAG}
+    mem_limit: ${MEM_AUTH:-640m}
+    environment:
+      <<: *java-env
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=auth
+      PEDAGOGICO_URL: http://pedagogico-service:8081
+      FRONTEND_RECUPERAR_SENHA_URL: ${FRONTEND_RECUPERAR_SENHA_URL:?defina FRONTEND_RECUPERAR_SENHA_URL (https://<IP>/redefinir-senha)}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
+      EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SABIA_ADMIN_EMAIL: ${SABIA_ADMIN_EMAIL:?defina SABIA_ADMIN_EMAIL}
+      SABIA_ADMIN_SENHA: ${SABIA_ADMIN_SENHA:?defina SABIA_ADMIN_SENHA (12+ caracteres)}
+      SABIA_ADMIN_NOME: ${SABIA_ADMIN_NOME:-Administrador}
+      SABIA_ADMIN_CPF: ${SABIA_ADMIN_CPF:-}
+      SABIA_PROFESSOR_EMAIL: ${SABIA_PROFESSOR_EMAIL:?defina SABIA_PROFESSOR_EMAIL}
+      SABIA_PROFESSOR_SENHA: ${SABIA_PROFESSOR_SENHA:?defina SABIA_PROFESSOR_SENHA (12+ caracteres)}
+      SABIA_PROFESSOR_NOME: ${SABIA_PROFESSOR_NOME:-Professor}
+      SABIA_PROFESSOR_CPF: ${SABIA_PROFESSOR_CPF:-}
+    healthcheck:
+      <<: *health-rapido
+    depends_on:
+      database:
+        condition: service_healthy
+
+  pedagogico-service:
+    <<: *comum
+    image: ${REGISTRY:-ghcr.io/edukaique}/sabia-pedagogico-service:${IMAGE_TAG:?defina IMAGE_TAG}
+    mem_limit: ${MEM_PEDAGOGICO:-640m}
+    environment:
+      <<: *java-env
+      SERVER_PORT: "8081"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=pedagogico
+      # Sem RabbitMQ em produção (ainda não é usado por nenhum fluxo).
+      RABBITMQ_ENABLED: "false"
+    healthcheck:
+      <<: *health-rapido
+    depends_on:
+      database:
+        condition: service_healthy
+
+  ia-service:
+    <<: *comum
+    image: ${REGISTRY:-ghcr.io/edukaique}/sabia-ia-service:${IMAGE_TAG:?defina IMAGE_TAG}
+    mem_limit: ${MEM_IA:-192m}
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?defina GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_TIMEOUT_SECONDS: ${GEMINI_TIMEOUT_SECONDS:-45}
+    healthcheck:
+      <<: *health-rapido
+      start_period: 20s
+
+  database:
+    <<: *comum
+    image: postgres:16.15-alpine
+    mem_limit: ${MEM_DATABASE:-384m}
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40"]
+    environment:
+      POSTGRES_DB: sabia
+      # 01-init.sql cria os schemas para o role "sabia": não mude o usuário.
+      POSTGRES_USER: sabia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env.prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabia -d sabia"]
+      <<: *health-rapido
+      start_period: 30s
+
+networks:
+  backend:
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
