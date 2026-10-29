@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Calendar, Star, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { sanitizarHtml } from '@/lib/sanitizarHtml'
 import { fredoka } from '@/lib/fontesHome'
 import { botaoPrincipal, cartao, linkDiscreto } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
@@ -46,7 +47,7 @@ export function PainelDetalhe({ atividade }: Props) {
         <h2 className={cn(fredoka.className, 'mb-3 text-lg font-bold text-tinta')}>Descrição</h2>
         <div
           className="prose prose-sm max-w-none text-tinta"
-          dangerouslySetInnerHTML={{ __html: atividade.descricao }}
+          dangerouslySetInnerHTML={{ __html: sanitizarHtml(atividade.descricao) }}
         />
       </section>
 
