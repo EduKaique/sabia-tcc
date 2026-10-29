@@ -4,9 +4,9 @@ spring:
     profiles:
         active: ${SPRING_PROFILES_ACTIVE:dev}
     datasource:
-        url: ${DB_URL:jdbc:postgresql://localhost:5433/sabia?currentSchema=pedagogico}
-        username: ${DB_USER:sabia}
-        password: ${DB_PASS:sabia}
+        url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:postgresql://localhost:5433/sabia?currentSchema=pedagogico}}
+        username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:sabia}}
+        password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASS:sabia}}
         driver-class-name: org.postgresql.Driver
     rabbitmq:
         host: ${RABBITMQ_HOST:localhost}

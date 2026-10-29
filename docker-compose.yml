@@ -82,6 +82,9 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8081
       RABBITMQ_HOST: rabbitmq
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - "8081:8081"
 
