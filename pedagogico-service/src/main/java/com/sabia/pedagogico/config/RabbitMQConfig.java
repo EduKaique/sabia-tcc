@@ -12,12 +12,14 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
+@ConditionalOnProperty(name = "sabia.mensageria.rabbitmq-enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MensageriaProperties.class)
 public class RabbitMQConfig {
 

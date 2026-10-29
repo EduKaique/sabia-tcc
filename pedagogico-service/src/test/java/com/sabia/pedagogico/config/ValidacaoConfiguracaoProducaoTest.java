@@ -56,6 +56,28 @@ class ValidacaoConfiguracaoProducaoTest {
                 .hasMessageContaining("RABBITMQ_PASS");
     }
 
+    @Test
+    void rabbitDesligadoDispensaSenhaDoRabbit() {
+        MockEnvironment env = prod()
+                .withProperty("JWT_SECRET", SEGREDO_FORTE)
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("RABBITMQ_ENABLED", "false");
+
+        assertThatCode(() -> ValidacaoConfiguracaoProducao.validar(env)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void rabbitLigadoExplicitamenteExigeSenhaDoRabbit() {
+        MockEnvironment env = prod()
+                .withProperty("JWT_SECRET", SEGREDO_FORTE)
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("RABBITMQ_ENABLED", "true");
+
+        assertThatThrownBy(() -> ValidacaoConfiguracaoProducao.validar(env))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("RABBITMQ_PASS");
+    }
+
     private static MockEnvironment prod() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("prod");
