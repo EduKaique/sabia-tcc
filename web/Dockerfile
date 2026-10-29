@@ -2,7 +2,8 @@ FROM node:22-alpine AS dev
 
 ENV CI=true
 
-RUN corepack enable pnpm
+# Mesma versão que gerou o pnpm-lock.yaml.
+RUN corepack enable pnpm && corepack prepare pnpm@11.9.0 --activate
 
 WORKDIR /app
 
@@ -19,7 +20,8 @@ FROM node:22-alpine AS deps
 
 ENV CI=true
 
-RUN corepack enable pnpm
+# Mesma versão que gerou o pnpm-lock.yaml.
+RUN corepack enable pnpm && corepack prepare pnpm@11.9.0 --activate
 
 WORKDIR /app
 
