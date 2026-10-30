@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Só valida/lê tokens emitidos pelo módulo {@code api} (Serviço de Autenticação) — este
  * serviço nunca emite JWT. Não depende de nenhuma entidade Usuario/repositório: o próprio
- * token já carrega {@code sub} (id do usuário) e a claim {@code perfil}.
+ * token já carrega {@code sub} (id do usuário) e a claim {@code role}.
  */
 @Component
 @RequiredArgsConstructor
@@ -39,8 +39,8 @@ public class JwtTokenReader {
         return Long.parseLong(extractClaims(token).getSubject());
     }
 
-    public String extractPerfil(String token) {
-        return extractClaims(token).get("perfil", String.class);
+    public String extractRole(String token) {
+        return extractClaims(token).get("role", String.class);
     }
 
     public String extractNome(String token) {

@@ -118,7 +118,7 @@ class PrimeiroAcessoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.tipo").value("Bearer"))
-                .andExpect(jsonPath("$.perfil").value("ALUNO"))
+                .andExpect(jsonPath("$.role").value("ALUNO"))
                 .andExpect(jsonPath("$.nome").value("Maria Souza"))
                 .andExpect(jsonPath("$.mustChangePassword").value(false))
                 .andExpect(jsonPath("$.turma.nome").value("Programação I — 2025/1"))
@@ -143,7 +143,7 @@ class PrimeiroAcessoControllerTest {
         assertThat(jwtTokenProvider.extractUserId(token)).isEqualTo(usuario.getId());
         mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.perfil").value("ALUNO"));
+                .andExpect(jsonPath("$.role").value("ALUNO"));
     }
 
     @Test
@@ -277,7 +277,7 @@ class PrimeiroAcessoControllerTest {
                                 .put("login", "2026a100")
                                 .put("senha", "senhaForte1").toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.perfil").value("ALUNO"));
+                .andExpect(jsonPath("$.role").value("ALUNO"));
     }
 
     @Test

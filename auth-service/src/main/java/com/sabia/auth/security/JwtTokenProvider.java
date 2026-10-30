@@ -32,7 +32,7 @@ public class JwtTokenProvider {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(usuario.getId().toString())
-                .claim("perfil", usuario.getTipoPerfil().name())
+                .claim("role", usuario.getTipoPerfil().name())
                 .claim("nome", usuario.getNome())
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + jwtProperties.expirationMs()))
@@ -45,7 +45,7 @@ public class JwtTokenProvider {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(SUB_SISTEMA)
-                .claim("perfil", PERFIL_SISTEMA)
+                .claim("role", PERFIL_SISTEMA)
                 .claim("nome", "auth-service")
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + VALIDADE_TOKEN_SERVICO_MS))
@@ -54,7 +54,7 @@ public class JwtTokenProvider {
     }
 
     public boolean isServiceToken(Claims claims) {
-        return PERFIL_SISTEMA.equals(claims.get("perfil", String.class));
+        return PERFIL_SISTEMA.equals(claims.get("role", String.class));
     }
 
     public Long extractUserId(String token) {

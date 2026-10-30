@@ -21,6 +21,12 @@ const proxyRoutes: ProxyRoute[] = [
     rewritePrefix: '/api/auth',
   },
   {
+    upstream: process.env.AUTH_URL || 'http://localhost:8080',
+    prefix: '/api/admin',
+    rewritePrefix: '/api/admin',
+    roles: ['ADMINISTRADOR'],
+  },
+  {
     upstream: process.env.PEDAGOGICO_URL || 'http://localhost:8081',
     prefix: '/api/pedagogico',
     rewritePrefix: '/',

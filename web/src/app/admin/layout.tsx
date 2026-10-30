@@ -1,0 +1,13 @@
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { AdminSidebar } from '@/components/layout/AdminSidebar'
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthGuard allowedRoles={['ADMINISTRADOR']}>
+      <div className="flex min-h-screen bg-background">
+        <AdminSidebar />
+        <main className="flex-1 overflow-auto">{children}</main>
+      </div>
+    </AuthGuard>
+  )
+}
