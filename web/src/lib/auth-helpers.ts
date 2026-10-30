@@ -23,7 +23,7 @@ export function redirecionarPorPerfil(
   data: LoginResponse,
   router: { push: (path: string) => void }
 ) {
-  switch (data.perfil) {
+  switch (data.role) {
     case "PROFESSOR":
       router.push("/professor/atividades");
       break;
@@ -31,7 +31,7 @@ export function redirecionarPorPerfil(
       router.push("/aluno/atividades");
       break;
     case "ADMINISTRADOR":
-      router.push("/admin/dashboard");
+      router.push("/admin/professores");
       break;
   }
 }

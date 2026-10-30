@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabia.auth.model.recuperacaosenha.TokenRecuperacaoSenha;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.repository.AlunoRepository;
+import com.sabia.auth.repository.ProfessorRepository;
 import com.sabia.auth.repository.TokenRecuperacaoSenhaRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import com.sabia.auth.service.email.EmailService;
@@ -47,6 +49,10 @@ class RecuperacaoSenhaControllerTest {
     @Autowired
     private TokenRecuperacaoSenhaRepository tokenRepository;
     @Autowired
+    private AlunoRepository alunoRepository;
+    @Autowired
+    private ProfessorRepository professorRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
@@ -59,6 +65,8 @@ class RecuperacaoSenhaControllerTest {
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         tokenRepository.deleteAll();
+        alunoRepository.deleteAll();
+        professorRepository.deleteAll();
         usuarioRepository.deleteAll();
         usuarioRepository.save(Usuario.builder()
                 .nome("Ana Professora")

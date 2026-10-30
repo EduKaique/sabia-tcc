@@ -3,6 +3,8 @@ package com.sabia.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.repository.AlunoRepository;
+import com.sabia.auth.repository.ProfessorRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,10 @@ class TrocarSenhaControllerTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
+    private AlunoRepository alunoRepository;
+    @Autowired
+    private ProfessorRepository professorRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private final ObjectMapper json = new ObjectMapper();
@@ -41,6 +47,8 @@ class TrocarSenhaControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+        alunoRepository.deleteAll();
+        professorRepository.deleteAll();
         usuarioRepository.deleteAll();
         Usuario usuario = usuarioRepository.save(Usuario.builder()
                 .nome("Ana Professora")

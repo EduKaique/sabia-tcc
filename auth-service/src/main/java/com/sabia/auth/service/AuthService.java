@@ -8,6 +8,7 @@ import com.sabia.auth.exception.SenhaAtualIncorretaException;
 import com.sabia.auth.exception.SenhaDivergenteException;
 import com.sabia.auth.model.usuario.Aluno;
 import com.sabia.auth.model.usuario.PerfilUsuario;
+import com.sabia.auth.exception.UsuarioInativoException;
 import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
@@ -43,6 +44,9 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
             throw new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS);
+        }
+        if (!usuario.isAtivo()) {
+            throw new UsuarioInativoException();
         }
 
         String token = jwtTokenProvider.generateToken(usuario);
@@ -80,9 +84,19 @@ public class AuthService {
      * Verifica a assinatura e a validade de um token JWT. Usado pelo API Gateway
      * como alternativa ao segredo HMAC compartilhado.
      */
+    @Transactional(readOnly = true)
     public ValidateResponse validar(String token) {
         try {
             Claims claims = jwtTokenProvider.extractClaims(token);
+            Long usuarioId = Long.valueOf(claims.getSubject());
+
+            boolean ativo = usuarioRepository.findById(usuarioId)
+                    .map(Usuario::isAtivo)
+                    .orElse(false);
+            if (!ativo) {
+                return ValidateResponse.invalido();
+            }
+
             if (jwtTokenProvider.isServiceToken(claims)) {
                 // Token de serviço não é sessão de usuário.
                 return ValidateResponse.invalido();
@@ -90,7 +104,7 @@ public class AuthService {
             return new ValidateResponse(
                     true,
                     Long.valueOf(claims.getSubject()),
-                    claims.get("perfil", String.class),
+                    claims.get("role", String.class),
                     claims.get("nome", String.class),
                     claims.getExpiration().toInstant()
             );

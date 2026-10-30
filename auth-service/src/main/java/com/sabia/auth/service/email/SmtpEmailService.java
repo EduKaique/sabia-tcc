@@ -46,4 +46,30 @@ public class SmtpEmailService implements EmailService {
             log.error("Falha ao enviar e-mail de recuperação de senha para <{}>", destinatario, e);
         }
     }
+
+    @Override
+    public void enviarSenhaTemporaria(String destinatario, String nome, String senhaTemporaria) {
+        SimpleMailMessage mensagem = new SimpleMailMessage();
+        mensagem.setFrom(remetente);
+        mensagem.setTo(destinatario);
+        mensagem.setSubject("Sabiá — Sua conta de professor foi criada");
+        mensagem.setText("""
+                Olá, %s!
+
+                Uma conta de professor foi criada para você no Sabiá.
+                Use a senha temporária abaixo para o seu primeiro acesso — você será obrigado
+                a trocá-la assim que fizer login:
+
+                %s
+
+                Se você não esperava este e-mail, entre em contato com a administração da instituição.
+                """.formatted(nome, senhaTemporaria));
+
+        try {
+            mailSender.send(mensagem);
+            log.info("E-mail com senha temporária enviado para <{}>", destinatario);
+        } catch (MailException e) {
+            log.error("Falha ao enviar e-mail com senha temporária para <{}>", destinatario, e);
+        }
+    }
 }

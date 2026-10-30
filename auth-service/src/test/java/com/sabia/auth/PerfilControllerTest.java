@@ -5,6 +5,7 @@ import com.sabia.auth.model.usuario.Aluno;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.repository.AlunoRepository;
+import com.sabia.auth.repository.ProfessorRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,8 @@ class PerfilControllerTest {
     @Autowired
     private AlunoRepository alunoRepository;
     @Autowired
+    private ProfessorRepository professorRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private final ObjectMapper json = new ObjectMapper();
@@ -47,6 +50,7 @@ class PerfilControllerTest {
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         alunoRepository.deleteAll();
+        professorRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         Usuario aluno = usuarioRepository.save(Usuario.builder()

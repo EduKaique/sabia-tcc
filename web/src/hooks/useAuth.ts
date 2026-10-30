@@ -5,7 +5,7 @@ import { useSyncExternalStore, useMemo } from "react";
 interface AuthUser {
   id: string;
   nome: string;
-  perfil: "PROFESSOR" | "ALUNO";
+  role: "PROFESSOR" | "ALUNO" | "ADMINISTRADOR";
 }
 
 const subscribe = (listener: () => void) => {
@@ -25,7 +25,7 @@ export function useAuth() {
 
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      return { id: payload.sub, nome: payload.nome, perfil: payload.perfil };
+      return { id: payload.sub, nome: payload.nome, role: payload.role };
     } catch {
       return null;
     }

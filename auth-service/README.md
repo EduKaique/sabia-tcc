@@ -7,9 +7,9 @@ do Sabiá — os demais serviços e o API Gateway apenas **validam**.
 | | |
 |---|---|
 | Stack | Java 21 · Spring Boot 4 · Spring Security · Spring Data JPA |
-| Porta | `8081` |
-| Banco | PostgreSQL compartilhado — schema `auth` |
-| Docs | `http://localhost:8081/swagger-ui.html` |
+| Porta | `8080` |
+| Banco | PostgreSQL — **Auth DB** (`sabia_auth`), isolado do monólito |
+| Docs | `http://localhost:8080/swagger-ui.html` |
 
 ## Rodar localmente
 
@@ -42,14 +42,21 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `pas
 | `POST` | `/api/auth/trocar-senha` | Bearer | Troca obrigatória de senha (quando `mustChangePassword=true`) |
 | `PUT` | `/api/auth/perfil` | Bearer | Aluno completa o perfil (nome, CPF, matrícula, avatar) |
 | `GET` | `/api/auth/perfil/status` | Bearer | `{ perfilCompleto }` do usuário autenticado |
+| `GET` | `/api/admin/professores` | Bearer (ADMINISTRADOR) | Lista professores, com filtro opcional `?ativo=true\|false` |
+| `POST` | `/api/admin/professores` | Bearer (ADMINISTRADOR) | Cadastra professor com senha temporária (e-mail mock em dev) |
+| `PATCH` | `/api/admin/professores/{id}/desativar` | Bearer (ADMINISTRADOR) | Soft delete — bloqueia login e derruba sessões ativas na hora |
+| `PATCH` | `/api/admin/professores/{id}/reativar` | Bearer (ADMINISTRADOR) | Devolve o acesso do professor |
 | `GET` | `/api/health` | pública | Health check |
 
 ### `POST /api/auth/login`
 ```jsonc
 // 200
-{ "token": "eyJ...", "tipo": "Bearer", "perfil": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
+{ "token": "eyJ...", "tipo": "Bearer", "role": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
 // 401 — mensagem genérica (não revela qual campo falhou)
 { "status": 401, "erro": "E-mail ou senha incorretos", "timestamp": "..." }
+
+// 403 — credenciais corretas, mas a conta foi desativada pelo admin
+{ "status": 403, "erro": "Usuário inativo.", "timestamp": "..." }
 ```
 Se `mustChangePassword=true` (ex.: senha gerada pelo admin), o front deve barrar o acesso ao
 dashboard e forçar a chamada de `POST /api/auth/trocar-senha` antes de liberar o resto da app.
@@ -57,7 +64,7 @@ dashboard e forçar a chamada de `POST /api/auth/trocar-senha` antes de liberar 
 ### `GET /api/auth/me`
 ```jsonc
 // 200
-{ "id": 2, "nome": "Ana Professora", "email": "professor@sabia.edu", "perfil": "PROFESSOR" }
+{ "id": 2, "nome": "Ana Professora", "email": "professor@sabia.edu", "role": "PROFESSOR" }
 ```
 
 ### `POST /api/auth/esqueci-senha`
@@ -134,6 +141,47 @@ Pedagógico — o front combina os dois status antes de liberar o dashboard do a
 ```
 Para PROFESSOR/ADMINISTRADOR sempre retorna `perfilCompleto: true` (não há perfil a completar).
 
+### `GET /api/admin/professores` (Bearer, apenas ADMINISTRADOR)
+```jsonc
+// GET /api/admin/professores?ativo=true   (o filtro é opcional; sem ele, lista todos)
+
+// 200
+[ { "id": 2, "nome": "Ana Professora", "cpf": "12345678901", "email": "professor@sabia.edu",
+    "ativo": true, "mustChangePassword": false } ]
+```
+
+### `POST /api/admin/professores` (Bearer, apenas ADMINISTRADOR)
+```jsonc
+// body
+{ "nomeCompleto": "Novo Professor", "cpf": "11111111111", "email": "novo.professor@sabia.edu" }
+
+// 201
+{ "id": 10, "nome": "Novo Professor", "cpf": "11111111111", "email": "novo.professor@sabia.edu",
+  "ativo": true, "mustChangePassword": true }
+
+// 409 — CPF ou e-mail já usados por outro usuário
+{ "status": 409, "erro": "CPF já cadastrado.", "timestamp": "..." }
+{ "status": 409, "erro": "E-mail já cadastrado.", "timestamp": "..." }
+```
+Gera uma senha temporária aleatória (nunca retornada na resposta), salva com BCrypt, seta
+`mustChangePassword = true` e envia a senha por e-mail via `EmailService` (mesmo mecanismo
+`dev`/`smtp` do fluxo de recuperação de senha). A conta herda a `instituicao` do admin logado.
+
+### `PATCH /api/admin/professores/{id}/desativar` e `/reativar` (Bearer, apenas ADMINISTRADOR)
+```jsonc
+// 200
+{ "mensagem": "Professor desativado com sucesso." }
+{ "mensagem": "Professor reativado com sucesso." }
+
+// 404 — id não existe ou não é um professor
+{ "status": 404, "erro": "Professor não encontrado.", "timestamp": "..." }
+```
+É soft delete: só alterna `Usuario.ativo`, nunca apaga o registro (turmas e atividades do
+professor, que vivem no Serviço Pedagógico, continuam intactas). Um professor desativado:
+não consegue mais logar (`403 Usuário inativo.`) e qualquer token JWT que ele já tivesse
+para de funcionar imediatamente — o `JwtAuthFilter` recarrega o usuário do banco a cada
+requisição e recusa quem está inativo.
+
 ---
 
 ## Contrato de validação de token para o API Gateway
@@ -143,7 +191,7 @@ O token é um **JWT HS256**. Estrutura das claims:
 | Claim | Conteúdo |
 |---|---|
 | `sub` | id do usuário (numérico, como string) |
-| `perfil` | `ADMINISTRADOR` \| `PROFESSOR` \| `ALUNO` |
+| `role` | `ADMINISTRADOR` \| `PROFESSOR` \| `ALUNO` |
 | `nome` | nome do usuário |
 | `iat` / `exp` | emissão / expiração (padrão: 8h — `JWT_EXPIRATION_MS`) |
 
@@ -158,7 +206,7 @@ Todos os serviços e o Gateway compartilham a variável **`JWT_SECRET`** (a mesm
 2. verifica a assinatura HS256 com `JWT_SECRET`;
 3. rejeita com **401** se assinatura inválida ou `exp` no passado;
 4. repassa a requisição adicionando headers de identidade para os serviços downstream:
-   `X-User-Id: <sub>`, `X-User-Perfil: <perfil>`.
+   `X-User-Id: <sub>`, `X-User-Role: <role>`.
 
 > O `auth-service` e o monólito `api/` já usam exatamente esse esquema
 > (`sabia.jwt.secret` / env `JWT_SECRET`). Basta o Gateway usar o mesmo valor.
@@ -172,17 +220,24 @@ Para o Gateway que prefira não conhecer o segredo:
 { "token": "eyJ..." }
 
 // 200 — token válido
-{ "valido": true, "usuarioId": 2, "perfil": "PROFESSOR", "nome": "Ana Professora",
+{ "valido": true, "usuarioId": 2, "role": "PROFESSOR", "nome": "Ana Professora",
   "expiraEm": "2026-09-09T02:00:00Z" }
 
 // 200 — token inválido/expirado (nunca lança erro)
-{ "valido": false, "usuarioId": null, "perfil": null, "nome": null, "expiraEm": null }
+{ "valido": false, "usuarioId": null, "role": null, "nome": null, "expiraEm": null }
 ```
 
 Custa uma chamada de rede por requisição — recomenda-se cache curto (TTL ≤ 60s) no Gateway.
 
 ### Rotas públicas (não exigem token, o Gateway deve deixar passar)
 `/api/auth/login`, `/api/auth/validate`, `/api/auth/esqueci-senha`, `/api/auth/redefinir-senha`, `/api/health`, `/swagger-ui/**`, `/v3/api-docs/**`
+
+### Rotas restritas por papel
+`/api/admin/**` exige `perfil = ADMINISTRADOR` (claim `perfil` do JWT). Se o Gateway validar
+localmente (Opção A), ele deve replicar essa checagem antes de repassar a requisição; o
+`auth-service` também valida de novo do seu lado (`hasRole('ADMINISTRADOR')`), então um
+gateway mal configurado não é um risco de segurança — só uma experiência pior (403 vindo do
+serviço em vez do Gateway).
 
 ---
 
@@ -195,7 +250,7 @@ Ver [`.env.example`](.env.example). As essenciais:
 | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5433/sabia?currentSchema=auth` | Schema `auth` no banco compartilhado |
 | `JWT_SECRET` | `dev-secret-change-in-production-must-be-at-least-32-chars` | **igual** no Gateway e demais serviços |
 | `JWT_EXPIRATION_MS` | `28800000` (8h) | |
-| `SERVER_PORT` | `8081` | |
+| `SERVER_PORT` | `8080` | |
 | `FRONTEND_RECUPERAR_SENHA_URL` | `http://localhost:3000/redefinir-senha` | link enviado em `esqueci-senha` |
 | `EMAIL_PROVIDER` | `dev` | `dev` apenas loga o link; `smtp` envia de verdade (usa `SMTP_*`/`EMAIL_FROM`) |
 

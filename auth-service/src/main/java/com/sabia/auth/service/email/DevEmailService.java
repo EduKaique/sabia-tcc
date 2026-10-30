@@ -13,4 +13,9 @@ public class DevEmailService implements EmailService {
     public void enviarLinkRecuperacaoSenha(String destinatario, String nome, String link) {
         log.info("[DEV] Link de recuperação de senha para {} <{}>: {}", nome, destinatario, link);
     }
+
+    @Override
+    public void enviarSenhaTemporaria(String destinatario, String nome, String senhaTemporaria) {
+        log.info("[DEV] Senha temporária para {} <{}>: {}", nome, destinatario, senhaTemporaria);
+    }
 }
