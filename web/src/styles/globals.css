@@ -46,6 +46,20 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --color-tinta: #1e2546;
+  --color-tinta-apoio: #3a4266;
+  --color-sabia-amarelo: #f9bd15;
+  --color-sabia-amarelo-hover: #ffc933;
+  --color-sabia-azul: #426cda;
+  --color-sabia-azul-escuro: #2f55c0;
+  --color-sabia-azul-claro: #eef3ff;
+  --color-sabia-laranja: #fe7629;
+  --color-sabia-verde: #60bb75;
+  --color-sabia-roxo: #8d4ce6;
+  --color-sabia-erro: #b3261e;
+  --color-sabia-erro-escuro: #8c1d18;
+  --color-sabia-erro-claro: #fdecea;
 }
 
 :root {
@@ -194,4 +208,95 @@ body {
 /* Blockly: mantém elementos abaixo de dialogs/modais (z-index 50) */
 .blocklyToolbox {
   z-index: 20 !important;
+}
+
+/* Blockly, tema "scratch" (editor do aluno, opt-in via <BlocklyEditor tema="scratch">).
+   Tudo no escopo .sabia-scratch-theme para não alterar as telas do professor. */
+.sabia-scratch-theme .blocklyToolbox {
+  padding: 8px 0;
+  border-right: 1px solid #e0e0e8;
+}
+
+.sabia-scratch-theme .blocklyToolboxCategory {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0 8px 4px;
+  padding: 0 14px 0 10px;
+  border: none !important;
+  border-radius: 9999px;
+  transition: background-color 120ms;
+}
+
+.sabia-scratch-theme .blocklyToolboxCategory:hover {
+  background-color: #f2f5fb;
+}
+
+.sabia-scratch-theme .blocklyToolboxSelected {
+  background-color: #e9f1fc !important;
+}
+
+.sabia-scratch-theme .blocklyToolboxCategoryLabel {
+  font: bold 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #575e75;
+  padding: 0;
+}
+
+.sabia-scratch-theme .blocklyToolboxSelected .blocklyToolboxCategoryLabel {
+  color: #1e2546;
+}
+
+.sabia-scratch-theme .blocklyToolboxCategoryContainer:focus-visible {
+  outline: none;
+}
+
+.sabia-scratch-theme .blocklyToolboxCategoryContainer:focus-visible .blocklyToolboxCategory {
+  box-shadow: 0 0 0 3px #426cda;
+}
+
+.sabiaCatIcone {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid rgb(0 0 0 / 15%);
+}
+
+.sabiaCat-sensores { background-color: #5cb1d6; }
+.sabiaCat-eventos { background-color: #ffbf00; }
+.sabiaCat-controle { background-color: #ffab19; }
+.sabiaCat-operadores { background-color: #59c059; }
+.sabiaCat-aparencia { background-color: #9966ff; }
+.sabiaCat-listas { background-color: #ff661a; }
+.sabiaCat-variaveis { background-color: #ff8c1a; }
+.sabiaCat-meusBlocos { background-color: #ff6680; }
+
+.sabia-scratch-theme .blocklyFlyoutBackground {
+  filter: drop-shadow(2px 0 6px rgb(30 37 70 / 12%));
+}
+
+.sabia-scratch-theme .blocklyFlyoutLabelText {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  fill: #575e75;
+}
+
+.sabia-scratch-theme .blocklyFlyoutButtonBackground {
+  stroke: #c6c6c6;
+}
+
+.sabia-scratch-theme .blocklyBlockCanvas > .blocklyDragging {
+  filter: drop-shadow(0 6px 8px rgb(0 0 0 / 25%));
+}
+
+.sabia-scratch-theme .blocklyZoom > image,
+.sabia-scratch-theme .blocklyZoom > svg > image {
+  opacity: 0.55;
+  transition: opacity 120ms;
+}
+
+.sabia-scratch-theme .blocklyZoom > image:hover,
+.sabia-scratch-theme .blocklyZoom > svg > image:hover {
+  opacity: 0.9;
 }

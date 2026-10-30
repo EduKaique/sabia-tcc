@@ -6,8 +6,11 @@ import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
 import com.sabia.auth.exception.SenhaAtualIncorretaException;
 import com.sabia.auth.exception.SenhaDivergenteException;
+import com.sabia.auth.model.usuario.Aluno;
+import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.exception.UsuarioInativoException;
 import com.sabia.auth.model.usuario.Usuario;
+import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import com.sabia.auth.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -19,22 +22,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
 
+    private static final String MSG_CREDENCIAIS_INVALIDAS = "Dados de acesso incorretos";
+
     private final UsuarioRepository usuarioRepository;
+    private final AlunoRepository alunoRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        var usuario = usuarioRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BadCredentialsException("E-mail ou senha incorretos"));
+        var usuario = buscarPorLogin(request.login())
+                .orElseThrow(() -> new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS));
 
         if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
-            throw new BadCredentialsException("E-mail ou senha incorretos");
+            throw new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS);
         }
         if (!usuario.isAtivo()) {
             throw new UsuarioInativoException();
@@ -44,6 +53,15 @@ public class AuthService {
         log.info("Login bem-sucedido para usuário id={}", usuario.getId());
         return new LoginResponse(token, "Bearer", usuario.getTipoPerfil().name(), usuario.getNome(),
                 usuario.isMustChangePassword());
+    }
+
+    private Optional<Usuario> buscarPorLogin(String login) {
+        if (login.contains("@")) {
+            return usuarioRepository.findByEmailIgnoreCase(login.toLowerCase(Locale.ROOT));
+        }
+        return alunoRepository.findByMatricula(Aluno.normalizarMatricula(login))
+                .map(Aluno::getUsuario)
+                .filter(u -> u.getTipoPerfil() == PerfilUsuario.ALUNO);
     }
 
     @Transactional
@@ -79,6 +97,10 @@ public class AuthService {
                 return ValidateResponse.invalido();
             }
 
+            if (jwtTokenProvider.isServiceToken(claims)) {
+                // Token de serviço não é sessão de usuário.
+                return ValidateResponse.invalido();
+            }
             return new ValidateResponse(
                     true,
                     Long.valueOf(claims.getSubject()),

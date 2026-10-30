@@ -2,6 +2,7 @@ package com.sabia.pedagogico.service;
 
 import com.sabia.pedagogico.dto.request.MatricularAlunoRequest;
 import com.sabia.pedagogico.dto.response.TurmaAlunoResponse;
+import com.sabia.pedagogico.dto.response.TurmaDoAlunoResponse;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.turma.Turma;
@@ -21,9 +22,12 @@ import java.util.List;
 public class TurmaAlunoService {
 
     private static final String MSG_JA_MATRICULADO = "Aluno já está matriculado nesta turma.";
+    private static final String MSG_JA_POSSUI_TURMA =
+            "Você já está em uma turma. Fale com seu professor se precisar trocar.";
 
     private final TurmaRepository turmaRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
+    private final TurmaService turmaService;
 
     public List<TurmaAlunoResponse> listar(Long professorId, Long turmaId) {
         buscarDoProfessor(professorId, turmaId);
@@ -34,8 +38,39 @@ public class TurmaAlunoService {
 
     @Transactional
     public TurmaAlunoResponse matricular(Long professorId, Long turmaId, MatricularAlunoRequest request) {
-        Turma turma = buscarDoProfessor(professorId, turmaId);
-        if (turmaAlunoRepository.existsByTurmaIdAndAlunoId(turmaId, request.alunoId())) {
+        return vincular(buscarDoProfessor(professorId, turmaId), request);
+    }
+
+    /** Matrícula feita pelo auth-service no primeiro acesso do aluno: sem checagem de professor. */
+    @Transactional
+    public TurmaAlunoResponse matricularPeloSistema(Long turmaId, MatricularAlunoRequest request) {
+        Turma turma = turmaRepository.findById(turmaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada."));
+        return vincular(turma, request);
+    }
+
+    public List<TurmaDoAlunoResponse> listarDoAluno(Long alunoId) {
+        return turmaAlunoRepository.findByAlunoId(alunoId).stream()
+                .map(m -> TurmaDoAlunoResponse.from(m.getTurma()))
+                .toList();
+    }
+
+    /**
+     * Aluno já cadastrado entra numa turma pelo código de convite. Só vale para quem ainda
+     * não tem turma; a troca de turma continua com o professor.
+     */
+    @Transactional
+    public TurmaDoAlunoResponse entrarPorCodigo(Long alunoId, String alunoNome, String codigo) {
+        Turma turma = turmaService.buscarPorCodigoConvite(codigo);
+        if (!turmaAlunoRepository.findByAlunoId(alunoId).isEmpty()) {
+            throw new ConflitoException(MSG_JA_POSSUI_TURMA);
+        }
+        vincular(turma, new MatricularAlunoRequest(alunoId, alunoNome));
+        return TurmaDoAlunoResponse.from(turma);
+    }
+
+    private TurmaAlunoResponse vincular(Turma turma, MatricularAlunoRequest request) {
+        if (turmaAlunoRepository.existsByTurmaIdAndAlunoId(turma.getId(), request.alunoId())) {
             throw new ConflitoException(MSG_JA_MATRICULADO);
         }
         TurmaAluno matricula = TurmaAluno.builder()

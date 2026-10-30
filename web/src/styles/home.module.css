@@ -1,0 +1,253 @@
+/* Estilos exclusivos da home (/). Não afetam o restante da aplicação. */
+
+.page {
+  --home-ink: #1e2546;
+  --home-orange: #fe7629;
+  --home-blue: #426cda;
+  --home-green: #60bb75;
+  --home-yellow: #f9bd15;
+  --home-purple: #8d4ce6;
+
+  background:
+    radial-gradient(120% 70% at 50% 0%, #dff1ff 0%, transparent 70%),
+    linear-gradient(180deg, #e8f5ff 0%, #f6f9ff 45%, #fff7e6 100%);
+  color: var(--home-ink);
+}
+
+/* Marca no formato de bloco "chapéu" (hat block) do Scratch/Blockly */
+.brandBlock {
+  position: relative;
+  background: var(--home-blue);
+  box-shadow: 0 4px 0 #2d4fa8;
+}
+
+.brandBlock::after {
+  /* encaixe inferior da peça */
+  content: '';
+  position: absolute;
+  left: 1.25rem;
+  bottom: -0.5rem;
+  width: 1.5rem;
+  height: 0.5rem;
+  border-radius: 0 0 0.4rem 0.4rem;
+  background: var(--home-blue);
+  box-shadow: 0 4px 0 #2d4fa8;
+}
+
+/* Imagem dos blocos: cresce com a largura, mas limitada pela altura da tela
+   para nunca invadir a área do texto. Vaza pelas laterais no mobile e pela base sempre. */
+.heroArt {
+  --art-w: min(135vw, 920px, 80dvh);
+  width: var(--art-w);
+  margin-bottom: calc(var(--art-w) * -0.1);
+  flex-shrink: 0;
+}
+
+/* Fica no mesmo elemento do mix-blend-multiply: mask cria contexto de empilhamento
+   e, em um ancestral, isolaria o blend (o branco voltaria a aparecer). */
+.artMask {
+  /* esmaece as bordas do JPEG (fundo não é branco puro) para não aparecer o "retângulo" */
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 70%, transparent 100%);
+}
+
+/* ---------- Entrada do aluno ----------
+   A ilha client (EntradaAluno) marca o painel com [data-painel-aberto]; o hero, que é
+   Server Component, reage só com CSS (:has), sem estado no servidor. Com o painel aberto
+   a arte de blocos sai do fluxo e o título encolhe, para o formulário caber acima da dobra. */
+
+.page:has([data-painel-aberto]) .heroArt {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: min(70vw, 520px);
+  margin-bottom: -6%;
+  opacity: 0.3;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page:has([data-painel-aberto]) .titulo {
+  font-size: 3rem;
+}
+
+.page:has([data-painel-aberto]) .conteudo {
+  padding-bottom: 3rem;
+}
+
+@media (max-width: 767px) {
+  .page:has([data-painel-aberto]) .heroArt,
+  .page:has([data-painel-aberto]) .subtitulo {
+    display: none;
+  }
+
+  .page:has([data-painel-aberto]) .titulo {
+    font-size: 1.75rem;
+  }
+
+  .page:has([data-painel-aberto]) .conteudo {
+    padding-top: 1.25rem;
+    padding-bottom: 2rem;
+  }
+
+  .page:has([data-painel-aberto]) .brandBlock {
+    margin-bottom: 1rem;
+  }
+
+  .page:has([data-painel-aberto]) .acao {
+    margin-top: 1.25rem;
+  }
+}
+
+/* Telas baixas (tablet na horizontal, notebook pequeno) */
+@media (min-width: 768px) and (max-height: 760px) {
+  .page:has([data-painel-aberto]) .subtitulo {
+    display: none;
+  }
+
+  .page:has([data-painel-aberto]) .conteudo {
+    padding-top: 2rem;
+  }
+
+  .page:has([data-painel-aberto]) .titulo {
+    font-size: 2.5rem;
+  }
+
+  .page:has([data-painel-aberto]) .acao {
+    margin-top: 1.5rem;
+  }
+}
+
+/* ---------- Movimento ---------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  80%,
+  100% {
+    transform: scale(1);
+  }
+  88% {
+    transform: scale(1.05);
+  }
+  94% {
+    transform: scale(0.99);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.delay1 {
+  animation-delay: 0.12s;
+}
+
+.delay2 {
+  animation-delay: 0.24s;
+}
+
+.delay3 {
+  animation-delay: 0.36s;
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.pulse {
+  animation: pulse 4s ease-in-out 1.2s infinite;
+}
+
+.twinkle {
+  animation: twinkle 3.2s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Boas-vindas: o avatar "estoura" uma vez e três estrelinhas piscam (sem confete pesado) */
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes brilho {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) rotate(20deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.pop {
+  animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.brilho {
+  animation: brilho 0.6s ease-out both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .float,
+  .pulse,
+  .twinkle,
+  .pop,
+  .brilho {
+    animation: none;
+  }
+
+  .page * {
+    transition: none !important;
+  }
+}

@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { Calendar, Star } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { fredoka } from '@/lib/fontesHome'
+import { botaoPrincipal, cartao } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
 import { getInfoUrgencia } from './IndicadorUrgencia'
 
@@ -18,40 +19,35 @@ export function AtividadeCard({ atividade }: Props) {
     atividade.status === 'EM_ANDAMENTO' ? 'Continuar' : 'Começar Agora'
 
   return (
-    <Card
-      className={`bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow border-l-4 ${
-        urgent ? 'border-l-red-500' : 'border-l-transparent'
-      }`}
-    >
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-            &nbsp;
-          </span>
-          <span className="flex items-center gap-1 text-sm font-semibold text-amber-500 shrink-0">
-            <Star size={14} className="fill-amber-400 text-amber-400" />
-            {atividade.pontuacaoMaxima} XP
-          </span>
-        </div>
+    <article className={cn(cartao, 'p-5', urgent && 'border-l-8 border-l-sabia-erro')}>
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <h3 className={cn(fredoka.className, 'text-xl font-bold text-tinta')}>{atividade.titulo}</h3>
+        <span className="flex shrink-0 items-center gap-1 rounded-full bg-sabia-amarelo/30 px-3 py-1 text-sm font-bold text-tinta">
+          <Star size={14} className="fill-sabia-amarelo text-sabia-amarelo" aria-hidden="true" />
+          {atividade.pontuacaoMaxima} XP
+        </span>
+      </div>
 
-        <h3 className="text-lg font-bold text-foreground mb-1">{atividade.titulo}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{atividade.descricao}</p>
+      <p className="mb-4 line-clamp-2 text-base text-tinta-apoio">{atividade.descricao}</p>
 
-        <div className="flex items-center justify-between gap-3">
-          <span
-            className={`flex items-center gap-1.5 text-sm ${
-              urgent ? 'text-red-500 font-medium' : 'text-muted-foreground'
-            }`}
-          >
-            <Calendar size={14} />
-            {dateText}
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span
+          className={cn(
+            'flex items-center gap-1.5 text-sm font-semibold',
+            urgent ? 'text-sabia-erro' : 'text-tinta-apoio',
+          )}
+        >
+          <Calendar size={16} aria-hidden="true" />
+          {dateText}
+        </span>
 
-          <Link href={`/aluno/atividades/${atividade.id}`}>
-            <Button size="sm">{actionLabel}</Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+        <Link
+          href={`/aluno/atividades/${atividade.id}`}
+          className={cn(botaoPrincipal, fredoka.className, 'min-h-12 px-5 py-2 text-base')}
+        >
+          {actionLabel}
+        </Link>
+      </div>
+    </article>
   )
 }

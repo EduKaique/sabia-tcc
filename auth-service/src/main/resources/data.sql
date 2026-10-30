@@ -5,6 +5,12 @@
 -- para que o mesmo token JWT resolva nos dois serviços durante a transição.
 -- ================================================================
 
+-- 0. CPF opcional para ALUNO (primeiro acesso por convite, HU003.2). O ddl-auto: update
+--    não relaxa NOT NULL em coluna existente; em base nova a coluna já nasce nullable (idempotente).
+ALTER TABLE usuario ALTER COLUMN cpf DROP NOT NULL;
+
+-- 0.1 E-mail opcional para ALUNO (entra pela matrícula). Mesmo motivo do ALTER acima.
+ALTER TABLE usuario ALTER COLUMN email DROP NOT NULL;
 
 -- 1. Instituição
 INSERT INTO instituicao (id, nome, cnpj, criada_em)
@@ -47,9 +53,14 @@ VALUES (
     'ALUNO', CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO aluno (id, pontuacao_geral)
-VALUES (3, 0)
+INSERT INTO aluno (id, pontuacao_geral, perfil_completo)
+VALUES (3, 0, true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Bases criadas antes deste ajuste já têm o aluno 3 com perfil incompleto (idempotente)
+UPDATE aluno
+SET perfil_completo = true
+WHERE id = 3 AND perfil_completo = false;
 
 -- 5. Alunos sem turma (para testar a matrícula pelo professor)
 --    Senha: password · perfil completo (CPF e matrícula preenchidos)
@@ -69,10 +80,31 @@ INSERT INTO aluno (id, pontuacao_geral, matricula, perfil_completo) VALUES
     (9, 0, '20260005', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Os seeds usam IDs explícitos; sincroniza a sequence depois de todos os inserts
--- para que novos professores recebam o próximo ID disponível.
-SELECT setval(
-    pg_get_serial_sequence('usuario', 'id'),
-    COALESCE((SELECT MAX(id) FROM usuario), 1),
-    true
-);
+-- 5.1 Matrícula normalizada (sem espaços nas pontas, em maiúsculas), como o cadastro grava.
+--     Idempotente; pula a linha que colidiria com outra matrícula já normalizada.
+UPDATE aluno a
+SET matricula = upper(btrim(a.matricula))
+WHERE a.matricula <> upper(btrim(a.matricula))
+  AND NOT EXISTS (SELECT 1 FROM aluno b WHERE b.id <> a.id AND b.matricula = upper(btrim(a.matricula)));
+
+-- 6. Sincroniza as sequences com os ids fixos do seed (idempotente; roda a cada reinício)
+--    Os INSERTs acima usam ids explícitos, que não avançam as sequences IDENTITY.
+--    Alvo = maior entre max(id) e o last_value atual: a sequence NUNCA recua.
+--    Como não há FK entre schemas, reaproveitar ids de registros apagados poderia
+--    associar linhas órfãs de outro serviço (ex.: turma_aluno) a um registro novo.
+--    last_value é NULL em sequence nunca usada; tabela vazia volta a começar em 1.
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM instituicao), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('instituicao', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;
+
+SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
+FROM (
+    SELECT s.seq,
+           GREATEST(COALESCE((SELECT MAX(id) FROM usuario), 0), COALESCE(ps.last_value, 0)) AS alvo
+    FROM (SELECT pg_get_serial_sequence('usuario', 'id') AS seq) s
+    LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
+) x;

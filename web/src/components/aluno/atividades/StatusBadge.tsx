@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { StatusAtividadeAluno } from '@/types/atividade'
 
 interface Props {
@@ -8,27 +8,32 @@ interface Props {
 const config: Record<StatusAtividadeAluno, { label: string; className: string }> = {
   PENDENTE: {
     label: 'Pendente',
-    className: 'bg-amber-100 text-amber-800 border-amber-200',
+    className: 'border-sabia-amarelo bg-sabia-amarelo/25',
   },
   EM_ANDAMENTO: {
     label: 'Em Andamento',
-    className: 'bg-blue-100 text-blue-800 border-blue-200',
+    className: 'border-sabia-azul bg-sabia-azul-claro',
   },
   ENTREGUE: {
     label: 'Em Avaliação',
-    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    className: 'border-sabia-laranja bg-sabia-laranja/15',
   },
   CORRIGIDA: {
     label: '✓ Corrigido',
-    className: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    className: 'border-sabia-verde bg-sabia-verde/20',
   },
 }
 
 export function StatusBadge({ status }: Props) {
   const { label, className } = config[status]
   return (
-    <Badge variant="outline" className={`text-xs font-medium ${className}`}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full border-2 px-3 py-0.5 text-xs font-bold text-tinta',
+        className,
+      )}
+    >
       {label}
-    </Badge>
+    </span>
   )
 }

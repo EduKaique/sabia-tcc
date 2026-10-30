@@ -2,10 +2,11 @@ package com.sabia.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sabia.auth.model.usuario.Aluno;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
-import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.ProfessorRepository;
+import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,9 +16,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,6 +58,18 @@ class AuthControllerTest {
                 .senhaHash(passwordEncoder.encode("password"))
                 .tipoPerfil(PerfilUsuario.PROFESSOR)
                 .build());
+        Usuario aluno = usuarioRepository.save(Usuario.builder()
+                .nome("Beatriz Souza")
+                .senhaHash(passwordEncoder.encode("password"))
+                .tipoPerfil(PerfilUsuario.ALUNO)
+                .build());
+        alunoRepository.save(Aluno.builder().usuario(aluno).matricula("2026AB01").build());
+    }
+
+    private ResultActions logar(String corpo) throws Exception {
+        return mvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(corpo));
     }
 
     @Test
@@ -77,16 +92,78 @@ class AuthControllerTest {
                         .content("""
                             {"email":"professor@sabia.edu","senha":"errada"}"""))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.erro").value("E-mail ou senha incorretos"));
+                .andExpect(jsonPath("$.erro").value("Dados de acesso incorretos"));
     }
 
     @Test
-    void login_comEmailInvalido_retorna400() throws Exception {
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {"email":"nao-e-email","senha":""}"""))
-                .andExpect(status().isBadRequest());
+    void login_comCamposVazios_retorna400() throws Exception {
+        logar("""
+                {"login":"","senha":""}""")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos.login").exists())
+                .andExpect(jsonPath("$.campos.senha").exists());
+    }
+
+    @Test
+    void login_porCampoLogin_comEmailEmMaiusculas_retorna200() throws Exception {
+        logar("""
+                {"login":" Professor@SABIA.edu ","senha":"password"}""")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value("PROFESSOR"));
+    }
+
+    @Test
+    void login_porMatricula_comEspacosEMinusculas_retorna200Aluno() throws Exception {
+        logar("""
+                {"login":"  2026ab01 ","senha":"password"}""")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value("ALUNO"))
+                .andExpect(jsonPath("$.nome").value("Beatriz Souza"));
+    }
+
+    @Test
+    void login_porMatricula_comSenhaIncorreta_retorna401Neutro() throws Exception {
+        logar("""
+                {"login":"2026AB01","senha":"errada"}""")
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.erro").value("Dados de acesso incorretos"));
+    }
+
+    @Test
+    void login_comIdentificadorQueNaoEhMatricula_retorna401() throws Exception {
+        // CPF do professor não é matrícula: professor só entra por e-mail.
+        logar("""
+                {"login":"12345678901","senha":"password"}""")
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.erro").value("Dados de acesso incorretos"));
+    }
+
+    @Test
+    void me_alunoSemEmail_retornaUsuarioAutenticado() throws Exception {
+        String body = logar("""
+                {"login":"2026AB01","senha":"password"}""")
+                .andReturn().getResponse().getContentAsString();
+        String token = json.readTree(body).get("token").asText();
+
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value("ALUNO"));
+    }
+
+    @Test
+    void email_continuaObrigatorioParaProfessorEAdministrador() {
+        for (PerfilUsuario perfil : new PerfilUsuario[]{PerfilUsuario.PROFESSOR, PerfilUsuario.ADMINISTRADOR}) {
+            Usuario semEmail = Usuario.builder()
+                    .nome("Sem e-mail")
+                    .cpf(perfil == PerfilUsuario.PROFESSOR ? "11111111111" : "22222222222")
+                    .senhaHash(passwordEncoder.encode("password"))
+                    .tipoPerfil(perfil)
+                    .build();
+
+            assertThatThrownBy(() -> usuarioRepository.saveAndFlush(semEmail))
+                    .rootCause()
+                    .hasMessageContaining("E-mail é obrigatório");
+        }
     }
 
     @Test

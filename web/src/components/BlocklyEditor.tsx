@@ -4,6 +4,7 @@ import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import { javascriptGenerator, Order } from "blockly/javascript";
 import * as ptBr from "blockly/msg/pt-br";
+import { atributosCategoriaScratch, opcoesScratch, type CategoriaToolbox } from "@/lib/temaBlocklyScratch";
 
 //@ts-expect-error ignorando tipagem do locale
 Blockly.setLocale(ptBr);
@@ -23,6 +24,17 @@ if (!Blockly.Blocks["get_input"]) {
   };
 }
 
+const CORES_PADRAO: Record<CategoriaToolbox, string> = {
+  entrada_saida: "#a55b80",
+  logica: "%{BKY_LOGIC_HUE}",
+  lacos: "%{BKY_LOOPS_HUE}",
+  matematica: "%{BKY_MATH_HUE}",
+  texto: "%{BKY_TEXTS_HUE}",
+  listas: "%{BKY_LISTS_HUE}",
+  variaveis: "%{BKY_VARIABLES_HUE}",
+  funcoes: "%{BKY_PROCEDURES_HUE}",
+};
+
 interface BlocklyEditorProps {
   onCodeChange?: (code: string) => void;
   onStateChange?: (state: string) => void;
@@ -30,15 +42,21 @@ interface BlocklyEditorProps {
   workspaceOnly?: boolean;
   readOnly?: boolean;
   onVariablePrompt?: (message: string, defaultValue: string, callback: (value: string | null) => void) => void;
+  /** Aparência opt-in: "scratch" (editor do aluno). Lida só na criação do workspace. */
+  tema?: "padrao" | "scratch";
+  /** Recebe o workspace depois do inject (ex.: para fechar o flyout antes de abrir um modal). */
+  workspaceExternoRef?: React.MutableRefObject<Blockly.WorkspaceSvg | null>;
 }
 
-const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, readOnly, onVariablePrompt }) => {
+const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChange, initialState, workspaceOnly, readOnly, onVariablePrompt, tema = "padrao", workspaceExternoRef }) => {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const onCodeChangeRef = useRef(onCodeChange);
   const onStateChangeRef = useRef(onStateChange);
   const onVariablePromptRef = useRef(onVariablePrompt);
   const readOnlyRef = useRef(readOnly);
+  const temaRef = useRef(tema);
+  const workspaceExternoRefRef = useRef(workspaceExternoRef);
 
   const [generatedCode, setGeneratedCode] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -57,22 +75,28 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
   }, [onVariablePrompt]);
 
   useEffect(() => {
+    const workspaceExterno = workspaceExternoRefRef.current;
     if (!workspaceRef.current && blocklyDiv.current) {
       const opcoesComuns = {
         zoom: { controls: true, wheel: false, startScale: 1.25 },
         grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
-        move: {wheel: true}
+        move: {wheel: true},
+        ...(temaRef.current === "scratch" ? opcoesScratch : {}),
       };
+      const cor = (categoria: CategoriaToolbox) =>
+        temaRef.current === "scratch"
+          ? atributosCategoriaScratch(categoria)
+          : `colour="${CORES_PADRAO[categoria]}"`;
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, readOnlyRef.current ? { ...opcoesComuns, readOnly: true } : {
         toolbox: `
           <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-            <category name="Entrada/Saída" colour="#a55b80">
+            <category name="Entrada/Saída" ${cor("entrada_saida")}>
               <block type="get_input"></block>
               <block type="text_print"></block>
             </category>
             
-            <category name="Lógica" colour="%{BKY_LOGIC_HUE}">
+            <category name="Lógica" ${cor("logica")}>
               <block type="controls_if"></block>
               <block type="logic_compare"></block>
               <block type="logic_operation"></block>
@@ -82,7 +106,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
               <block type="logic_ternary"></block>
             </category>
             
-            <category name="Laços (Loops)" colour="%{BKY_LOOPS_HUE}">
+            <category name="Laços (Loops)" ${cor("lacos")}>
               <block type="controls_repeat_ext">
                 <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
               </block>
@@ -96,7 +120,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
               <block type="controls_flow_statements"></block>
             </category>
 
-            <category name="Matemática" colour="%{BKY_MATH_HUE}">
+            <category name="Matemática" ${cor("matematica")}>
               <block type="math_number"></block>
               <block type="math_arithmetic">
                 <value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
@@ -127,7 +151,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
               </block>
             </category>
 
-            <category name="Texto" colour="%{BKY_TEXTS_HUE}">
+            <category name="Texto" ${cor("texto")}>
               <block type="text"></block>
               <block type="text_join"></block>
               <block type="text_append">
@@ -157,7 +181,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
               </block>
             </category>
 
-            <category name="Listas (Arrays)" colour="%{BKY_LISTS_HUE}">
+            <category name="Listas (Arrays)" ${cor("listas")}>
               <block type="lists_create_with">
                 <mutation items="0"></mutation>
               </block>
@@ -187,8 +211,8 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
 
             <sep></sep>
             
-            <category name="Variáveis" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
-            <category name="Funções" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>
+            <category name="Variáveis" ${cor("variaveis")} custom="VARIABLE"></category>
+            <category name="Funções" ${cor("funcoes")} custom="PROCEDURE"></category>
           </xml>
         `,
         trashcan: true,
@@ -197,11 +221,14 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
 
       Blockly.dialog.setPrompt((message, defaultValue, callback) => {
         if (onVariablePromptRef.current) {
+          workspaceRef.current?.getFlyout()?.hide();
           onVariablePromptRef.current(message, defaultValue, callback);
         } else {
           callback(window.prompt(message, defaultValue));
         }
       });
+
+      if (workspaceExterno) workspaceExterno.current = workspaceRef.current;
 
       workspaceRef.current.addChangeListener(() => {
         if (workspaceRef.current) {
@@ -220,6 +247,7 @@ const BlocklyEditor: React.FC<BlocklyEditorProps> = ({ onCodeChange, onStateChan
       if (workspaceRef.current) {
         workspaceRef.current.dispose();
         workspaceRef.current = null;
+        if (workspaceExterno) workspaceExterno.current = null;
       }
     };
   }, []); 

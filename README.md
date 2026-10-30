@@ -8,6 +8,8 @@ sabia-tcc/
 ├── web/              # Frontend — Next.js 16 + TypeScript + Tailwind
 ├── api/              # Monólito  — Java 21 + Spring Boot + PostgreSQL (pedagógico, sandbox, IA)
 ├── auth-service/     # Microsserviço de Autenticação (IAM & Perfis) — porta 8081
+├── ia-service/       # Serviço de IA — FastAPI + Gemini — porta 8002
+├── api-gateway/      # API Gateway — porta 8000
 ├── docs/             # Documentação técnica
 ├── .github/          # CI/CD e templates
 ├── setup.sh

@@ -32,7 +32,8 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/api/publico/**"
     };
 
     @Bean
@@ -45,7 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
                         .requestMatchers("/api/aluno/**").hasRole("ALUNO")
-                        .requestMatchers("/api/ia/**").hasRole("PROFESSOR")
+                        // Token de serviço emitido só pelo auth-service (primeiro acesso do aluno)
+                        .requestMatchers("/api/interno/**").hasRole("SISTEMA")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

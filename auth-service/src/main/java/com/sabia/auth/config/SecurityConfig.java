@@ -35,6 +35,7 @@ public class SecurityConfig {
             "/api/auth/esqueci-senha",
             "/api/auth/redefinir-senha",
             "/api/auth/validate",
+            "/api/auth/primeiro-acesso",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

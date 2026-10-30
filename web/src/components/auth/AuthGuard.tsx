@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -12,6 +12,9 @@ const homeByRole = {
 
 type Role = keyof typeof homeByRole
 
+// true só no cliente: evita decidir o redirecionamento no render do servidor.
+const subscribeNoop = () => () => {}
+
 export function AuthGuard({
   children,
   allowedRoles,
@@ -22,11 +25,11 @@ export function AuthGuard({
   const router = useRouter()
   const pathname = usePathname()
   const { user, token } = useAuth()
-  const [hydrated, setHydrated] = useState(false)
-
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
+  const hydrated = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  )
 
   useEffect(() => {
     if (!hydrated) return

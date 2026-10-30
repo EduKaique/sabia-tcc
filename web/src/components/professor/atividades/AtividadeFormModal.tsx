@@ -20,7 +20,7 @@ import { RichTextEditor } from "./RichTextEditor";
 import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
 import BlocklyEditor from "@/components/BlocklyEditor";
 import type { AtividadeAvaliativa, StatusAtividade, TipoAtividade } from "@/types";
-import type { SugestaoAtividadeIa } from "@/services/ia";
+import type { GerarAtividadeIaRequest } from "@/services/ia";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -110,7 +110,7 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
     setPainelIaAberto(true);
   }
 
-  function handleAceitarSugestao(sugestao: SugestaoAtividadeIa, turmaId: number) {
+  function handleAceitarSugestao(sugestao: GerarAtividadeIaRequest, turmaId: number) {
     setValue("titulo", sugestao.titulo, { shouldDirty: true, shouldValidate: true });
     setValue("descricao", sugestao.descricao, { shouldDirty: true, shouldValidate: true });
     setValue("turmaId", turmaId, { shouldDirty: true, shouldValidate: true });

@@ -28,7 +28,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String token = extractToken(request);
-        if (token != null && jwtTokenProvider.isTokenValid(token)) {
+        // Token de serviço (SISTEMA) não representa usuário: não autentica no auth-service.
+        if (token != null && jwtTokenProvider.isTokenValid(token)
+                && !jwtTokenProvider.isServiceToken(jwtTokenProvider.extractClaims(token))) {
             Long userId = jwtTokenProvider.extractUserId(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
 

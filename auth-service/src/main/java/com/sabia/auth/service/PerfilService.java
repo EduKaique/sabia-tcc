@@ -32,7 +32,8 @@ public class PerfilService {
         if (!request.cpf().equals(usuarioAutenticado.getCpf()) && usuarioRepository.existsByCpf(request.cpf())) {
             throw new CpfJaCadastradoException();
         }
-        if (alunoRepository.existsByMatriculaAndIdNot(request.matricula(), usuarioAutenticado.getId())) {
+        String matricula = Aluno.normalizarMatricula(request.matricula());
+        if (alunoRepository.existsByMatriculaAndIdNot(matricula, usuarioAutenticado.getId())) {
             throw new MatriculaJaCadastradaException();
         }
 
@@ -44,7 +45,7 @@ public class PerfilService {
         usuarioAutenticado.setCpf(request.cpf());
         usuarioRepository.save(usuarioAutenticado);
 
-        aluno.setMatricula(request.matricula());
+        aluno.setMatricula(matricula);
         aluno.setAvatar(request.avatar());
         aluno.setPerfilCompleto(true);
         alunoRepository.save(aluno);

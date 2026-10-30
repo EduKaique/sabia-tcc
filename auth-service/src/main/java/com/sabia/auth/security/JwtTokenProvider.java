@@ -20,6 +20,12 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenProvider {
 
+    /** Perfil do token de serviço (auth-service → pedagogico). Não existe em PerfilUsuario. */
+    public static final String PERFIL_SISTEMA = "SISTEMA";
+    private static final long VALIDADE_TOKEN_SERVICO_MS = 60_000;
+    // O pedagogico faz Long.parseLong(sub); 0 nunca é id de usuário (IDENTITY começa em 1).
+    private static final String SUB_SISTEMA = "0";
+
     private final JwtProperties jwtProperties;
 
     public String generateToken(Usuario usuario) {
@@ -32,6 +38,23 @@ public class JwtTokenProvider {
                 .expiration(new Date(now + jwtProperties.expirationMs()))
                 .signWith(signingKey())
                 .compact();
+    }
+
+    /** Token curto para chamadas internas ao Serviço Pedagógico. Nunca devolvido ao cliente. */
+    public String generateServiceToken() {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .subject(SUB_SISTEMA)
+                .claim("role", PERFIL_SISTEMA)
+                .claim("nome", "auth-service")
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + VALIDADE_TOKEN_SERVICO_MS))
+                .signWith(signingKey())
+                .compact();
+    }
+
+    public boolean isServiceToken(Claims claims) {
+        return PERFIL_SISTEMA.equals(claims.get("role", String.class));
     }
 
     public Long extractUserId(String token) {

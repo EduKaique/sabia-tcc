@@ -54,7 +54,8 @@ export interface AlunoMatriculado {
 export interface AlunoBusca {
   id: number
   nome: string
-  email: string
+  email: string | null
+  matricula: string | null
 }
 
 export interface AtividadeDetalhes {
@@ -125,8 +126,8 @@ export interface ErroApi {
 }
 
 export interface RelatorioIa {
+  resumo?: string
   notaSugerida?: number
   acertos?: string[]
   erros?: { descricao: string; severidade?: string }[]
-  resumo?: string
 }

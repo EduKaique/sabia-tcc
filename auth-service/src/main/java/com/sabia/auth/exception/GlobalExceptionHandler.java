@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<ErroResponse> handleBadCredentials(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErroResponse.of(401, "E-mail ou senha incorretos"));
+                .body(ErroResponse.of(401, "Dados de acesso incorretos"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -78,6 +78,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AlunoNaoEncontradoException.class)
     public ResponseEntity<ErroResponse> handleAlunoNaoEncontrado(AlunoNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErroResponse.of(404, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CampoInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleCampoInvalido(CampoInvalidoException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.ofValidation(Map.of(ex.getCampo(), ex.getMessage())));
+    }
+
+    @ExceptionHandler(CadastroDuplicadoException.class)
+    public ResponseEntity<ErroResponse> handleCadastroDuplicado(CadastroDuplicadoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErroResponse(409, ex.getMessage(),
+                Instant.now().toString(), Map.of(ex.getCampo(), ex.getMessage())));
+    }
+
+    @ExceptionHandler(CodigoTurmaInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleCodigoTurmaInvalido(CodigoTurmaInvalidoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErroResponse.of(404, ex.getMessage()));
+    }
+
+    @ExceptionHandler(PedagogicoIndisponivelException.class)
+    public ResponseEntity<ErroResponse> handlePedagogicoIndisponivel(PedagogicoIndisponivelException ex) {
+        // Só a classe da causa: a mensagem do RestClient pode conter a URL com o código da turma.
+        log.warn("Serviço Pedagógico indisponível no primeiro acesso: {}",
+                ex.getCause() == null ? "-" : ex.getCause().getClass().getSimpleName());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErroResponse.of(503, ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
