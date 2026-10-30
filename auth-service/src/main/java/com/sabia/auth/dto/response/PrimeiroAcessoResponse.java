@@ -4,7 +4,7 @@ package com.sabia.auth.dto.response;
 public record PrimeiroAcessoResponse(
         String token,
         String tipo,
-        String perfil,
+        String role,
         String nome,
         boolean mustChangePassword,
         Turma turma
@@ -12,7 +12,7 @@ public record PrimeiroAcessoResponse(
     public record Turma(String nome) {}
 
     public static PrimeiroAcessoResponse of(LoginResponse login, String turmaNome) {
-        return new PrimeiroAcessoResponse(login.token(), login.tipo(), login.perfil(), login.nome(),
+        return new PrimeiroAcessoResponse(login.token(), login.tipo(), login.role(), login.nome(),
                 login.mustChangePassword(), new Turma(turmaNome));
     }
 }

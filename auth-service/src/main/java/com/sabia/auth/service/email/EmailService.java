@@ -8,4 +8,10 @@ public interface EmailService {
      * {@code sabia.email.provider}.
      */
     void enviarLinkRecuperacaoSenha(String destinatario, String nome, String link);
+
+    /**
+     * Envia a senha temporária gerada quando o admin cadastra um novo professor
+     * (HU001.4 — o professor é obrigado a trocá-la no primeiro login).
+     */
+    void enviarSenhaTemporaria(String destinatario, String nome, String senhaTemporaria);
 }

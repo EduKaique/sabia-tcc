@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import com.sabia.pedagogico.model.atividade.StatusSubmissao;
 import com.sabia.pedagogico.model.atividade.SubmissaoAvaliativa;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,9 +17,15 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
 
     boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
+    boolean existsByAtividadeId(Long atividadeId);
+
     Optional<SubmissaoAvaliativa> findByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
     List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);
+
+    List<SubmissaoAvaliativa> findByAtividade_Turma_ProfessorId(Long professorId);
+
+    List<SubmissaoAvaliativa> findByAtividade_IdIn(Collection<Long> atividadeIds);
 
     @Query("""
         SELECT s FROM SubmissaoAvaliativa s

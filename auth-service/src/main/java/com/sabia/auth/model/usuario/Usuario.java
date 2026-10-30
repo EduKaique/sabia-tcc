@@ -52,6 +52,10 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private boolean mustChangePassword = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    @Builder.Default
+    private boolean ativo = true;
+
     @PrePersist
     void prePersist() {
         validarCpfObrigatorio();
@@ -93,5 +97,10 @@ public class Usuario implements UserDetails {
     public String getUsername() {
         // Aluno pode não ter e-mail: o id identifica o usuário no JwtAuthFilter.
         return email != null ? email : String.valueOf(id);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ativo;
     }
 }

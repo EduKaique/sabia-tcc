@@ -6,7 +6,7 @@ import java.time.Instant;
 public record ValidateResponse(
         boolean valido,
         Long usuarioId,
-        String perfil,
+        String role,
         String nome,
         Instant expiraEm
 ) {

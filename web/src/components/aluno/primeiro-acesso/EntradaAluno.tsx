@@ -49,6 +49,7 @@ const MSG_FALHA_ENVIO = 'Não foi possível concluir agora. Tente de novo.'
 const MSG_MUITAS_TENTATIVAS = 'Muitas tentativas. Aguarde alguns minutos.'
 const MSG_DADOS_INCORRETOS = 'Dados de acesso incorretos.'
 const MSG_FALHA_LOGIN = 'Não foi possível entrar agora. Tente de novo.'
+const MSG_CONTA_INATIVA = 'Conta inativa. Entre em contato com um administrador.'
 const MSG_FALHA_VINCULO = 'Você entrou, mas não foi possível entrar na turma agora. Tente pelo painel da sua conta.'
 
 const ORDEM_CAMPOS: readonly CampoPrimeiroAcesso[] = [...CAMPOS_PASSO_1, ...CAMPOS_PASSO_2]
@@ -217,7 +218,7 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
       {
         onSuccess: (resposta) => {
           salvarToken(resposta.token)
-          if (resposta.perfil === 'ALUNO' && turma) {
+          if (resposta.role === 'ALUNO' && turma) {
             vincularAposLogin(resposta, turma)
           } else {
             redirecionarPorPerfil(resposta, router)
@@ -226,7 +227,13 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
         onError: (erro) => {
           const status = erro instanceof ErroRequisicao ? erro.status : 0
           setErroLogin(
-            status === 401 ? MSG_DADOS_INCORRETOS : status === 429 ? MSG_MUITAS_TENTATIVAS : MSG_FALHA_LOGIN,
+            status === 401
+              ? MSG_DADOS_INCORRETOS
+              : status === 403
+                ? MSG_CONTA_INATIVA
+                : status === 429
+                  ? MSG_MUITAS_TENTATIVAS
+                  : MSG_FALHA_LOGIN,
           )
           focar('pa-erro-login')
         },

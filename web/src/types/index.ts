@@ -19,6 +19,28 @@ export type TipoAtividade =
   | 'ATIVIDADE_AVALIATIVA'
   | 'ATIVIDADE_TRILHA'
 
+/** Modo de apresentação da atividade, ortogonal ao tipo. `null` no backend é tratado como BLOCOS. */
+export type ModoAtividade = 'BLOCOS' | 'JOGO_ROBO'
+
+export type TipoBlocoRobo = 'robo_mover' | 'robo_repetir'
+
+export interface PosicaoRobo {
+  linha: number
+  coluna: number
+}
+
+/** Conteúdo de `cenarioJson` nas atividades do modo Jogo do Robô. */
+export interface CenarioRobo {
+  versao: number
+  linhas: number
+  colunas: number
+  inicio: PosicaoRobo
+  destino: PosicaoRobo
+  obstaculos: PosicaoRobo[]
+  blocosPermitidos: TipoBlocoRobo[]
+  maxBlocos?: number
+}
+
 export interface AtividadeAvaliativa {
   id: string
   titulo: string
@@ -30,6 +52,8 @@ export interface AtividadeAvaliativa {
   gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
+  modo: ModoAtividade
+  cenarioJson: string | null
 }
 
 export type EtapaEnsino = 'ANOS_INICIAIS' | 'ANOS_FINAIS' | 'MEDIO' | 'TECNICO'
@@ -130,4 +154,100 @@ export interface RelatorioIa {
   notaSugerida?: number
   acertos?: string[]
   erros?: { descricao: string; severidade?: string }[]
+}
+
+export type TipoRelatorio = 'GERAL' | 'TURMAS' | 'ATIVIDADES'
+
+export interface RelatorioRequest {
+  tipo?: TipoRelatorio
+  turmaId?: number
+  atividadeId?: string
+  dataInicio?: string
+  dataFim?: string
+  incluirDetalhes?: boolean
+}
+
+export interface RelatorioTurma {
+  turmaId: number
+  turmaNome: string
+  totalAlunos: number
+  totalAtividades: number
+  totalEntregas: number
+  taxaEntrega: number
+  mediaTurma: number | null
+}
+
+export interface RelatorioAtividade {
+  atividadeId: string
+  atividadeTitulo: string
+  turmaNome: string
+  totalAlunos: number
+  totalEntregas: number
+  taxaEntrega: number
+  media: number | null
+}
+
+export interface RelatorioProfessor {
+  totalTurmas: number
+  totalAlunos: number
+  totalAtividades: number
+  totalEntregas: number
+  taxaEntrega: number
+  taxaCorrecao: number
+  mediaGeral: number | null
+  turmas: RelatorioTurma[]
+  atividades: RelatorioAtividade[]
+}
+
+export interface FiltroPeriodoTurma {
+  atividadeId?: string
+  dataInicio?: string
+  dataFim?: string
+}
+
+export interface MediaAtividade {
+  atividadeId: number
+  atividadeTitulo: string
+  pontuacaoMaxima: number
+  media: number | null
+  mediaPercentual: number | null
+  totalEntregas: number
+  totalCorrigidas: number
+  totalAlunos: number
+  taxaEntrega: number
+}
+
+export interface FaixaNota {
+  faixa: string
+  quantidade: number
+}
+
+export interface DistribuicaoNotas {
+  faixas: FaixaNota[]
+  totalNotas: number
+  mediaPercentual: number | null
+  medianaPercentual: number | null
+}
+
+export interface ProgressaoAluno {
+  alunoId: number
+  alunoNome: string
+  mediaPercentual: number | null
+  notasPercentuais: (number | null)[]
+}
+
+export interface ProgressaoTurma {
+  atividades: { atividadeId: number; titulo: string }[]
+  alunos: ProgressaoAluno[]
+  mediaTurma: (number | null)[]
+}
+
+export interface StatusEntregas {
+  totalEsperado: number
+  naoEntregues: number
+  pendentes: number
+  emCorrecao: number
+  corrigidas: number
+  entreguesNoPrazo: number
+  entreguesComAtraso: number
 }
