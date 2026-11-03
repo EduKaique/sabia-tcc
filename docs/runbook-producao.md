@@ -3,12 +3,14 @@
 Servidor Ubuntu, acesso por **IP público** (sem domínio), HTTPS com certificado de IP do Let's Encrypt
 emitido pelo Caddy. As imagens vêm do GHCR (veja `docs/ci-cd.md`); **nada é compilado no servidor**.
 
-Em todos os comandos, `/opt/sabia` é o clone do repositório, `<IP>` é o IP público e
-`dc` é um atalho para o compose de produção:
+Em todos os comandos, `/opt/sabia` é o clone do repositório (rode-os de dentro dele) e `<IP>` é o
+IP público. `deploy/dc.sh` é o `docker compose` de produção: aceita os mesmos argumentos e já passa
+projeto, arquivo, `.env.prod` e `IMAGE_TAG` (do ambiente ou de `deploy/.current_tag`, a última tag
+implantada):
 
 ```bash
-alias dc='docker compose -p sabia-prod -f /opt/sabia/docker-compose.prod.yml --env-file /opt/sabia/.env.prod'
-# dc exige IMAGE_TAG: exporte a tag em uso antes, ex.: export IMAGE_TAG=$(cat /opt/sabia/deploy/.current_tag)
+deploy/dc.sh ps
+deploy/dc.sh logs --tail=100 caddy
 ```
 
 ## 1. Preparar o servidor (uma vez)
@@ -93,15 +95,14 @@ Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `release`).
    `deploy/smoke.sh http://<IP>`. Em HTTP o clipboard e o cookie `Secure` não funcionam: só para teste.
 2. **HTTPS em staging do Let's Encrypt:** `CADDYFILE=Caddyfile`,
    `ACME_CA=https://acme-staging-v02.api.letsencrypt.org/directory`. Rode `deploy/deploy.sh sha-xxxxxxx`
-   e acompanhe `dc logs -f caddy` até aparecer `certificate obtained successfully`.
+   e acompanhe `deploy/dc.sh logs -f caddy` até aparecer `certificate obtained successfully`.
    O navegador vai avisar que o certificado não é confiável (é o esperado no staging).
    `deploy/smoke.sh https://<IP>` (usa `-k`).
 3. **HTTPS em produção:** `ACME_CA=https://acme-v02.api.letsencrypt.org/directory`,
    `CORS_ORIGINS=https://<IP>`. Apague o certificado de staging e suba de novo:
    ```bash
-   export IMAGE_TAG=$(cat deploy/.current_tag)
-   dc stop caddy && dc rm -f caddy && docker volume rm sabia-prod_caddy_data
-   deploy/deploy.sh "$IMAGE_TAG"
+   deploy/dc.sh stop caddy && deploy/dc.sh rm -f caddy && docker volume rm sabia-prod_caddy_data
+   deploy/deploy.sh "$(cat deploy/.current_tag)"
    ```
    Confirme o cadeado no navegador e rode `deploy/smoke.sh https://<IP>` de novo.
 4. Agende o backup diário (a linha exata é impressa pelo `deploy/backup.sh`):
@@ -119,10 +120,10 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 |---|---|
 | Atualizar | `cd /opt/sabia && git pull && deploy/deploy.sh sha-novo` (faz backup antes) |
 | Rollback | `deploy/deploy.sh --rollback` (volta para a tag anterior). O schema do banco **não** volta: se a versão nova mudou tabelas, restaure o backup feito antes do deploy |
-| Status | `dc ps` e `docker stats --no-stream` |
-| Logs | `dc logs --tail=200 -f <serviço>` (caddy, web, api-gateway, auth-service, pedagogico-service, ia-service, database) |
-| Reiniciar um serviço | `dc restart <serviço>` |
-| Reiniciar tudo | `dc restart` |
+| Status | `deploy/dc.sh ps` e `docker stats --no-stream` |
+| Logs | `deploy/dc.sh logs --tail=200 -f <serviço>` (caddy, web, api-gateway, auth-service, pedagogico-service, ia-service, database) |
+| Reiniciar um serviço | `deploy/dc.sh restart <serviço>` |
+| Reiniciar tudo | `deploy/dc.sh restart` |
 | Backup manual | `deploy/backup.sh` |
 | Testar um backup | `deploy/restore.sh /var/backups/sabia/sabia-AAAAMMDD-HHMMSS.dump --test` |
 | Restaurar de verdade | `deploy/restore.sh <dump>` (pede `RESTAURAR`, faz backup antes) |
@@ -130,8 +131,8 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 | Espaço em disco | `df -h /` e `docker system df` |
 
 **Reboot do servidor:** o Docker sobe com o systemd e os containers voltam sozinhos
-(`restart: unless-stopped`). Depois do boot, confira `dc ps` e rode o `smoke.sh`.
-Um container parado manualmente com `dc stop` **não** volta no reboot.
+(`restart: unless-stopped`). Depois do boot, confira `deploy/dc.sh ps` e rode o `smoke.sh`.
+Um container parado manualmente com `deploy/dc.sh stop` **não** volta no reboot.
 
 ## 4. Certificado de IP
 
@@ -140,7 +141,7 @@ Um container parado manualmente com `dc stop` **não** volta no reboot.
   e os navegadores bloqueiam o site. Com o servidor ligado e as portas abertas, nada precisa ser feito.
 - Diagnóstico:
   ```bash
-  dc logs caddy | grep -iE 'certificate|acme|error' | tail -20
+  deploy/dc.sh logs caddy | grep -iE 'certificate|acme|error' | tail -20
   echo | openssl s_client -connect <IP>:443 2>/dev/null | openssl x509 -noout -issuer -dates
   ```
   Erros comuns: porta 80/443 bloqueada no firewall da universidade (o desafio falha), `ACME_CA` ainda
@@ -165,9 +166,9 @@ inacessível, `/api/pedagogico/api/interno/` 404, CORS do login e portas 5432, 8
 Manual:
 
 **Infra**
-- [ ] `dc ps`: todos `healthy`, nenhum reiniciando em loop.
+- [ ] `deploy/dc.sh ps`: todos `healthy`, nenhum reiniciando em loop.
 - [ ] `https://<IP>` com cadeado (certificado do Let's Encrypt de produção).
-- [ ] `dc logs | grep -iE 'key=|secret|senha'` não mostra segredo; sem `DEBUG` e sem SQL nos logs.
+- [ ] `deploy/dc.sh logs | grep -iE 'key=|secret|senha'` não mostra segredo; sem `DEBUG` e sem SQL nos logs.
 - [ ] `docker stats --no-stream`: consumo dentro dos limites com o sistema ocioso.
 
 **Fluxos da aula** (num computador da escola, na rede da escola)
@@ -178,13 +179,13 @@ Manual:
 - [ ] Aluno abre a atividade, o editor Blockly carrega (fontes e toolbox), executa e envia.
 - [ ] Professor vê a submissão, corrige e lança a nota; o aluno vê a nota.
 - [ ] Professor usa "gerar atividade com IA" e "revisar com IA".
-- [ ] Degradação: `dc stop ia-service` → o professor vê erro amigável e o resto funciona; `dc start ia-service` depois.
+- [ ] Degradação: `deploy/dc.sh stop ia-service` → o professor vê erro amigável e o resto funciona; `deploy/dc.sh start ia-service` depois.
 - [ ] Recuperar senha: o e-mail chega (SMTP) com link para `https://<IP>/redefinir-senha`.
 - [ ] 5–10 abas de aluno simultâneas sem erro.
 
 **Operação**
 - [ ] `deploy/backup.sh` gera o arquivo e `deploy/restore.sh <dump> --test` passa.
-- [ ] `dc restart` de um serviço: volta sozinho e os dados continuam lá.
+- [ ] `deploy/dc.sh restart <serviço>`: volta sozinho e os dados continuam lá.
 
 ## 6. Véspera da aula
 
@@ -207,8 +208,7 @@ não devem ficar guardados sem necessidade.
 1. Exporte o que o TCC precisa **sem dados pessoais** (contagens, notas agregadas, prints anonimizados).
 2. Pare e apague tudo, inclusive o banco:
    ```bash
-   export IMAGE_TAG=$(cat /opt/sabia/deploy/.current_tag)
-   dc down -v                                    # remove containers e volumes (banco e certificados)
+   /opt/sabia/deploy/dc.sh down -v               # remove containers e volumes (banco e certificados)
    ```
 3. Apague os dumps e os logs:
    ```bash

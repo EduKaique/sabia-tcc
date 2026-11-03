@@ -38,7 +38,7 @@ fi
 info "Subindo serviços e aguardando os healthchecks (até 10 min)"
 if ! compose up -d --remove-orphans --wait --wait-timeout 600; then
   compose ps
-  erro "algum serviço não ficou saudável. Veja: docker compose -p sabia-prod logs --tail=100 <serviço>"
+  erro "algum serviço não ficou saudável. Veja: deploy/dc.sh logs --tail=100 <serviço>"
 fi
 
 compose ps
