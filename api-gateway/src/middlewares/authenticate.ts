@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { UnauthorizedError, ForbiddenError } from '../hooks/errors.ts';
+import { UnauthorizedError, ForbiddenError, SenhaTemporariaError } from '../hooks/errors.ts';
 import type { Roles } from '../types/enum/roles.ts';
 
 export async function authenticate(request: FastifyRequest, _reply: FastifyReply) {
@@ -7,6 +7,9 @@ export async function authenticate(request: FastifyRequest, _reply: FastifyReply
     await request.jwtVerify();
   } catch {
     throw new UnauthorizedError();
+  }
+  if (request.user.mustChangePassword === true) {
+    throw new SenhaTemporariaError();
   }
 }
 

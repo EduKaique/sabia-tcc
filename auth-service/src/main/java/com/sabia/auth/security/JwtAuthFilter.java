@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -31,6 +32,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Token de serviço (SISTEMA) não representa usuário: não autentica no auth-service.
         if (token != null && jwtTokenProvider.isTokenValid(token)
                 && !jwtTokenProvider.isServiceToken(jwtTokenProvider.extractClaims(token))) {
+            if (jwtTokenProvider.exigeTrocaDeSenha(jwtTokenProvider.extractClaims(token))
+                    && !rotaLiberadaComTrocaPendente(request)) {
+                recusarSenhaTemporaria(response);
+                return;
+            }
             Long userId = jwtTokenProvider.extractUserId(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
 
@@ -42,6 +48,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    /** Com troca de senha pendente, só a própria troca e o "quem sou eu" ficam liberados. */
+    private boolean rotaLiberadaComTrocaPendente(HttpServletRequest request) {
+        String metodo = request.getMethod();
+        String caminho = request.getRequestURI().substring(request.getContextPath().length());
+        return ("POST".equals(metodo) && "/api/auth/trocar-senha".equals(caminho))
+                || ("GET".equals(metodo) && "/api/auth/me".equals(caminho));
+    }
+
+    private void recusarSenhaTemporaria(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"status\":403,\"erro\":\"Você precisa trocar sua senha para continuar.\","
+                + "\"codigo\":\"SENHA_TEMPORARIA\",\"timestamp\":\"" + Instant.now() + "\"}");
     }
 
     private String extractToken(HttpServletRequest request) {

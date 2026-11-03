@@ -8,12 +8,14 @@ declare module '@fastify/jwt' {
       role?: Roles;
       perfil?: Roles | 'ADMINISTRADOR';
       email: string;
+      mustChangePassword?: boolean;
     };
     user: {
       sub: string;
       role?: Roles;
       perfil?: Roles | 'ADMINISTRADOR';
       email: string;
+      mustChangePassword?: boolean;
     };
   }
 }

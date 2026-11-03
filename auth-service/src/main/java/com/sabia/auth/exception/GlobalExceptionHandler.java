@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
@@ -23,6 +24,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponse> handleBadCredentials(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErroResponse.of(401, "Dados de acesso incorretos"));
+    }
+
+    /** Corpo ilegível: a mensagem do parser pode trazer trechos do JSON (ex.: senha), então não é logada. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResponse> handleCorpoIlegivel(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.of(400, "Requisição inválida."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -75,8 +82,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErroResponse.of(403, ex.getMessage()));
     }
 
-    @ExceptionHandler(AlunoNaoEncontradoException.class)
-    public ResponseEntity<ErroResponse> handleAlunoNaoEncontrado(AlunoNaoEncontradoException ex) {
+    @ExceptionHandler({AlunoNaoEncontradoException.class, TurmaNaoEncontradaException.class})
+    public ResponseEntity<ErroResponse> handleAlunoNaoEncontrado(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErroResponse.of(404, ex.getMessage()));
     }
 
@@ -99,7 +106,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PedagogicoIndisponivelException.class)
     public ResponseEntity<ErroResponse> handlePedagogicoIndisponivel(PedagogicoIndisponivelException ex) {
         // Só a classe da causa: a mensagem do RestClient pode conter a URL com o código da turma.
-        log.warn("Serviço Pedagógico indisponível no primeiro acesso: {}",
+        log.warn("Serviço Pedagógico indisponível: {}",
                 ex.getCause() == null ? "-" : ex.getCause().getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErroResponse.of(503, ex.getMessage()));
     }

@@ -47,6 +47,11 @@ public class JwtTokenReader {
         return extractClaims(token).get("nome", String.class);
     }
 
+    /** Claim emitida pelo auth-service quando o usuário precisa trocar a senha antes de usar o sistema. */
+    public boolean extractMustChangePassword(String token) {
+        return Boolean.TRUE.equals(extractClaims(token).get("mustChangePassword", Boolean.class));
+    }
+
     private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey())

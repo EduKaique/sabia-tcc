@@ -2,8 +2,10 @@ package com.sabia.auth.client;
 
 import com.sabia.auth.exception.CodigoTurmaInvalidoException;
 import com.sabia.auth.exception.PedagogicoIndisponivelException;
+import com.sabia.auth.exception.TurmaNaoEncontradaException;
 import com.sabia.auth.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -13,6 +15,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -59,6 +62,32 @@ public class PedagogicoClient {
             throw new PedagogicoIndisponivelException(null);
         }
         return turma;
+    }
+
+    /** {@code ingressoEm} chega como texto ISO-8601 (LocalDateTime) e é convertido por quem chama. */
+    public record AlunoDaTurmaRemoto(Long alunoId, String alunoNome, String ingressoEm) {}
+
+    /**
+     * Alunos da turma, só se ela pertencer ao professor. 404 (turma inexistente ou de outro
+     * professor) vira {@link TurmaNaoEncontradaException}.
+     */
+    public List<AlunoDaTurmaRemoto> listarAlunosDaTurma(Long turmaId, Long professorId) {
+        List<AlunoDaTurmaRemoto> alunos;
+        try {
+            alunos = restClient.get()
+                    .uri("/api/interno/turmas/{turmaId}/alunos?professorId={professorId}", turmaId, professorId)
+                    .header(HttpHeaders.AUTHORIZATION, bearer())
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<AlunoDaTurmaRemoto>>() {});
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new TurmaNaoEncontradaException();
+        } catch (RestClientException e) {
+            throw new PedagogicoIndisponivelException(e);
+        }
+        if (alunos == null) {
+            throw new PedagogicoIndisponivelException(null);
+        }
+        return alunos;
     }
 
     public void matricular(Long turmaId, Long alunoId, String alunoNome) {

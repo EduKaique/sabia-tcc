@@ -29,6 +29,16 @@ export class ForbiddenError extends GatewayError {
   }
 }
 
+/** Token com troca de senha pendente: só a troca (no auth-service) fica liberada. */
+export class SenhaTemporariaError extends GatewayError {
+  readonly codigo = 'SENHA_TEMPORARIA';
+
+  constructor() {
+    super(403, 'Você precisa trocar sua senha para continuar.');
+    this.name = 'SenhaTemporariaError';
+  }
+}
+
 export class BadRequestError extends GatewayError {
   constructor(message = 'Requisição inválida.') {
     super(400, message);

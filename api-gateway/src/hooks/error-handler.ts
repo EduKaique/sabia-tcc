@@ -1,5 +1,5 @@
 import type { FastifyError, FastifyInstance } from 'fastify';
-import { GatewayError, ServiceUnavailableError } from './errors.ts';
+import { GatewayError, SenhaTemporariaError, ServiceUnavailableError } from './errors.ts';
 import { UpstreamError } from '../services/http-client.ts';
 
 export function registerErrorHandler(gateway: FastifyInstance) {
@@ -8,6 +8,16 @@ export function registerErrorHandler(gateway: FastifyInstance) {
 
     if (error instanceof UpstreamError) {
       return reply.code(error.statusCode).send(error.body);
+    }
+
+    // Mesmo formato dos serviços ({ status, erro, codigo }): o front reconhece pelo `codigo`.
+    if (error instanceof SenhaTemporariaError) {
+      return reply.code(error.statusCode).send({
+        status: error.statusCode,
+        erro: error.message,
+        codigo: error.codigo,
+        timestamp: new Date().toISOString(),
+      });
     }
 
     if (error instanceof GatewayError) {
