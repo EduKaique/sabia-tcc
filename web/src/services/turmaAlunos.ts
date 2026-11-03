@@ -1,14 +1,15 @@
 import api from '@/lib/pedagogicoApi'
 import authApi from '@/lib/api'
-import type { AlunoBusca, AlunoMatriculado } from '@/types'
+import type { AlunoBusca, AlunoDaTurma, AlunoMatriculado } from '@/types'
 
 export interface MatricularAlunoPayload {
   alunoId: number
   alunoNome: string
 }
 
-export async function listarAlunosTurma(turmaId: number): Promise<AlunoMatriculado[]> {
-  const { data } = await api.get<AlunoMatriculado[]>(`/api/professor/turmas/${turmaId}/alunos`)
+/** Alunos da turma com matrícula, avatar e troca pendente (auth-service, que valida o dono da turma). */
+export async function listarAlunosDaTurma(turmaId: number): Promise<AlunoDaTurma[]> {
+  const { data } = await authApi.get<AlunoDaTurma[]>(`/api/auth/professor/turmas/${turmaId}/alunos`)
   return data
 }
 

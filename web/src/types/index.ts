@@ -75,6 +75,16 @@ export interface AlunoMatriculado {
   ingressoEm: string
 }
 
+/** Aluno da turma com dados de conta (auth-service). Sem CPF, e-mail nem data de nascimento. */
+export interface AlunoDaTurma {
+  alunoId: number
+  nome: string | null
+  matricula: string | null
+  avatar: string | null
+  ingressoEm: string
+  trocaSenhaPendente: boolean
+}
+
 export interface AlunoBusca {
   id: number
   nome: string

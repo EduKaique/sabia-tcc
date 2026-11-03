@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  listarAlunosTurma,
+  listarAlunosDaTurma,
   matricularAluno,
   desmatricularAluno,
   buscarAluno,
@@ -12,7 +12,7 @@ const alunosKey = (turmaId: number) => ["turmas", turmaId, "alunos"];
 export function useTurmaAlunos(turmaId: number) {
   return useQuery({
     queryKey: alunosKey(turmaId),
-    queryFn: () => listarAlunosTurma(turmaId),
+    queryFn: () => listarAlunosDaTurma(turmaId),
     enabled: !!turmaId,
   });
 }
