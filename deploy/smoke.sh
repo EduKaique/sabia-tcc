@@ -15,14 +15,32 @@ falhas=0
 ok() { printf 'OK     %s\n' "$1"; }
 falha() { printf 'FALHA  %s\n' "$1"; falhas=$((falhas + 1)); }
 
-status() { "${CURL[@]}" -o /dev/null -w '%{http_code}' "$@" || echo 000; }
+# Código HTTP da requisição. O curl já escreve 000 quando não há resposta.
+status() {
+  local codigo
+  codigo="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$@" || true)"
+  printf '%s' "${codigo:-000}"
+}
 
+# Explicação para códigos que nunca contam como sucesso.
+explicar() {
+  case "$1" in
+    000) echo " — sem resposta HTTP: falha de TLS ou de rede (certificado, porta 80/443, firewall)" ;;
+    30?) echo " — redirecionamento: 308 costuma ser o Caddy mandando http→https; use a URL https://" ;;
+  esac
+}
+
+# OK só se veio exatamente o código esperado.
 esperar_status() {
   local descricao="$1" esperado="$2"
   shift 2
   local obtido
   obtido="$(status "$@")"
-  if [[ "$obtido" == "$esperado" ]]; then ok "$descricao ($obtido)"; else falha "$descricao (esperado $esperado, veio $obtido)"; fi
+  if [[ "$obtido" == "$esperado" ]]; then
+    ok "$descricao ($obtido)"
+  else
+    falha "$descricao (esperado $esperado, veio $obtido)$(explicar "$obtido")"
+  fi
 }
 
 LOGIN_JSON='{"login":"admin@sabia.edu","senha":"password"}'
@@ -30,32 +48,31 @@ LOGIN_JSON='{"login":"admin@sabia.edu","senha":"password"}'
 esperar_status "/ responde" 200 "$BASE/"
 esperar_status "health público /api/health" 200 "$BASE/api/health"
 
-codigo="$(status -X POST -H 'Content-Type: application/json' -d "$LOGIN_JSON" "$BASE/api/auth/login")"
-if [[ "$codigo" != "200" && "$codigo" != "000" ]]; then
-  ok "login do seed de dev (admin@sabia.edu/password) recusado ($codigo)"
-else
-  falha "login do seed de dev (admin@sabia.edu/password) deveria falhar (veio $codigo)"
-fi
+esperar_status "login do seed de dev (admin@sabia.edu/password) recusado" 401 \
+  -X POST -H 'Content-Type: application/json' -d "$LOGIN_JSON" "$BASE/api/auth/login"
 
+# Documentação: precisa haver resposta HTTP de verdade (não 000/30x) e sem OpenAPI/Swagger.
+corpo_tmp="$(mktemp)"
+trap 'rm -f "$corpo_tmp"' EXIT
 for caminho in /v3/api-docs /swagger-ui.html /docs /openapi.json /api/ia/docs \
   /api/ia/openapi.json /api/pedagogico/v3/api-docs /api/auth/v3/api-docs; do
-  corpo="$("${CURL[@]}" "$BASE$caminho" || true)"
-  if grep -qiE '"openapi"|swagger-ui' <<< "$corpo"; then
-    falha "documentação exposta em $caminho"
+  codigo="$("${CURL[@]}" -o "$corpo_tmp" -w '%{http_code}' "$BASE$caminho" || true)"
+  codigo="${codigo:-000}"
+  if [[ "$codigo" == 000 || "$codigo" == 3* ]]; then
+    falha "documentação em $caminho não verificada (veio $codigo)$(explicar "$codigo")"
+  elif grep -qiE '"openapi"|swagger-ui' "$corpo_tmp"; then
+    falha "documentação exposta em $caminho ($codigo)"
   else
-    ok "sem documentação em $caminho"
+    ok "sem documentação em $caminho ($codigo)"
   fi
 done
 
 esperar_status "/api/pedagogico/api/interno/ bloqueado" 404 "$BASE/api/pedagogico/api/interno/"
 
-codigo="$(status -X POST -H "Origin: $BASE" -H 'Content-Type: application/json' \
-  -d '{"login":"smoke@teste.invalid","senha":"x"}' "$BASE/api/auth/login")"
-if [[ "$codigo" != "403" && "$codigo" != "000" ]]; then
-  ok "POST de login com Origin: $BASE não é barrado por CORS ($codigo)"
-else
-  falha "POST de login com Origin: $BASE veio $codigo (confira CORS_ORIGINS)"
-fi
+# Usuário inexistente: 401 prova que o CORS deixou passar (403 = Origin barrado).
+esperar_status "POST de login com Origin: $BASE não é barrado por CORS" 401 \
+  -X POST -H "Origin: $BASE" -H 'Content-Type: application/json' \
+  -d '{"login":"smoke@teste.invalid","senha":"x"}' "$BASE/api/auth/login"
 
 for porta in 5432 8000 8002 8080 8081 3000 5672 15672; do
   if nc -z -w2 "$HOST" "$porta" 2>/dev/null; then
