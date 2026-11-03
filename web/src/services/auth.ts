@@ -1,6 +1,7 @@
+import { API_URL } from '@/lib/apiBase'
 import { erroDaResposta, erroDeRede } from '@/lib/erroRequisicao'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL
+const BASE = API_URL
 
 export interface LoginRequest {
   /** Matrícula (aluno) ou e-mail (qualquer perfil). */

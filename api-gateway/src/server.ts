@@ -4,18 +4,16 @@ import { registerProxies } from './routes/proxy.ts';
 import { registerHealthCheck } from './routes/health.ts';
 import { registerErrorHandler } from './hooks/error-handler.ts';
 import jwtPlugin from './plugins/jwt.ts';
-import { registerAuthRoutes } from './routes/auth.ts';
 import { env } from './config/env.ts';
 
 const gateway = Fastify({
   logger: true,
+  // Atrás do proxy (Caddy): request.ip vem do X-Forwarded-For. O gateway não é exposto.
+  trustProxy: true,
 });
 
 await registerCors(gateway);
 await gateway.register(jwtPlugin);
-
-// Aqui vão as rotas antes do proxy, como auth e composition
-await registerAuthRoutes(gateway);
 
 await registerProxies(gateway);
 registerHealthCheck(gateway);

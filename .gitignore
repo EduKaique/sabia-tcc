@@ -45,3 +45,9 @@ docker-compose.override.yml
 *~.nib
 
 .vscode/
+
+# Deploy de produção (segredos, estado e dumps locais)
+.env.prod
+deploy/backups/
+deploy/.current_tag
+deploy/.last_tag

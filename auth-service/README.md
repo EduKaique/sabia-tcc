@@ -8,7 +8,7 @@ do Sabiá — os demais serviços e o API Gateway apenas **validam**.
 |---|---|
 | Stack | Java 21 · Spring Boot 4 · Spring Security · Spring Data JPA |
 | Porta | `8080` |
-| Banco | PostgreSQL — **Auth DB** (`sabia_auth`), isolado do monólito |
+| Banco | PostgreSQL compartilhado — schema `auth` |
 | Docs | `http://localhost:8080/swagger-ui.html` |
 
 ## Rodar localmente
@@ -22,7 +22,7 @@ cd auth-service
 ./mvnw spring-boot:run
 ```
 
-Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `password`
+Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `senha123`
 
 | E-mail | Perfil |
 |---|---|
