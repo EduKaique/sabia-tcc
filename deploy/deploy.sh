@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Implanta uma tag das imagens do GHCR.
-#   deploy/deploy.sh sha-1a2b3c4     # ou release / main / 1.2.3
+#   deploy/deploy.sh sha-1a2b3c4     # ou main / 1.2.3
 #   deploy/deploy.sh --rollback      # volta para a tag anterior (deploy/.last_tag)
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
@@ -8,6 +8,15 @@ source "$(dirname "$0")/lib.sh"
 [[ $# -eq 1 ]] || erro "uso: $0 <tag> | --rollback"
 
 exigir_env_file
+# Antes de qualquer pull: o backup.sh roda a cada deploy e precisa deste diretório.
+preparar_dir_backup "$(dir_backup)"
+
+# Valor diferente de smtp/dev derruba o auth-service ("No qualifying bean of type EmailService").
+email_provider="$(ler_env EMAIL_PROVIDER)"
+case "$email_provider" in
+  smtp | dev | "") ;;
+  *) erro "EMAIL_PROVIDER inválido no $ENV_FILE: \"$email_provider\". Use exatamente smtp ou dev (minúsculas, sem espaços e sem comentário na mesma linha)." ;;
+esac
 
 anterior="$(tag_atual)"
 if [[ "$1" == "--rollback" ]]; then
@@ -38,7 +47,7 @@ fi
 info "Subindo serviços e aguardando os healthchecks (até 10 min)"
 if ! compose up -d --remove-orphans --wait --wait-timeout 600; then
   compose ps
-  erro "algum serviço não ficou saudável. Veja: docker compose -p sabia-prod logs --tail=100 <serviço>"
+  erro "algum serviço não ficou saudável. Veja: deploy/dc.sh logs --tail=100 <serviço>"
 fi
 
 compose ps

@@ -8,15 +8,13 @@ source "$(dirname "$0")/lib.sh"
 
 exigir_env_file
 
-BACKUP_DIR="${BACKUP_DIR:-$(ler_env BACKUP_DIR)}"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/sabia}"
+BACKUP_DIR="$(dir_backup)"
 BACKUP_REMOTE="${BACKUP_REMOTE:-$(ler_env BACKUP_REMOTE)}"
 RETENCAO_DIAS=7
 MINIMO_LIVRE_KB=$((1024 * 1024)) # 1 GB
 
 umask 077
-mkdir -p "$BACKUP_DIR"
-chmod 700 "$BACKUP_DIR"
+preparar_dir_backup "$BACKUP_DIR"
 
 livre_kb="$(df --output=avail -k "$BACKUP_DIR" | tail -n1 | tr -d ' ')"
 if (( livre_kb < MINIMO_LIVRE_KB )); then

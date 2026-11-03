@@ -3,19 +3,29 @@
 Servidor Ubuntu, acesso por **IP público** (sem domínio), HTTPS com certificado de IP do Let's Encrypt
 emitido pelo Caddy. As imagens vêm do GHCR (veja `docs/ci-cd.md`); **nada é compilado no servidor**.
 
-Em todos os comandos, `/opt/sabia` é o clone do repositório, `<IP>` é o IP público e
-`dc` é um atalho para o compose de produção:
+Em todos os comandos, `/opt/sabia` é o clone do repositório (rode-os de dentro dele) e `<IP>` é o
+IP público. `deploy/dc.sh` é o `docker compose` de produção: aceita os mesmos argumentos e já passa
+projeto, arquivo, `.env.prod` e `IMAGE_TAG` (do ambiente ou de `deploy/.current_tag`, a última tag
+implantada):
 
 ```bash
-alias dc='docker compose -p sabia-prod -f /opt/sabia/docker-compose.prod.yml --env-file /opt/sabia/.env.prod'
-# dc exige IMAGE_TAG: exporte a tag em uso antes, ex.: export IMAGE_TAG=$(cat /opt/sabia/deploy/.current_tag)
+deploy/dc.sh ps
+deploy/dc.sh logs --tail=100 caddy
 ```
 
 ## 1. Preparar o servidor (uma vez)
 
 ### Docker
 
-Repositório oficial da Docker (instruções em https://docs.docker.com/engine/install/ubuntu/):
+**Ubuntu 26.04:** o repositório da Docker ainda não tem pacotes para essa versão (o `apt-get update`
+falha ou não acha `docker-ce`). Use os pacotes do próprio Ubuntu e pule o bloco do repositório oficial:
+
+```bash
+sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2
+```
+
+Outras versões do Ubuntu: repositório oficial da Docker (instruções em
+https://docs.docker.com/engine/install/ubuntu/):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y ca-certificates curl
@@ -27,13 +37,8 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Se o `apt-get update` reclamar que o repositório não tem a versão do Ubuntu 26.04
-(o repositório da Docker costuma demorar a incluir versões novas), use os pacotes do Ubuntu:
-
-```bash
-sudo rm /etc/apt/sources.list.d/docker.list
-sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2
-```
+Se você já tinha adicionado o repositório da Docker no 26.04, remova-o antes
+(`sudo rm /etc/apt/sources.list.d/docker.list && sudo apt-get update`).
 
 Depois, em ambos os casos:
 
@@ -45,7 +50,11 @@ docker compose version              # precisa ser v2.20+ (usa --wait)
 
 ### Firewall
 
+O `ufw` pode não vir instalado na imagem da VM. Crie as regras **antes** do `enable`: ligar o ufw sem a
+regra da porta 22 derruba a sessão SSH atual e tranca o acesso.
+
 ```bash
+sudo apt-get install -y ufw
 sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
@@ -62,7 +71,7 @@ o Let's Encrypt valida o IP por elas, e a renovação também depende disso.
 
 ```bash
 sudo mkdir -p /opt/sabia && sudo chown "$USER" /opt/sabia
-git clone -b release https://github.com/EduKaique/sabia-tcc.git /opt/sabia
+git clone -b main https://github.com/EduKaique/sabia-tcc.git /opt/sabia
 ```
 
 Login no GHCR com um PAT clássico só com `read:packages` (passo a passo em `docs/ci-cd.md`):
@@ -84,29 +93,35 @@ nano .env.prod      # preencha tudo; os comandos para gerar segredos estão no p
 - Senhas iniciais (`SABIA_*_SENHA`) com 12+ caracteres.
 - Servidor com ~1,6 GB de RAM: acrescente as linhas de `deploy/env.lowmem.example` e crie swap.
 
+### Pasta de backup (antes do primeiro deploy)
+
+O `deploy.sh` faz backup a cada deploy e se recusa a começar sem esta pasta:
+
+```bash
+sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
+```
+
 ## 2. Primeiro deploy
 
-Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `release`).
+Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `main`; o workflow só publica a partir da `main`, inclusive tags `v*`).
 
 1. **Smoke em HTTP (opcional, antes do certificado):** no `.env.prod`, `CADDYFILE=Caddyfile.http` e
    `CORS_ORIGINS=https://<IP>,http://<IP>`. Rode `deploy/deploy.sh sha-xxxxxxx` e, de outra máquina,
    `deploy/smoke.sh http://<IP>`. Em HTTP o clipboard e o cookie `Secure` não funcionam: só para teste.
 2. **HTTPS em staging do Let's Encrypt:** `CADDYFILE=Caddyfile`,
    `ACME_CA=https://acme-staging-v02.api.letsencrypt.org/directory`. Rode `deploy/deploy.sh sha-xxxxxxx`
-   e acompanhe `dc logs -f caddy` até aparecer `certificate obtained successfully`.
+   e acompanhe `deploy/dc.sh logs -f caddy` até aparecer `certificate obtained successfully`.
    O navegador vai avisar que o certificado não é confiável (é o esperado no staging).
    `deploy/smoke.sh https://<IP>` (usa `-k`).
 3. **HTTPS em produção:** `ACME_CA=https://acme-v02.api.letsencrypt.org/directory`,
    `CORS_ORIGINS=https://<IP>`. Apague o certificado de staging e suba de novo:
    ```bash
-   export IMAGE_TAG=$(cat deploy/.current_tag)
-   dc stop caddy && dc rm -f caddy && docker volume rm sabia-prod_caddy_data
-   deploy/deploy.sh "$IMAGE_TAG"
+   deploy/dc.sh stop caddy && deploy/dc.sh rm -f caddy && docker volume rm sabia-prod_caddy_data
+   deploy/deploy.sh "$(cat deploy/.current_tag)"
    ```
    Confirme o cadeado no navegador e rode `deploy/smoke.sh https://<IP>` de novo.
-4. Agende o backup diário (a linha exata é impressa pelo `deploy/backup.sh`):
+4. Agende o backup diário (a linha exata é impressa pelo `deploy/backup.sh`; a pasta já foi criada na seção 1):
    ```bash
-   sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
    crontab -e   # 15 3 * * * /opt/sabia/deploy/backup.sh >> /var/backups/sabia/backup.log 2>&1
    ```
 
@@ -119,10 +134,10 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 |---|---|
 | Atualizar | `cd /opt/sabia && git pull && deploy/deploy.sh sha-novo` (faz backup antes) |
 | Rollback | `deploy/deploy.sh --rollback` (volta para a tag anterior). O schema do banco **não** volta: se a versão nova mudou tabelas, restaure o backup feito antes do deploy |
-| Status | `dc ps` e `docker stats --no-stream` |
-| Logs | `dc logs --tail=200 -f <serviço>` (caddy, web, api-gateway, auth-service, pedagogico-service, ia-service, database) |
-| Reiniciar um serviço | `dc restart <serviço>` |
-| Reiniciar tudo | `dc restart` |
+| Status | `deploy/dc.sh ps` e `docker stats --no-stream` |
+| Logs | `deploy/dc.sh logs --tail=200 -f <serviço>` (caddy, web, api-gateway, auth-service, pedagogico-service, ia-service, database) |
+| Reiniciar um serviço | `deploy/dc.sh restart <serviço>` |
+| Reiniciar tudo | `deploy/dc.sh restart` |
 | Backup manual | `deploy/backup.sh` |
 | Testar um backup | `deploy/restore.sh /var/backups/sabia/sabia-AAAAMMDD-HHMMSS.dump --test` |
 | Restaurar de verdade | `deploy/restore.sh <dump>` (pede `RESTAURAR`, faz backup antes) |
@@ -130,21 +145,28 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 | Espaço em disco | `df -h /` e `docker system df` |
 
 **Reboot do servidor:** o Docker sobe com o systemd e os containers voltam sozinhos
-(`restart: unless-stopped`). Depois do boot, confira `dc ps` e rode o `smoke.sh`.
-Um container parado manualmente com `dc stop` **não** volta no reboot.
+(`restart: unless-stopped`). Depois do boot, confira `deploy/dc.sh ps` e rode o `smoke.sh`.
+Um container parado manualmente com `deploy/dc.sh stop` **não** volta no reboot.
 
 ## 4. Certificado de IP
 
-- Perfil `shortlived`: validade de ~6 dias. O Caddy renova sozinho na metade da vida (~a cada 3 dias).
+- Perfil `shortlived`: validade de ~6 dias. O Caddy renova sozinho quando resta cerca de um terço da
+  validade (~no 4º dia de um certificado de 6 dias).
 - Se o Caddy ficar **fora do ar ou sem acesso às portas 80/443 por mais de ~6 dias**, o certificado vence
   e os navegadores bloqueiam o site. Com o servidor ligado e as portas abertas, nada precisa ser feito.
 - Diagnóstico:
   ```bash
-  dc logs caddy | grep -iE 'certificate|acme|error' | tail -20
+  deploy/dc.sh logs caddy | grep -iE 'certificate|acme|error' | tail -20
   echo | openssl s_client -connect <IP>:443 2>/dev/null | openssl x509 -noout -issuer -dates
   ```
   Erros comuns: porta 80/443 bloqueada no firewall da universidade (o desafio falha), `ACME_CA` ainda
   em staging, ou limite de emissão atingido por muitas tentativas (espere e use staging para testar).
+- **`PR_END_OF_FILE_ERROR` (Firefox), "conexão reiniciada" (Chrome) ou `curl: (35)` em `https://<IP>`:**
+  acesso por IP não envia SNI e, atrás do Docker, o Caddy não sabe qual certificado entregar.
+  Solução: o bloco global `default_sni {$SITE_ADDRESS}` no início do `deploy/Caddyfile` (já está no
+  repositório; se o servidor tem uma cópia antiga, `git pull` e `deploy/deploy.sh "$(cat deploy/.current_tag)"`).
+- **`NET::ERR_CERT_AUTHORITY_INVALID`:** o certificado é do staging do Let's Encrypt (`ACME_CA` ainda em
+  staging). Troque `ACME_CA` para a produção e apague o certificado de staging (seção 2, passo 3).
 - **Contingência (certificado não sai a tempo da aula):** `CADDYFILE=Caddyfile.http` e
   `CORS_ORIGINS=https://<IP>,http://<IP>` no `.env.prod`, depois `deploy/deploy.sh "$(cat deploy/.current_tag)"`.
   Funciona em `http://<IP>`, mas o botão de copiar link não funciona e o token trafega sem criptografia.
@@ -165,9 +187,9 @@ inacessível, `/api/pedagogico/api/interno/` 404, CORS do login e portas 5432, 8
 Manual:
 
 **Infra**
-- [ ] `dc ps`: todos `healthy`, nenhum reiniciando em loop.
+- [ ] `deploy/dc.sh ps`: todos `healthy`, nenhum reiniciando em loop.
 - [ ] `https://<IP>` com cadeado (certificado do Let's Encrypt de produção).
-- [ ] `dc logs | grep -iE 'key=|secret|senha'` não mostra segredo; sem `DEBUG` e sem SQL nos logs.
+- [ ] `deploy/dc.sh logs | grep -iE 'key=|secret|senha'` não mostra segredo; sem `DEBUG` e sem SQL nos logs.
 - [ ] `docker stats --no-stream`: consumo dentro dos limites com o sistema ocioso.
 
 **Fluxos da aula** (num computador da escola, na rede da escola)
@@ -178,13 +200,13 @@ Manual:
 - [ ] Aluno abre a atividade, o editor Blockly carrega (fontes e toolbox), executa e envia.
 - [ ] Professor vê a submissão, corrige e lança a nota; o aluno vê a nota.
 - [ ] Professor usa "gerar atividade com IA" e "revisar com IA".
-- [ ] Degradação: `dc stop ia-service` → o professor vê erro amigável e o resto funciona; `dc start ia-service` depois.
+- [ ] Degradação: `deploy/dc.sh stop ia-service` → o professor vê erro amigável e o resto funciona; `deploy/dc.sh start ia-service` depois.
 - [ ] Recuperar senha: o e-mail chega (SMTP) com link para `https://<IP>/redefinir-senha`.
 - [ ] 5–10 abas de aluno simultâneas sem erro.
 
 **Operação**
 - [ ] `deploy/backup.sh` gera o arquivo e `deploy/restore.sh <dump> --test` passa.
-- [ ] `dc restart` de um serviço: volta sozinho e os dados continuam lá.
+- [ ] `deploy/dc.sh restart <serviço>`: volta sozinho e os dados continuam lá.
 
 ## 6. Véspera da aula
 
@@ -207,8 +229,7 @@ não devem ficar guardados sem necessidade.
 1. Exporte o que o TCC precisa **sem dados pessoais** (contagens, notas agregadas, prints anonimizados).
 2. Pare e apague tudo, inclusive o banco:
    ```bash
-   export IMAGE_TAG=$(cat /opt/sabia/deploy/.current_tag)
-   dc down -v                                    # remove containers e volumes (banco e certificados)
+   /opt/sabia/deploy/dc.sh down -v               # remove containers e volumes (banco e certificados)
    ```
 3. Apague os dumps e os logs:
    ```bash
