@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Trash2, Users } from 'lucide-react'
+import { KeyRound, Search, Trash2, Users } from 'lucide-react'
 import { useTurmaAlunos } from '@/hooks/useTurmaAlunos'
 import { mensagemErroTurma } from '@/hooks/useTurmas'
 import type { AlunoDaTurma, AlunoMatriculado } from '@/types'
 import { AlunoAvatar } from '@/components/professor/atividades/detalhes/AlunoAvatar'
 import { DesmatricularAlunoDialog } from './DesmatricularAlunoDialog'
+import { RedefinirSenhaAlunoDialog } from './RedefinirSenhaAlunoDialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,7 @@ export function AlunosTurmaTable({ turmaId }: Props) {
   const { data: alunos = [], isLoading, isError, error } = useTurmaAlunos(turmaId)
   const [busca, setBusca] = useState('')
   const [alunoParaRemover, setAlunoParaRemover] = useState<AlunoMatriculado | null>(null)
+  const [alunoParaRedefinir, setAlunoParaRedefinir] = useState<AlunoDaTurma | null>(null)
 
   const termo = normalizar(busca.trim())
   const filtrados = termo
@@ -148,6 +150,15 @@ export function AlunosTurmaTable({ turmaId }: Props) {
                           <Button
                             variant="ghost"
                             size="sm"
+                            title="Redefinir senha"
+                            aria-label={`Redefinir senha de ${nomeExibido(aluno)}`}
+                            onClick={() => setAlunoParaRedefinir(aluno)}
+                          >
+                            <KeyRound size={14} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="text-destructive hover:text-destructive"
                             title="Remover da turma"
                             aria-label={`Remover ${nomeExibido(aluno)} da turma`}
@@ -170,6 +181,12 @@ export function AlunosTurmaTable({ turmaId }: Props) {
         </div>
       )}
 
+      <RedefinirSenhaAlunoDialog
+        key={alunoParaRedefinir?.alunoId ?? 'nenhum'}
+        turmaId={turmaId}
+        aluno={alunoParaRedefinir}
+        onOpenChange={(open) => !open && setAlunoParaRedefinir(null)}
+      />
       <DesmatricularAlunoDialog
         key={alunoParaRemover?.alunoId ?? 'nenhum'}
         turmaId={turmaId}

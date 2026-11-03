@@ -30,3 +30,29 @@ export async function buscarAluno(termo: string): Promise<AlunoBusca> {
   const { data } = await authApi.get<AlunoBusca>('/api/auth/alunos/busca', { params: { termo } })
   return data
 }
+
+export interface RedefinirSenhaAlunoPayload {
+  modo: 'ALEATORIA' | 'DIGITADA'
+  /** Só no modo DIGITADA. */
+  senha?: string
+  exigirTroca: boolean
+}
+
+export interface RedefinirSenhaAlunoResposta {
+  /** Só no modo ALEATORIA: exibir uma única vez, nunca guardar. */
+  senhaTemporaria?: string
+  exigirTroca: boolean
+}
+
+/** Professor redefine a senha de um aluno da turma (auth-service confere o vínculo). */
+export async function redefinirSenhaAluno(
+  turmaId: number,
+  alunoId: number,
+  payload: RedefinirSenhaAlunoPayload,
+): Promise<RedefinirSenhaAlunoResposta> {
+  const { data } = await authApi.post<RedefinirSenhaAlunoResposta>(
+    `/api/auth/professor/turmas/${turmaId}/alunos/${alunoId}/senha`,
+    payload,
+  )
+  return data
+}
