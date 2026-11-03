@@ -6,6 +6,16 @@ interface AuthUser {
   id: string;
   nome: string;
   role: "PROFESSOR" | "ALUNO" | "ADMINISTRADOR";
+  /** Troca de senha pendente: o backend recusa tudo (403 SENHA_TEMPORARIA) até a troca. */
+  mustChangePassword: boolean;
+}
+
+/** Payload do JWT é base64url e o JSON é UTF-8 (nomes com acento): `atob` puro não basta. */
+function decodificarPayload(token: string) {
+  const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+  const comPadding = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+  const bytes = Uint8Array.from(atob(comPadding), (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
 }
 
 const subscribe = (listener: () => void) => {
@@ -24,8 +34,13 @@ export function useAuth() {
     if (!token) return null;
 
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return { id: payload.sub, nome: payload.nome, role: payload.role };
+      const payload = decodificarPayload(token);
+      return {
+        id: payload.sub,
+        nome: payload.nome,
+        role: payload.role,
+        mustChangePassword: payload.mustChangePassword === true,
+      };
     } catch {
       return null;
     }

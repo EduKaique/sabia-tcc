@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, LogOut, Users } from 'lucide-react'
+import { BarChart3, BookOpen, KeyRound, LogOut, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 
@@ -65,6 +65,13 @@ export function ProfessorSidebar() {
           <Settings size={18} />
           Configurações
         </Link> */}
+        <Link
+          href="/trocar-senha"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+        >
+          <KeyRound size={18} />
+          Alterar senha
+        </Link>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
