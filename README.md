@@ -66,4 +66,5 @@ make setup    # instala dependências
 
 - [Arquitetura](docs/architecture.md)
 - [Setup detalhado](docs/setup.md)
+- Versão atual: 0.1.0 (pré-release). Mudanças em [CHANGELOG.md](CHANGELOG.md)
 
