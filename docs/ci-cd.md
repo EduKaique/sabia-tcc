@@ -4,7 +4,8 @@ Workflow: `.github/workflows/docker-publish.yml`. O servidor nunca faz build: s�
 
 ## Quando roda
 
-- push em `release` ou `main`, tag `v*` ou manualmente (Actions → "Publicar imagens (GHCR)" → Run workflow).
+- push na `main`, tag `v*` criada a partir da `main` ou manualmente (Actions → "Publicar imagens (GHCR)" → Run workflow).
+  Não existe mais branch `release`: as imagens saem só da `main`.
 - Job **testes**: `./mvnw -B test` em `auth-service` e `pedagogico-service` (JDK 21). Se falhar, nada é publicado.
 - Job **publicar**: constrói as 5 imagens (`linux/amd64`, cache do buildx no GitHub) e envia ao GHCR com o `GITHUB_TOKEN` do próprio workflow. O front não roda `pnpm test` (jest ainda não está instalado).
 
@@ -23,7 +24,7 @@ Workflow: `.github/workflows/docker-publish.yml`. O servidor nunca faz build: s�
 Tags de cada build:
 
 - `sha-<7 primeiros caracteres do commit>`: sempre; é a tag para fixar versão e fazer rollback.
-- `release` ou `main`: o nome da branch do push.
+- `main`: em push na `main`.
 - `latest`: só em push na `main`.
 - `1.2.3`: em tag git `v1.2.3`.
 
@@ -46,7 +47,6 @@ Não use esse token em mais nada nem o coloque em arquivos do repositório.
 ## Rollback
 
 1. Ache a tag da versão boa: aba Actions (o resumo de cada execução lista as tags) ou a página do pacote no GitHub (`sha-xxxxxxx`).
-2. No compose de produção, troque a tag das imagens afetadas de `release` para `sha-xxxxxxx` (ou exporte a variável de tag usada no compose).
-3. `docker compose pull && docker compose up -d`.
+2. No servidor: `deploy/deploy.sh sha-xxxxxxx` (ou `deploy/deploy.sh --rollback` para a tag implantada antes). Detalhes em `docs/runbook-producao.md`.
 
-Para voltar ao fluxo normal, restaure a tag `release` (ou `latest`) e repita o passo 3.
+Prefira sempre `sha-xxxxxxx` em produção: `main` e `latest` mudam a cada push.

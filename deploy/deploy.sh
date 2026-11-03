@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Implanta uma tag das imagens do GHCR.
-#   deploy/deploy.sh sha-1a2b3c4     # ou release / main / 1.2.3
+#   deploy/deploy.sh sha-1a2b3c4     # ou main / 1.2.3
 #   deploy/deploy.sh --rollback      # volta para a tag anterior (deploy/.last_tag)
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"

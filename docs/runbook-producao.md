@@ -17,7 +17,15 @@ deploy/dc.sh logs --tail=100 caddy
 
 ### Docker
 
-Repositório oficial da Docker (instruções em https://docs.docker.com/engine/install/ubuntu/):
+**Ubuntu 26.04:** o repositório da Docker ainda não tem pacotes para essa versão (o `apt-get update`
+falha ou não acha `docker-ce`). Use os pacotes do próprio Ubuntu e pule o bloco do repositório oficial:
+
+```bash
+sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2
+```
+
+Outras versões do Ubuntu: repositório oficial da Docker (instruções em
+https://docs.docker.com/engine/install/ubuntu/):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y ca-certificates curl
@@ -29,13 +37,8 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Se o `apt-get update` reclamar que o repositório não tem a versão do Ubuntu 26.04
-(o repositório da Docker costuma demorar a incluir versões novas), use os pacotes do Ubuntu:
-
-```bash
-sudo rm /etc/apt/sources.list.d/docker.list
-sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2
-```
+Se você já tinha adicionado o repositório da Docker no 26.04, remova-o antes
+(`sudo rm /etc/apt/sources.list.d/docker.list && sudo apt-get update`).
 
 Depois, em ambos os casos:
 
@@ -47,7 +50,11 @@ docker compose version              # precisa ser v2.20+ (usa --wait)
 
 ### Firewall
 
+O `ufw` pode não vir instalado na imagem da VM. Crie as regras **antes** do `enable`: ligar o ufw sem a
+regra da porta 22 derruba a sessão SSH atual e tranca o acesso.
+
 ```bash
+sudo apt-get install -y ufw
 sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
@@ -64,7 +71,7 @@ o Let's Encrypt valida o IP por elas, e a renovação também depende disso.
 
 ```bash
 sudo mkdir -p /opt/sabia && sudo chown "$USER" /opt/sabia
-git clone -b release https://github.com/EduKaique/sabia-tcc.git /opt/sabia
+git clone -b main https://github.com/EduKaique/sabia-tcc.git /opt/sabia
 ```
 
 Login no GHCR com um PAT clássico só com `read:packages` (passo a passo em `docs/ci-cd.md`):
@@ -96,7 +103,7 @@ sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
 
 ## 2. Primeiro deploy
 
-Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `release`).
+Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `main`; o workflow só publica a partir da `main`, inclusive tags `v*`).
 
 1. **Smoke em HTTP (opcional, antes do certificado):** no `.env.prod`, `CADDYFILE=Caddyfile.http` e
    `CORS_ORIGINS=https://<IP>,http://<IP>`. Rode `deploy/deploy.sh sha-xxxxxxx` e, de outra máquina,
@@ -143,7 +150,8 @@ Um container parado manualmente com `deploy/dc.sh stop` **não** volta no reboot
 
 ## 4. Certificado de IP
 
-- Perfil `shortlived`: validade de ~6 dias. O Caddy renova sozinho na metade da vida (~a cada 3 dias).
+- Perfil `shortlived`: validade de ~6 dias. O Caddy renova sozinho quando resta cerca de um terço da
+  validade (~no 4º dia de um certificado de 6 dias).
 - Se o Caddy ficar **fora do ar ou sem acesso às portas 80/443 por mais de ~6 dias**, o certificado vence
   e os navegadores bloqueiam o site. Com o servidor ligado e as portas abertas, nada precisa ser feito.
 - Diagnóstico:
@@ -153,6 +161,12 @@ Um container parado manualmente com `deploy/dc.sh stop` **não** volta no reboot
   ```
   Erros comuns: porta 80/443 bloqueada no firewall da universidade (o desafio falha), `ACME_CA` ainda
   em staging, ou limite de emissão atingido por muitas tentativas (espere e use staging para testar).
+- **`PR_END_OF_FILE_ERROR` (Firefox), "conexão reiniciada" (Chrome) ou `curl: (35)` em `https://<IP>`:**
+  acesso por IP não envia SNI e, atrás do Docker, o Caddy não sabe qual certificado entregar.
+  Solução: o bloco global `default_sni {$SITE_ADDRESS}` no início do `deploy/Caddyfile` (já está no
+  repositório; se o servidor tem uma cópia antiga, `git pull` e `deploy/deploy.sh "$(cat deploy/.current_tag)"`).
+- **`NET::ERR_CERT_AUTHORITY_INVALID`:** o certificado é do staging do Let's Encrypt (`ACME_CA` ainda em
+  staging). Troque `ACME_CA` para a produção e apague o certificado de staging (seção 2, passo 3).
 - **Contingência (certificado não sai a tempo da aula):** `CADDYFILE=Caddyfile.http` e
   `CORS_ORIGINS=https://<IP>,http://<IP>` no `.env.prod`, depois `deploy/deploy.sh "$(cat deploy/.current_tag)"`.
   Funciona em `http://<IP>`, mas o botão de copiar link não funciona e o token trafega sem criptografia.
