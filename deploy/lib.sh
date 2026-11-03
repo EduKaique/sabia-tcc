@@ -27,6 +27,21 @@ ler_env() {
   printf '%s' "$valor"
 }
 
+# Diretório dos dumps: ambiente, .env.prod ou /var/backups/sabia.
+dir_backup() {
+  local dir="${BACKUP_DIR:-$(ler_env BACKUP_DIR)}"
+  printf '%s' "${dir:-/var/backups/sabia}"
+}
+
+# Cria o diretório de backup (modo 700) ou mostra o comando exato para corrigir.
+preparar_dir_backup() {
+  local dir="$1"
+  if ! { mkdir -p "$dir" && [[ -w "$dir" ]] && chmod 700 "$dir"; } 2>/dev/null; then
+    erro "sem permissão para criar/usar o diretório de backup $dir. Corrija com:
+  sudo mkdir -p $dir && sudo chown $(id -un) $dir"
+  fi
+}
+
 tag_atual() { cat "$ARQ_TAG_ATUAL" 2>/dev/null || true; }
 tag_anterior() { cat "$ARQ_TAG_ANTERIOR" 2>/dev/null || true; }
 

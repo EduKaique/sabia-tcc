@@ -86,6 +86,14 @@ nano .env.prod      # preencha tudo; os comandos para gerar segredos estão no p
 - Senhas iniciais (`SABIA_*_SENHA`) com 12+ caracteres.
 - Servidor com ~1,6 GB de RAM: acrescente as linhas de `deploy/env.lowmem.example` e crie swap.
 
+### Pasta de backup (antes do primeiro deploy)
+
+O `deploy.sh` faz backup a cada deploy e se recusa a começar sem esta pasta:
+
+```bash
+sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
+```
+
 ## 2. Primeiro deploy
 
 Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `release`).
@@ -105,9 +113,8 @@ Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `release`).
    deploy/deploy.sh "$(cat deploy/.current_tag)"
    ```
    Confirme o cadeado no navegador e rode `deploy/smoke.sh https://<IP>` de novo.
-4. Agende o backup diário (a linha exata é impressa pelo `deploy/backup.sh`):
+4. Agende o backup diário (a linha exata é impressa pelo `deploy/backup.sh`; a pasta já foi criada na seção 1):
    ```bash
-   sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
    crontab -e   # 15 3 * * * /opt/sabia/deploy/backup.sh >> /var/backups/sabia/backup.log 2>&1
    ```
 

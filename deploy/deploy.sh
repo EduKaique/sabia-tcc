@@ -8,6 +8,8 @@ source "$(dirname "$0")/lib.sh"
 [[ $# -eq 1 ]] || erro "uso: $0 <tag> | --rollback"
 
 exigir_env_file
+# Antes de qualquer pull: o backup.sh roda a cada deploy e precisa deste diretório.
+preparar_dir_backup "$(dir_backup)"
 
 anterior="$(tag_atual)"
 if [[ "$1" == "--rollback" ]]; then
