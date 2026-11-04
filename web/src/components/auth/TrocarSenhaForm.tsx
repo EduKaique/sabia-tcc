@@ -1,37 +1,33 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { ArrowLeft, Eye, EyeOff, Loader2, LogOut } from 'lucide-react'
+import { ArrowLeft, Loader2, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { trocarSenha } from '@/services/auth'
 import { useAuth } from '@/hooks/useAuth'
 import { mensagemErroTurma } from '@/hooks/useTurmas'
 import { encerrarSessao, redirecionarPorPerfil, salvarToken } from '@/lib/auth-helpers'
+import { cn } from '@/lib/utils'
+import { fredoka } from '@/lib/fontesHome'
+import { alertaErro, botaoPrincipal, botaoSecundario, textoApoio } from '@/lib/estilos'
 import { trocarSenhaSchema, type TrocarSenhaFormData } from '@/lib/schemas/trocarSenhaSchema'
-
-const inputBase =
-  'w-full rounded-lg border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30'
+import { CampoFormulario } from '@/components/aluno/primeiro-acesso/CampoFormulario'
+import { CampoSenha } from '@/components/aluno/primeiro-acesso/CampoSenha'
 
 const subscribeNoop = () => () => {}
 
-const CAMPOS: { id: keyof TrocarSenhaFormData; rotulo: string; autoComplete: string }[] = [
-  { id: 'senhaAtual', rotulo: 'Senha atual', autoComplete: 'current-password' },
-  { id: 'novaSenha', rotulo: 'Nova senha', autoComplete: 'new-password' },
-  { id: 'confirmarSenha', rotulo: 'Confirmar nova senha', autoComplete: 'new-password' },
-]
-
 /**
- * Troca da própria senha. Obrigatória (claim mustChangePassword no token): sem saída além de
- * "Sair". Voluntária (pelo menu): com "Voltar". Ao concluir, guarda o token novo e vai para a home.
+ * Troca da própria senha, no visual do login da home. Obrigatória (claim mustChangePassword no
+ * token): sem saída além de "Sair". Voluntária (pelo menu): com "Voltar". Ao concluir, guarda o
+ * token novo e vai para a home do perfil.
  */
 export function TrocarSenhaForm() {
   const router = useRouter()
   const { user, token } = useAuth()
   const hydrated = useSyncExternalStore(subscribeNoop, () => true, () => false)
-  const [mostrarSenha, setMostrarSenha] = useState(false)
   const obrigatoria = !!user?.mustChangePassword
 
   useEffect(() => {
@@ -60,83 +56,74 @@ export function TrocarSenhaForm() {
   if (!hydrated || !token) return null
 
   return (
-    <form onSubmit={handleSubmit((data) => mutate(data))} noValidate>
-      <p className="mb-6 text-sm text-muted-foreground">
-        {obrigatoria
-          ? 'Sua senha foi redefinida. Para continuar, crie uma senha nova que só você saiba.'
-          : 'Digite sua senha atual e escolha uma senha nova.'}
-      </p>
+    <form
+      noValidate
+      onSubmit={handleSubmit((dados) => {
+        if (!isPending) mutate(dados)
+      })}
+      className="flex flex-col gap-5 text-left"
+    >
+      <div className="flex flex-col gap-2 text-center">
+        <h2 className={cn(fredoka.className, 'text-2xl font-bold text-tinta sm:text-[1.75rem]')}>
+          {obrigatoria ? 'Crie uma senha nova' : 'Trocar sua senha'}
+        </h2>
+        <p className={textoApoio}>
+          {obrigatoria
+            ? 'Sua senha foi redefinida. Para continuar, crie uma senha nova que só você saiba.'
+            : 'Digite sua senha atual e escolha uma senha nova.'}
+        </p>
+      </div>
 
-      {CAMPOS.map(({ id, rotulo, autoComplete }, i) => (
-        <div key={id} className={`flex flex-col gap-1.5 ${i > 0 ? 'mt-4' : ''}`}>
-          <label htmlFor={id} className="font-heading text-sm font-medium text-foreground">
-            {rotulo}
-          </label>
-          <div className="relative">
-            <input
-              id={id}
-              type={mostrarSenha ? 'text' : 'password'}
-              autoComplete={autoComplete}
-              {...register(id)}
-              className={`${inputBase} ${i === 0 ? 'pr-10' : ''} ${errors[id] ? 'border-destructive' : 'border-border'}`}
-            />
-            {i === 0 && (
-              <button
-                type="button"
-                aria-label={mostrarSenha ? 'Ocultar senhas' : 'Mostrar senhas'}
-                aria-pressed={mostrarSenha}
-                onClick={() => setMostrarSenha((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            )}
-          </div>
-          {errors[id] && <p className="text-sm text-destructive">{errors[id]?.message}</p>}
-        </div>
-      ))}
+      <CampoFormulario id="ts-senha-atual" label="Senha atual" erro={errors.senhaAtual?.message}>
+        {(a11y) => <CampoSenha {...a11y} autoComplete="current-password" {...register('senhaAtual')} />}
+      </CampoFormulario>
 
-      {isError && (
-        <div role="alert" className="mt-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {mensagemErroTurma(error)}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={isPending}
-        aria-busy={isPending}
-        className="mt-6 w-full rounded-lg bg-primary py-2.5 font-heading font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+      <CampoFormulario
+        id="ts-nova-senha"
+        label="Nova senha"
+        dica="Pelo menos 8 caracteres."
+        erro={errors.novaSenha?.message}
       >
-        {isPending ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 size={16} className="animate-spin" />
-            Salvando...
-          </span>
-        ) : (
-          'Trocar senha'
-        )}
-      </button>
+        {(a11y) => <CampoSenha {...a11y} autoComplete="new-password" {...register('novaSenha')} />}
+      </CampoFormulario>
 
-      {obrigatoria ? (
+      <CampoFormulario id="ts-confirmar-senha" label="Confirmar nova senha" erro={errors.confirmarSenha?.message}>
+        {(a11y) => <CampoSenha {...a11y} autoComplete="new-password" {...register('confirmarSenha')} />}
+      </CampoFormulario>
+
+      {/* Região de alerta montada antes de qualquer erro, para ser anunciada. */}
+      <div role="alert" className="outline-none">
+        {isError && <div className={alertaErro}>{mensagemErroTurma(error)}</div>}
+      </div>
+
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {obrigatoria ? (
+          <button type="button" onClick={sair} disabled={isPending} className={botaoSecundario}>
+            <LogOut size={18} aria-hidden="true" />
+            Sair
+          </button>
+        ) : (
+          <button type="button" onClick={() => router.back()} disabled={isPending} className={botaoSecundario}>
+            <ArrowLeft size={18} aria-hidden="true" />
+            Voltar
+          </button>
+        )}
         <button
-          type="button"
-          onClick={sair}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+          type="submit"
+          disabled={isPending}
+          aria-busy={isPending}
+          className={cn(botaoPrincipal, fredoka.className, 'sm:min-w-44')}
         >
-          <LogOut size={16} />
-          Sair
+          {isPending ? (
+            <>
+              <Loader2 size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              Salvando…
+            </>
+          ) : (
+            'Trocar senha'
+          )}
         </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft size={16} />
-          Voltar
-        </button>
-      )}
+      </div>
     </form>
   )
 }
