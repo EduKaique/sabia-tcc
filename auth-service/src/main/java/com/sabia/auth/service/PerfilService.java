@@ -5,6 +5,7 @@ import com.sabia.auth.dto.response.PerfilStatusResponse;
 import com.sabia.auth.exception.CpfJaCadastradoException;
 import com.sabia.auth.exception.MatriculaJaCadastradaException;
 import com.sabia.auth.exception.PerfilNaoAplicavelException;
+import com.sabia.auth.messaging.PerfilAlunoAtualizadoEvent;
 import com.sabia.auth.model.usuario.Aluno;
 import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
@@ -12,6 +13,7 @@ import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class PerfilService {
 
     private final UsuarioRepository usuarioRepository;
     private final AlunoRepository alunoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void completarPerfil(Usuario usuarioAutenticado, PerfilRequest request) {
@@ -50,6 +53,7 @@ public class PerfilService {
         aluno.setPerfilCompleto(true);
         alunoRepository.save(aluno);
 
+        eventPublisher.publishEvent(new PerfilAlunoAtualizadoEvent(usuarioAutenticado.getId(), request.nomeCompleto()));
         log.info("Perfil completado para aluno id={}", usuarioAutenticado.getId());
     }
 

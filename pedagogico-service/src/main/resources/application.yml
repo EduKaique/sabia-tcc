@@ -13,6 +13,22 @@ spring:
         port: ${RABBITMQ_PORT:5672}
         username: ${RABBITMQ_USER:sabia}
         password: ${RABBITMQ_PASS:sabia}
+        connection-timeout: 5s
+        publisher-confirm-type: correlated
+        publisher-returns: true
+        template:
+            mandatory: true
+        listener:
+            simple:
+                # Falha no consumidor: 3 tentativas com backoff; esgotadas, a mensagem vai para a DLQ.
+                default-requeue-rejected: false
+                prefetch: 10
+                retry:
+                    enabled: true
+                    max-attempts: ${RABBITMQ_RETRY_MAX_ATTEMPTS:3}
+                    initial-interval: ${RABBITMQ_RETRY_INITIAL_INTERVAL:1s}
+                    multiplier: 2
+                    max-interval: 10s
     jpa:
         hibernate:
             ddl-auto: update
@@ -42,10 +58,6 @@ sabia:
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
     mensageria:
-        # false: não conecta nem declara topologia no RabbitMQ (ele ainda não é usado
-        # por nenhum fluxo); em prod dispensa RABBITMQ_PASS.
+        # false: não conecta no RabbitMQ, não declara topologia, não consome nem publica eventos;
+        # em prod dispensa RABBITMQ_PASS.
         rabbitmq-enabled: ${RABBITMQ_ENABLED:true}
-        correcoes:
-            exchange: sabia.correcoes.exchange
-            fila: sabia.correcoes.solicitadas.queue
-            routing-key: correcao.solicitada

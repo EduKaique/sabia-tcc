@@ -3,6 +3,7 @@ package com.sabia.pedagogico.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAvaliativa, Long> {
+
+    @Modifying
+    @Query("UPDATE SubmissaoAvaliativa s SET s.alunoNome = :nome WHERE s.alunoId = :alunoId")
+    int atualizarNomeAluno(@Param("alunoId") Long alunoId, @Param("nome") String nome);
 
     boolean existsByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 

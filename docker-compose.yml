@@ -23,11 +23,12 @@ services:
     container_name: sabia_rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: sabia
-      RABBITMQ_DEFAULT_PASS: sabia
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-sabia}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-sabia}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_PORT:-5672}:5672"
+      # Painel de gerenciamento: http://localhost:15672
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -45,6 +46,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=auth
       SPRING_DATASOURCE_USERNAME: sabia
@@ -61,6 +64,11 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       PEDAGOGICO_URL: ${PEDAGOGICO_URL:-http://pedagogico-service:8081}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-sabia}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-sabia}
+      RABBITMQ_ENABLED: ${RABBITMQ_ENABLED:-true}
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: ${LOG_FORMAT:-logstash}
     ports:
       - "8080:8080"
 
@@ -82,6 +90,10 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8081
       RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-sabia}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-sabia}
+      RABBITMQ_ENABLED: ${RABBITMQ_ENABLED:-true}
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: ${LOG_FORMAT:-logstash}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production-must-be-at-least-32-chars}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-28800000}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
@@ -94,10 +106,17 @@ services:
       dockerfile: Dockerfile
     container_name: sabia_ia_service
     restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       GEMINI_TIMEOUT_SECONDS: ${GEMINI_TIMEOUT_SECONDS:-45}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-sabia}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-sabia}
+      RABBITMQ_ENABLED: ${RABBITMQ_ENABLED:-true}
     ports:
       - "8002:8002"
 

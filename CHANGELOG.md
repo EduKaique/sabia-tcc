@@ -7,6 +7,12 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Adicionado
+
+- Integração com RabbitMQ (eventos de integração entre auth, pedagogico e ia) com retry, DLQ, idempotência, logs estruturados e health. Veja [docs/mensageria.md](docs/mensageria.md).
+- CRUD do relatório de IA por submissão (`/api/professor/submissoes/{id}/relatorio-ia`), persistido após a primeira geração.
+- `scripts/reprocessar-dlq.py` para reenviar mensagens de DLQ.
+
 ## [0.1.0] - 2026-11-03
 
 Primeira versão, publicada como **pré-release**. Notas completas em

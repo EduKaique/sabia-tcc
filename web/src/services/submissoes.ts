@@ -7,7 +7,16 @@ import type {
   SubmissaoProfessorDetalhe,
 } from '@/types'
 
-import type { RelatorioProfessor, RelatorioRequest } from '@/types'
+import type { RelatorioIa, RelatorioProfessor, RelatorioRequest } from '@/types'
+
+export async function salvarRelatorioIa(id: string, relatorio: RelatorioIa): Promise<RelatorioIa> {
+  const { data } = await api.put<RelatorioIa>(`/api/professor/submissoes/${id}/relatorio-ia`, relatorio)
+  return data
+}
+
+export async function removerRelatorioIa(id: string): Promise<void> {
+  await api.delete(`/api/professor/submissoes/${id}/relatorio-ia`)
+}
 
 export async function listarSubmissoes(
   atividadeId: string,
