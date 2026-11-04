@@ -1,8 +1,11 @@
 package com.sabia.pedagogico.config;
 
+import com.sabia.pedagogico.messaging.EventoPublisher;
+import com.sabia.pedagogico.messaging.NoopEventoPublisher;
+import com.sabia.pedagogico.messaging.RabbitEventoPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration;
@@ -15,33 +18,36 @@ class RabbitMQConfigTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(RabbitAutoConfiguration.class))
-            .withUserConfiguration(RabbitMQConfig.class)
-            .withPropertyValues(
-                    "sabia.mensageria.correcoes.exchange=ex",
-                    "sabia.mensageria.correcoes.fila=fila",
-                    "sabia.mensageria.correcoes.routing-key=rk");
+            .withUserConfiguration(RabbitMQConfig.class);
 
     @Test
-    void desligadoNaoDeclaraTopologiaNemRunner() {
+    void desligadoNaoDeclaraTopologiaNemPublicaEventos() {
         contextRunner.withPropertyValues("sabia.mensageria.rabbitmq-enabled=false").run(ctx -> {
             assertThat(ctx).hasNotFailed();
-            assertThat(ctx).doesNotHaveBean(RabbitMQConfig.class);
             assertThat(ctx).doesNotHaveBean(Queue.class);
-            assertThat(ctx).doesNotHaveBean(DirectExchange.class);
+            assertThat(ctx).doesNotHaveBean(Exchange.class);
             assertThat(ctx).doesNotHaveBean(Binding.class);
             assertThat(ctx).doesNotHaveBean("declararTopologiaRabbit");
+            assertThat(ctx.getBean(EventoPublisher.class)).isInstanceOf(NoopEventoPublisher.class);
         });
     }
 
     @Test
-    void ligadoPorPadraoMantemComportamentoAtual() {
+    void ligadoPorPadraoDeclaraFilasComDlqEBindings() {
         contextRunner.run(ctx -> {
             assertThat(ctx).hasNotFailed();
-            assertThat(ctx).hasSingleBean(Queue.class);
-            assertThat(ctx).hasSingleBean(DirectExchange.class);
-            assertThat(ctx).hasSingleBean(Binding.class);
+            assertThat(ctx.getBeansOfType(Queue.class)).hasSize(4);
+            assertThat(ctx.getBeansOfType(Exchange.class)).hasSize(2);
+            assertThat(ctx.getBeansOfType(Binding.class)).hasSize(4);
             assertThat(ctx).hasBean("declararTopologiaRabbit");
             assertThat(ctx).hasSingleBean(ConnectionFactory.class);
+            assertThat(ctx.getBean(EventoPublisher.class)).isInstanceOf(RabbitEventoPublisher.class);
+
+            Queue fila = ctx.getBean("alunoPerfilQueue", Queue.class);
+            assertThat(fila.isDurable()).isTrue();
+            assertThat(fila.getArguments())
+                    .containsEntry("x-dead-letter-exchange", "sabia.eventos.dlx")
+                    .containsEntry("x-dead-letter-routing-key", "pedagogico.aluno-perfil.queue.dlq");
         });
     }
 }

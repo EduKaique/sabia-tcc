@@ -112,6 +112,7 @@ services:
       SABIA_PROFESSOR_SENHA: ${SABIA_PROFESSOR_SENHA:?defina SABIA_PROFESSOR_SENHA (12+ caracteres)}
       SABIA_PROFESSOR_NOME: ${SABIA_PROFESSOR_NOME:-Professor}
       SABIA_PROFESSOR_CPF: ${SABIA_PROFESSOR_CPF:-}
+      RABBITMQ_ENABLED: "false"
     healthcheck:
       <<: *health-rapido
     depends_on:
@@ -126,7 +127,8 @@ services:
       <<: *java-env
       SERVER_PORT: "8081"
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=pedagogico
-      # Sem RabbitMQ em produção (ainda não é usado por nenhum fluxo).
+      # Sem broker no compose de produção: os fluxos assíncronos ficam desligados
+      # (as chamadas HTTP continuam funcionando).
       RABBITMQ_ENABLED: "false"
     healthcheck:
       <<: *health-rapido
@@ -142,6 +144,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:?defina GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       GEMINI_TIMEOUT_SECONDS: ${GEMINI_TIMEOUT_SECONDS:-45}
+      RABBITMQ_ENABLED: "false"
     healthcheck:
       <<: *health-rapido
       start_period: 20s

@@ -140,6 +140,7 @@ export interface SubmissaoProfessorDetalhe {
   status: StatusSubmissao
   estadoJson: string | null
   correcao: Correcao | null
+  relatorioIaPreGeradoJson?: string | null
 }
 
 export interface ErroApi {

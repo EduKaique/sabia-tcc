@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { AlertTriangle, Check, ChevronDown, CircleAlert, Sparkles } from 'lucide-react'
 import type { RelatorioIa } from '@/types'
 import { useRevisarSubmissaoIa } from '@/hooks/useRevisarSubmissaoIa'
+import { useRemoverRelatorioIa, useSalvarRelatorioIa } from '@/hooks/useRelatorioIaSubmissao'
 import type { RevisarSubmissaoIaPayload } from '@/services/ia'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -31,12 +32,15 @@ function lerRelatorio(json: string | null | undefined): RelatorioIa | null {
 }
 
 interface Props {
+  submissaoId: string
   relatorioIaJson: string | null | undefined
   payload: RevisarSubmissaoIaPayload | null
 }
 
-export function PainelRelatorioIa({ relatorioIaJson, payload }: Props) {
+export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Props) {
   const revisar = useRevisarSubmissaoIa()
+  const salvar = useSalvarRelatorioIa(submissaoId)
+  const remover = useRemoverRelatorioIa(submissaoId)
   const [relatorioGerado, setRelatorioGerado] = useState<RelatorioIa | null>(null)
   const [secaoAberta, setSecaoAberta] = useState<'acertos' | 'erros' | 'resumo' | null>(null)
   const relatorio = relatorioGerado ?? lerRelatorio(relatorioIaJson)
@@ -44,8 +48,15 @@ export function PainelRelatorioIa({ relatorioIaJson, payload }: Props) {
   function gerarRelatorio() {
     if (!payload) return
     revisar.mutate(payload, {
-      onSuccess: setRelatorioGerado,
+      onSuccess: (gerado) => {
+        setRelatorioGerado(gerado)
+        salvar.mutate(gerado)
+      },
     })
+  }
+
+  function descartarRelatorio() {
+    remover.mutate(undefined, { onSuccess: () => setRelatorioGerado(null) })
   }
 
   return (
@@ -140,6 +151,17 @@ export function PainelRelatorioIa({ relatorioIaJson, payload }: Props) {
                 {relatorio.resumo}
               </p>
             </SecaoRelatorio>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={gerarRelatorio} disabled={!payload || revisar.isPending}>
+                {revisar.isPending ? 'Gerando...' : 'Gerar novamente'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={descartarRelatorio} disabled={remover.isPending}>
+                Descartar relatório
+              </Button>
+            </div>
+            {(salvar.isError || remover.isError) && (
+              <p className="text-sm text-destructive">Não foi possível atualizar o relatório salvo.</p>
+            )}
           </>
         )}
       </div>

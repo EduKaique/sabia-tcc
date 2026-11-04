@@ -20,6 +20,10 @@ public class SubmissaoAvaliativa extends Submissao {
     @JoinColumn(name = "atividade_id", nullable = false)
     private AtividadeAvaliativa atividade;
 
+    /** Relatório da IA gerado de forma assíncrona (evento submissao.revisao-ia.gerada). */
+    @Column(name = "relatorio_ia_pre_gerado_json", columnDefinition = "TEXT")
+    private String relatorioIaPreGeradoJson;
+
     @OneToOne(mappedBy = "submissao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Correcao correcao;
 

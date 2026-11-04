@@ -19,6 +19,16 @@ spring:
     web:
         error:
             include-message: always
+    rabbitmq:
+        host: ${RABBITMQ_HOST:localhost}
+        port: ${RABBITMQ_PORT:5672}
+        username: ${RABBITMQ_USER:sabia}
+        password: ${RABBITMQ_PASS:sabia}
+        connection-timeout: 5s
+        publisher-confirm-type: correlated
+        publisher-returns: true
+        template:
+            mandatory: true
     mail:
         host: ${SMTP_HOST:localhost}
         port: ${SMTP_PORT:587}
@@ -49,6 +59,9 @@ sabia:
         expiration-ms: ${JWT_EXPIRATION_MS:28800000}
     cors:
         allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+    mensageria:
+        # false: não publica eventos de integração (nem conecta no RabbitMQ).
+        rabbitmq-enabled: ${RABBITMQ_ENABLED:true}
     pedagogico:
         # Endpoints internos do Serviço Pedagógico (primeiro acesso do aluno)
         url: ${PEDAGOGICO_URL:http://pedagogico-service:8081}

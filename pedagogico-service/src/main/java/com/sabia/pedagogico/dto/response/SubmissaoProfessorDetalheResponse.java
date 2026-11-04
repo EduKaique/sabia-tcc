@@ -11,5 +11,6 @@ public record SubmissaoProfessorDetalheResponse(
         LocalDateTime dataEnvio,
         StatusSubmissao status,
         String estadoJson,
-        CorrecaoResponse correcao
+        CorrecaoResponse correcao,
+        String relatorioIaPreGeradoJson
 ) {}
