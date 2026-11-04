@@ -182,13 +182,13 @@ export function AlunosTurmaTable({ turmaId }: Props) {
       )}
 
       <RedefinirSenhaAlunoDialog
-        key={alunoParaRedefinir?.alunoId ?? 'nenhum'}
+        key={`redefinir-${alunoParaRedefinir?.alunoId ?? 'nenhum'}`}
         turmaId={turmaId}
         aluno={alunoParaRedefinir}
         onOpenChange={(open) => !open && setAlunoParaRedefinir(null)}
       />
       <DesmatricularAlunoDialog
-        key={alunoParaRemover?.alunoId ?? 'nenhum'}
+        key={`remover-${alunoParaRemover?.alunoId ?? 'nenhum'}`}
         turmaId={turmaId}
         aluno={alunoParaRemover}
         onOpenChange={(open) => !open && setAlunoParaRemover(null)}
