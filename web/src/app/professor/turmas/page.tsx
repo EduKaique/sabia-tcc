@@ -3,11 +3,8 @@
 import { useState } from 'react'
 import { Plus, Users } from 'lucide-react'
 import { useTurmas } from '@/hooks/useTurmas'
-import type { Turma } from '@/types'
 import { TurmaCard } from '@/components/professor/turmas/TurmaCard'
 import { TurmaFormDialog } from '@/components/professor/turmas/TurmaFormDialog'
-import { ExcluirTurmaDialog } from '@/components/professor/turmas/ExcluirTurmaDialog'
-import { GerenciarAlunosDialog } from '@/components/professor/turmas/GerenciarAlunosDialog'
 import { LoadingSkeleton } from '@/components/professor/atividades/LoadingSkeleton'
 import { Button } from '@/components/ui/button'
 
@@ -15,18 +12,8 @@ export default function TurmasPage() {
   const { data: turmas = [], isLoading } = useTurmas()
   const [formAberto, setFormAberto] = useState(false)
   const [formKey, setFormKey] = useState(0)
-  const [turmaEmEdicao, setTurmaEmEdicao] = useState<Turma | null>(null)
-  const [turmaParaExcluir, setTurmaParaExcluir] = useState<Turma | null>(null)
-  const [turmaParaGerenciarAlunos, setTurmaParaGerenciarAlunos] = useState<Turma | null>(null)
 
   const abrirCriacao = () => {
-    setTurmaEmEdicao(null)
-    setFormKey((k) => k + 1)
-    setFormAberto(true)
-  }
-
-  const abrirEdicao = (turma: Turma) => {
-    setTurmaEmEdicao(turma)
     setFormKey((k) => k + 1)
     setFormAberto(true)
   }
@@ -62,33 +49,12 @@ export default function TurmasPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {turmas.map((turma) => (
-            <TurmaCard
-              key={turma.id}
-              turma={turma}
-              onEditar={abrirEdicao}
-              onExcluir={setTurmaParaExcluir}
-              onGerenciarAlunos={setTurmaParaGerenciarAlunos}
-            />
+            <TurmaCard key={turma.id} turma={turma} />
           ))}
         </div>
       )}
 
-      <TurmaFormDialog
-        key={formKey}
-        open={formAberto}
-        onOpenChange={setFormAberto}
-        turma={turmaEmEdicao}
-      />
-      <ExcluirTurmaDialog
-        key={turmaParaExcluir?.id ?? 'nenhuma'}
-        turma={turmaParaExcluir}
-        onOpenChange={(open) => !open && setTurmaParaExcluir(null)}
-      />
-      <GerenciarAlunosDialog
-        key={turmaParaGerenciarAlunos?.id ?? 'nenhuma'}
-        turma={turmaParaGerenciarAlunos}
-        onOpenChange={(open) => !open && setTurmaParaGerenciarAlunos(null)}
-      />
+      <TurmaFormDialog key={formKey} open={formAberto} onOpenChange={setFormAberto} />
     </div>
   )
 }

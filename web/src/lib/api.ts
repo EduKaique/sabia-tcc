@@ -1,4 +1,5 @@
 import axios from "axios";
+import { registrarRedirecionamentoSenhaTemporaria } from "@/lib/auth-helpers";
 import { API_URL } from "@/lib/apiBase";
 
 const api = axios.create({
@@ -17,5 +18,7 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+registrarRedirecionamentoSenhaTemporaria(api);
 
 export default api;

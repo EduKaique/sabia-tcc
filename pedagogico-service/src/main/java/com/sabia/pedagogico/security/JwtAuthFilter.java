@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -33,6 +34,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         String token = extractToken(request);
         if (token != null && jwtTokenReader.isTokenValid(token)) {
+            if (jwtTokenReader.extractMustChangePassword(token)) {
+                // Troca de senha pendente: nenhuma rota deste serviço é liberada (a troca é no auth-service).
+                recusarSenhaTemporaria(response);
+                return;
+            }
             Long userId = jwtTokenReader.extractUserId(token);
             String role = jwtTokenReader.extractRole(token);
             String nome = jwtTokenReader.extractNome(token);
@@ -46,6 +52,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         chain.doFilter(request, response);
+    }
+
+    private void recusarSenhaTemporaria(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"status\":403,\"erro\":\"Você precisa trocar sua senha para continuar.\","
+                + "\"codigo\":\"SENHA_TEMPORARIA\",\"timestamp\":\"" + Instant.now() + "\"}");
     }
 
     private String extractToken(HttpServletRequest request) {

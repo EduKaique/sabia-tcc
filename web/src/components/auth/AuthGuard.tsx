@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { ROTA_TROCAR_SENHA } from '@/lib/auth-helpers'
 
 const homeByRole = {
   ADMINISTRADOR: '/admin/professores',
@@ -39,11 +40,18 @@ export function AuthGuard({
       return
     }
 
+    if (user?.mustChangePassword) {
+      router.replace(ROTA_TROCAR_SENHA)
+      return
+    }
+
     if (user && !allowedRoles.includes(user.role)) {
       router.replace(homeByRole[user.role])
     }
   }, [allowedRoles, hydrated, pathname, router, token, user])
 
-  if (!hydrated || !token || !user || !allowedRoles.includes(user.role)) return null
+  if (!hydrated || !token || !user || user.mustChangePassword || !allowedRoles.includes(user.role)) {
+    return null
+  }
   return children
 }

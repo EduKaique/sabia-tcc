@@ -1,10 +1,13 @@
+import { TrocaSenhaGuard } from '@/components/auth/TrocaSenhaGuard'
 import { ProfessorSidebar } from '@/components/layout/ProfessorSidebar'
 
 export default function ProfessorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background">
-      <ProfessorSidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
-    </div>
+    <TrocaSenhaGuard>
+      <div className="flex min-h-screen bg-background">
+        <ProfessorSidebar />
+        <main className="flex-1 overflow-auto">{children}</main>
+      </div>
+    </TrocaSenhaGuard>
   )
 }

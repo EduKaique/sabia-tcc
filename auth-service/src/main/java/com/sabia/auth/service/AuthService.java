@@ -64,8 +64,9 @@ public class AuthService {
                 .filter(u -> u.getTipoPerfil() == PerfilUsuario.ALUNO);
     }
 
+    /** Devolve um token novo, já sem a claim de troca pendente. */
     @Transactional
-    public void trocarSenha(Usuario usuario, TrocarSenhaRequest request) {
+    public LoginResponse trocarSenha(Usuario usuario, TrocarSenhaRequest request) {
         if (!passwordEncoder.matches(request.senhaAtual(), usuario.getSenhaHash())) {
             throw new SenhaAtualIncorretaException();
         }
@@ -77,7 +78,9 @@ public class AuthService {
         usuario.setMustChangePassword(false);
         usuarioRepository.save(usuario);
 
-        log.info("Senha alterada (troca obrigatória) para usuário id={}", usuario.getId());
+        log.info("Senha alterada pelo próprio usuário id={}", usuario.getId());
+        return new LoginResponse(jwtTokenProvider.generateToken(usuario), "Bearer",
+                usuario.getTipoPerfil().name(), usuario.getNome(), false);
     }
 
     /**

@@ -15,4 +15,10 @@ public record LoginRequest(
         String valor = login == null || login.isBlank() ? email : login;
         login = valor == null ? null : valor.trim();
     }
+
+    /** A senha nunca vai para log (o DEBUG do Spring MVC no perfil dev imprime o corpo lido). */
+    @Override
+    public String toString() {
+        return "LoginRequest[login=" + login + ", senha=omitida]";
+    }
 }
