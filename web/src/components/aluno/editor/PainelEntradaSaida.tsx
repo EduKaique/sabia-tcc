@@ -12,9 +12,11 @@ interface Props {
   getCode: () => string;
   /** Aparência opt-in do editor do aluno; o padrão é o visual usado na correção do professor. */
   tema?: "padrao" | "scratch";
+  /** Chamado depois de cada execução de código não vazio. */
+  onExecutar?: () => void;
 }
 
-export function PainelEntradaSaida({ getCode, tema = "padrao" }: Props) {
+export function PainelEntradaSaida({ getCode, tema = "padrao", onExecutar }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [outputValue, setOutputValue] = useState("");
 
@@ -47,6 +49,7 @@ export function PainelEntradaSaida({ getCode, tema = "padrao" }: Props) {
     } finally {
       window.alert = originalAlert;
     }
+    onExecutar?.();
   };
 
   if (tema === "scratch") {

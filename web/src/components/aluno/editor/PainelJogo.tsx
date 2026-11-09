@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { WorkspaceSvg } from 'blockly/core'
 import { Play, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import { botaoPrincipal, botaoSecundario, textoApoio } from '@/lib/estilos'
-import { simular, type Simulacao } from '@/lib/simuladorRobo'
+import { simular, type Simulacao, type StatusSimulacao } from '@/lib/simuladorRobo'
 import type { CenarioRobo } from '@/types'
 import { PalcoRobo } from './PalcoRobo'
 import { SemaforoRobo, TEXTO_FASE, type FaseJogo } from './SemaforoRobo'
@@ -19,6 +19,8 @@ interface Props {
   estadoSerializado: string
   workspaceRef: React.MutableRefObject<WorkspaceSvg | null>
   className?: string
+  /** Chamado quando cada execução termina (fim da animação ou resultado instantâneo). */
+  onResultado?: (status: StatusSimulacao) => void
 }
 
 interface Execucao {
@@ -56,10 +58,15 @@ function destacarBloco(workspaceRef: Props['workspaceRef'], blockId: string | nu
   workspaceRef.current?.highlightBlock(blockId)
 }
 
-export function PainelJogo({ cenario, estadoSerializado, workspaceRef, className }: Props) {
+export function PainelJogo({ cenario, estadoSerializado, workspaceRef, className, onResultado }: Props) {
   const [execucao, setExecucao] = useState<Execucao | null>(null)
   const [indice, setIndice] = useState(0)
   const [concluida, setConcluida] = useState(false)
+  const onResultadoRef = useRef(onResultado)
+
+  useEffect(() => {
+    onResultadoRef.current = onResultado
+  }, [onResultado])
 
   if (execucao && estadoSerializado !== execucao.estado) {
     setExecucao(null)
@@ -88,6 +95,7 @@ export function PainelJogo({ cenario, estadoSerializado, workspaceRef, className
             : () => {
                 destacarResultado()
                 setConcluida(true)
+                onResultadoRef.current?.(execucao.simulacao.resultado.status)
               },
           RITMO_MS,
         )
@@ -110,6 +118,7 @@ export function PainelJogo({ cenario, estadoSerializado, workspaceRef, className
     setIndice(instantanea ? simulacao.passos.length : 0)
     setConcluida(instantanea)
     setExecucao({ simulacao, estado: estadoSerializado, instantanea })
+    if (instantanea) onResultado?.(simulacao.resultado.status)
   }
 
   const reiniciar = () => setExecucao(null)

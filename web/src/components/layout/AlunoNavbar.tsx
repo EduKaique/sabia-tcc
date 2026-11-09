@@ -9,7 +9,10 @@ import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import styles from '@/styles/home.module.css'
 
-const navItems = [{ href: '/aluno/atividades', label: 'Avaliações' }]
+const navItems = [
+  { href: '/aluno/atividades', label: 'Avaliações' },
+  { href: '/aluno/aprender', label: 'Aprender' },
+]
 
 const botaoIcone =
   'flex size-12 items-center justify-center rounded-full text-tinta-apoio transition-colors hover:bg-sabia-azul-claro hover:text-tinta outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul'
