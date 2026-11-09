@@ -1,0 +1,37 @@
+[
+  {
+    "codigo": "teste-robo-01",
+    "ordem": 1,
+    "titulo": "Leve o robô até a estrela",
+    "resumo": "Use os blocos de movimento para levar o robô do canto de baixo até o destino.",
+    "conteudo": "<p>Um <strong>algoritmo</strong> é uma sequência de passos. Monte os blocos na ordem certa e clique em Executar.</p>",
+    "conceito": "Sequência",
+    "habilidadeBncc": null,
+    "videoId": null,
+    "videoTitulo": null,
+    "videoCanal": null,
+    "modo": "JOGO_ROBO",
+    "cenario": {
+      "versao": 1,
+      "linhas": 5,
+      "colunas": 5,
+      "inicio": { "linha": 4, "coluna": 0 },
+      "destino": { "linha": 0, "coluna": 4 },
+      "obstaculos": [],
+      "blocosPermitidos": ["robo_mover", "robo_repetir"]
+    }
+  },
+  {
+    "codigo": "teste-blocos-01",
+    "ordem": 2,
+    "titulo": "Diga olá com blocos",
+    "resumo": "Monte um programa com blocos livres que mostre uma mensagem na tela.",
+    "conteudo": "<p>Arraste o bloco de mostrar mensagem, escreva um texto e execute o programa.</p>",
+    "conceito": "Saída de dados",
+    "habilidadeBncc": null,
+    "videoId": null,
+    "videoTitulo": null,
+    "videoCanal": null,
+    "modo": "BLOCOS"
+  }
+]
