@@ -72,12 +72,15 @@ export default function LicaoEditorPage({ params }: Props) {
 }
 
 function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: CenarioRobo | null }) {
+  // Estado do servidor sem blocos (ou fora do formato do Blockly) é tratado como "nada salvo":
+  // não é carregado no workspace nem serve de referência para o autosave.
+  const salvoValido = licao.estadoJson && hasBlocks(licao.estadoJson) ? licao.estadoJson : null
   // Capturado uma vez: refetch da lição nunca recarrega o workspace por baixo do aluno.
-  const [estadoInicial] = useState(licao.estadoJson ?? undefined)
+  const [estadoInicial] = useState(salvoValido ?? undefined)
   const workspaceRef = useRef<WorkspaceSvg | null>(null)
-  const estadoRef = useRef(licao.estadoJson ?? '')
-  /** Último estado enviado (ou o que veio do servidor); null = nada salvo ainda. */
-  const ultimoSalvoRef = useRef<string | null>(licao.estadoJson)
+  const estadoRef = useRef(salvoValido ?? '')
+  /** Último estado enviado (ou o válido que veio do servidor); null = nada salvo ainda. */
+  const ultimoSalvoRef = useRef<string | null>(salvoValido)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const concluindoRef = useRef(false)
 
