@@ -1,6 +1,6 @@
 import { Calendar, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { sanitizarHtml } from '@/lib/sanitizarHtml'
+import { HtmlContent } from '@/components/HtmlContent'
 import { fredoka } from '@/lib/fontesHome'
 import { textoApoio } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
@@ -27,10 +27,7 @@ export function SidebarInstrucoes({ atividade }: Props) {
       </div>
 
       <div className="flex-1 p-4 space-y-4 text-base">
-        <div
-          className="prose prose-sm max-w-none text-tinta"
-          dangerouslySetInnerHTML={{ __html: sanitizarHtml(atividade.descricao) }}
-        />
+        <HtmlContent html={atividade.descricao} className="max-w-none text-tinta" />
 
         <div className="pt-3 border-t-2 border-tinta/10 space-y-3">
           <div className={cn(textoApoio, 'flex items-center gap-2')}>

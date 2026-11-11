@@ -6,6 +6,7 @@ import { useGerarAtividadeIa } from "@/hooks/useGerarAtividadeIa";
 import { useTurmas } from "@/hooks/useTurmas";
 import type { GerarAtividadeIaRequest } from "@/services/ia";
 import type { TipoAtividade } from "@/types";
+import { HtmlContent } from "@/components/HtmlContent";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -173,9 +174,10 @@ export function GerarAtividadeIaPanel({
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Descricao sugerida
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                  {sugestao.descricao}
-                </p>
+                <HtmlContent
+                  html={sugestao.descricao}
+                  className="mt-1 text-sm leading-6 text-muted-foreground"
+                />
               </div>
             </div>
           )}
