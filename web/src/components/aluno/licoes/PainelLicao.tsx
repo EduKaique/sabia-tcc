@@ -1,18 +1,15 @@
 import Link from 'next/link'
-import { CheckCircle2, Circle, PartyPopper } from 'lucide-react'
+import { BookOpen, CheckCircle2, Circle, PartyPopper } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { sanitizarHtml } from '@/lib/sanitizarHtml'
 import { fredoka } from '@/lib/fontesHome'
-import { alertaErro, botaoPrincipal, botaoSecundario, rotulo, textoApoio } from '@/lib/estilos'
+import { temConteudo } from '@/lib/conteudoLicao'
+import { alertaErro, botaoPrincipal, botaoSecundario, linkDiscreto, rotulo, textoApoio } from '@/lib/estilos'
 import type { LicaoDetalhe } from '@/types/licao'
-import { VideoLicao } from './VideoLicao'
 
 interface Props {
   licao: LicaoDetalhe
   /** Id da próxima lição por ordem; undefined na última. */
   proximaId?: number
-  marcandoVideo: boolean
-  onMarcarVideo: () => void
   erro: string | null
 }
 
@@ -30,16 +27,21 @@ function ItemChecklist({ feito, children }: { feito: boolean; children: React.Re
   )
 }
 
-/** Painel lateral da lição: conteúdo, vídeo opcional, o que falta e a conclusão. */
-export function PainelLicao({ licao, proximaId, marcandoVideo, onMarcarVideo, erro }: Props) {
+/** Painel lateral da etapa de atividade: o que fazer, o que falta e a conclusão. */
+export function PainelLicao({ licao, proximaId, erro }: Props) {
   const { progresso } = licao
+  const modoRobo = licao.modo === 'JOGO_ROBO'
 
   return (
     <aside className="w-80 h-full flex flex-col border-r-2 border-tinta/15 bg-white overflow-y-auto shrink-0">
       <div className="p-4 border-b-2 border-tinta/10">
         <p className={textoApoio}>{licao.conceito}</p>
         <h2 className={cn(fredoka.className, 'text-xl font-bold text-tinta leading-snug')}>{licao.titulo}</h2>
-        {licao.resumo && <p className="mt-1 text-base text-tinta-apoio">{licao.resumo}</p>}
+        <p className="mt-1 text-base text-tinta-apoio">
+          {modoRobo
+            ? 'Monte os blocos e clique em Executar para levar o robô até o destino.'
+            : 'Monte seu programa com blocos e clique em Rodar Código.'}
+        </p>
       </div>
 
       <div className="flex-1 p-4 space-y-5 text-base">
@@ -52,7 +54,7 @@ export function PainelLicao({ licao, proximaId, marcandoVideo, onMarcarVideo, er
             <div className="flex flex-col gap-2">
               {proximaId !== undefined && (
                 <Link
-                  href={`/aluno/aprender/${proximaId}/editor`}
+                  href={`/aluno/aprender/${proximaId}`}
                   className={cn(botaoPrincipal, fredoka.className, 'min-h-12 py-2 text-base')}
                 >
                   Próxima lição
@@ -73,33 +75,32 @@ export function PainelLicao({ licao, proximaId, marcandoVideo, onMarcarVideo, er
 
         {erro && <p role="alert" className={alertaErro}>{erro}</p>}
 
-        {licao.conteudo && (
-          <div
-            className="prose prose-sm max-w-none text-tinta"
-            dangerouslySetInnerHTML={{ __html: sanitizarHtml(licao.conteudo) }}
-          />
-        )}
-
-        {licao.videoId && (
-          <VideoLicao
-            videoId={licao.videoId}
-            titulo={licao.videoTitulo}
-            canal={licao.videoCanal}
-            visto={progresso.videoVisto}
-            marcando={marcandoVideo}
-            onMarcarVisto={onMarcarVideo}
-          />
-        )}
-
-        <div className="pt-3 border-t-2 border-tinta/10 space-y-2">
+        <div className="space-y-2">
           <p className={rotulo}>Para concluir</p>
           <ul className="space-y-1.5">
-            {licao.videoId && <ItemChecklist feito={progresso.videoVisto}>Assistir ao vídeo</ItemChecklist>}
+            {licao.videoId && (
+              <ItemChecklist feito={progresso.videoVisto}>
+                Assistir ao vídeo{' '}
+                <Link
+                  href={`/aluno/aprender/${licao.id}?pagina=video`}
+                  className="font-bold text-sabia-azul-escuro underline underline-offset-4 hover:text-tinta"
+                >
+                  Ver vídeo
+                </Link>
+              </ItemChecklist>
+            )}
             <ItemChecklist feito={progresso.atividadeConcluida}>
-              {licao.modo === 'JOGO_ROBO' ? 'Levar o robô até o destino' : 'Rodar um programa com blocos'}
+              {modoRobo ? 'Levar o robô até o destino' : 'Rodar um programa com blocos'}
             </ItemChecklist>
           </ul>
         </div>
+
+        {temConteudo(licao) && (
+          <Link href={`/aluno/aprender/${licao.id}`} className={cn(linkDiscreto, 'gap-1.5 px-0')}>
+            <BookOpen size={16} aria-hidden="true" />
+            Rever conteúdo
+          </Link>
+        )}
       </div>
     </aside>
   )

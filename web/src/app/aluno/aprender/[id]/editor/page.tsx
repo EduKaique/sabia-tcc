@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { linkDiscreto, textoErro } from '@/lib/estilos'
 import { lerCenario } from '@/lib/cenariosRobo'
 import { hasBlocks } from '@/lib/workspaceBlockly'
+import { temConteudo } from '@/lib/conteudoLicao'
 import type { CenarioRobo } from '@/types'
 import type { LicaoDetalhe } from '@/types/licao'
 import { useLicao, useLicoes, useMutacoesLicao } from '@/hooks/useLicoes'
@@ -84,7 +85,7 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const concluindoRef = useRef(false)
 
-  const { videoVisto, salvarEstado, concluirAtividade } = useMutacoesLicao(licao.id)
+  const { salvarEstado, concluirAtividade } = useMutacoesLicao(licao.id)
   const { data: licoes } = useLicoes()
   const indice = licoes?.findIndex((l) => l.id === licao.id) ?? -1
   const proximaId = indice >= 0 ? licoes?.[indice + 1]?.id : undefined
@@ -145,15 +146,17 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
   const erro =
     concluirAtividade.isError
       ? 'Não foi possível registrar a conclusão. Execute de novo para tentar outra vez.'
-      : videoVisto.isError
-        ? 'Não foi possível marcar o vídeo. Tente novamente.'
-        : salvarEstado.isError
-          ? 'Não foi possível salvar seu progresso. Ele será salvo na próxima alteração.'
-          : null
+      : salvarEstado.isError
+        ? 'Não foi possível salvar seu progresso. Ele será salvo na próxima alteração.'
+        : null
 
   return (
     <>
-      <CabecalhoEditor titulo={licao.titulo} hrefVoltar="/aluno/aprender" />
+      {/* Sem conteúdo, a etapa 1 redireciona para cá: voltar para ela prenderia o aluno. */}
+      <CabecalhoEditor
+        titulo={licao.titulo}
+        hrefVoltar={temConteudo(licao) ? `/aluno/aprender/${licao.id}` : '/aluno/aprender'}
+      />
 
       <AreaPratica
         cenario={cenario}
@@ -166,8 +169,6 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
           <PainelLicao
             licao={licao}
             proximaId={proximaId}
-            marcandoVideo={videoVisto.isPending}
-            onMarcarVideo={() => videoVisto.mutate()}
             erro={erro}
           />
         }

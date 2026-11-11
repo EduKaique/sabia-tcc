@@ -53,7 +53,7 @@ export function LicaoCard({ licao, numero }: Props) {
       </div>
 
       <Link
-        href={`/aluno/aprender/${licao.id}/editor`}
+        href={`/aluno/aprender/${licao.id}`}
         className={cn(botaoPrincipal, fredoka.className, 'min-h-12 px-5 py-2 text-base')}
       >
         {acao}

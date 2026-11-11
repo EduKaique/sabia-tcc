@@ -4,7 +4,7 @@
     "ordem": 1,
     "titulo": "Leve o robô até a estrela",
     "resumo": "Use os blocos de movimento para levar o robô do canto de baixo até o destino.",
-    "conteudo": "<p>Um <strong>algoritmo</strong> é uma sequência de passos. Monte os blocos na ordem certa e clique em Executar.</p>",
+    "conteudo": "<p>Um <strong>algoritmo</strong> é uma lista de passos, em ordem, para resolver um problema. Escovar os dentes ou fazer um sanduíche seguem algoritmos!</p><hr><p>Na <strong>sequência</strong>, cada passo acontece depois do anterior. Se a ordem muda, o resultado também muda.</p><ul><li>Primeiro passo</li><li>Segundo passo</li><li>Terceiro passo</li></ul><hr><p>No jogo, o robô segue os blocos de cima para baixo. Monte a sequência certa para ele chegar até a estrela.</p>",
     "conceito": "Sequência",
     "habilidadeBncc": null,
     "videoId": null,
@@ -26,12 +26,12 @@
     "ordem": 2,
     "titulo": "Diga olá com blocos",
     "resumo": "Monte um programa com blocos livres que mostre uma mensagem na tela.",
-    "conteudo": "<p>Arraste o bloco de mostrar mensagem, escreva um texto e execute o programa.</p>",
+    "conteudo": "<p>Programas podem <strong>mostrar mensagens</strong> na tela. Isso se chama <strong>saída de dados</strong>.</p><hr><p>Para mostrar um texto:</p><ul><li>Pegue o bloco de mostrar mensagem.</li><li>Escreva o texto que quer mostrar.</li><li>Clique em Rodar Código.</li></ul><hr><p>A mensagem aparece no painel de <strong>Saída</strong>. Experimente mudar o texto e rodar de novo!</p>",
     "conceito": "Saída de dados",
     "habilidadeBncc": null,
-    "videoId": null,
-    "videoTitulo": null,
-    "videoCanal": null,
+    "videoId": "CANYM34cIuQ",
+    "videoTitulo": "PROGRAMAÇÃO para crianças 👦 Programação em blocos 💻 Parte 2",
+    "videoCanal": "Smile and Learn - Português",
     "modo": "BLOCOS"
   }
 ]
