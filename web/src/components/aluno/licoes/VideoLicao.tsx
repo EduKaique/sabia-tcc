@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { CheckCircle2, ExternalLink, Play } from 'lucide-react'
+import { CheckCircle2, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { botaoSecundario, linkDiscreto, textoApoio } from '@/lib/estilos'
 
@@ -15,33 +14,23 @@ interface Props {
 }
 
 /**
- * Vídeo do YouTube (modo privacidade aprimorada). O iframe só é montado depois do clique: nada é
- * carregado do YouTube até o aluno pedir. Sem IFrame API — "Já assisti" é uma ação explícita.
+ * Vídeo do YouTube (modo privacidade aprimorada), já montado: use só na página do vídeo da etapa
+ * de conteúdo. Sem IFrame API — "Já assisti" é uma ação explícita.
  */
 export function VideoLicao({ videoId, titulo, canal, visto, marcando, onMarcarVisto }: Props) {
-  const [aberto, setAberto] = useState(false)
   const tituloVideo = titulo ?? 'Vídeo da lição'
 
   return (
     <section aria-label="Vídeo da lição" className="space-y-2">
-      {aberto ? (
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${videoId}`}
-          title={tituloVideo}
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="encrypted-media; picture-in-picture; fullscreen"
-          className="aspect-video w-full rounded-2xl border-2 border-tinta"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setAberto(true)}
-          className={cn(botaoSecundario, 'w-full')}
-        >
-          <Play size={16} className="fill-current" aria-hidden="true" />
-          Assistir vídeo
-        </button>
-      )}
+      {/* 16:9 na largura do cartão; a largura máxima limita a altura a 100dvh − 28rem (navbar,
+          atribuição e botões cabem numa tela de 1080p sem rolagem). Mínimo de 18rem no mobile. */}
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0`}
+        title={tituloVideo}
+        referrerPolicy="strict-origin-when-cross-origin"
+        allow="encrypted-media; picture-in-picture; fullscreen"
+        className="mx-auto block aspect-video w-full max-w-[max(18rem,calc((100dvh_-_28rem)*16/9))] rounded-2xl border-2 border-tinta"
+      />
 
       {(titulo || canal) && (
         <p className={textoApoio}>
