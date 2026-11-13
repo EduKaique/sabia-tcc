@@ -9,6 +9,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -109,6 +117,27 @@ public class GlobalExceptionHandler {
         log.warn("Serviço Pedagógico indisponível: {}",
                 ex.getCause() == null ? "-" : ex.getCause().getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErroResponse.of(503, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErroResponse> handleTipoInvalido(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.of(400, "Requisição inválida."));
+    }
+
+    /** Erros de requisição do Spring MVC (rota, método, media type, parâmetro ausente): status do próprio Spring. */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class,
+            HttpRequestMethodNotSupportedException.class, HttpMediaTypeNotSupportedException.class,
+            HttpMediaTypeNotAcceptableException.class, MissingServletRequestParameterException.class})
+    public ResponseEntity<ErroResponse> handleErroDeRequisicao(Exception ex) {
+        ErrorResponse erro = (ErrorResponse) ex;
+        int codigo = erro.getStatusCode().value();
+        String mensagem = switch (codigo) {
+            case 404 -> "Recurso não encontrado.";
+            case 405 -> "Método não permitido.";
+            case 415 -> "Tipo de conteúdo não suportado.";
+            default -> "Requisição inválida.";
+        };
+        return ResponseEntity.status(codigo).headers(erro.getHeaders()).body(ErroResponse.of(codigo, mensagem));
     }
 
     @ExceptionHandler(Exception.class)
