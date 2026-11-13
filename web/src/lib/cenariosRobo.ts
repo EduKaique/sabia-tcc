@@ -31,6 +31,26 @@ export const PRESETS_CENARIO = [
   { id: 'obstaculos-5x5', nome: 'Com obstáculos (5×5)', cenario: CENARIO_OBSTACULOS_5X5 },
 ] as const
 
+/** Lê o cenarioJson do modo Jogo do Robô; devolve null se estiver ausente ou com formato inesperado. */
+export function lerCenario(cenarioJson: string | null | undefined): CenarioRobo | null {
+  if (!cenarioJson) return null
+  try {
+    const c = JSON.parse(cenarioJson)
+    const posicaoValida = (p: unknown) =>
+      typeof p === 'object' && p !== null &&
+      Number.isInteger((p as CenarioRobo['inicio']).linha) &&
+      Number.isInteger((p as CenarioRobo['inicio']).coluna)
+    const valido =
+      Number.isInteger(c?.linhas) && Number.isInteger(c?.colunas) &&
+      posicaoValida(c.inicio) && posicaoValida(c.destino) &&
+      Array.isArray(c.obstaculos) && c.obstaculos.every(posicaoValida) &&
+      Array.isArray(c.blocosPermitidos)
+    return valido ? (c as CenarioRobo) : null
+  } catch {
+    return null
+  }
+}
+
 /** JSON com as chaves em ordem alfabética, para comparar cenários pelo conteúdo. */
 function normalizar(valor: unknown): string {
   if (Array.isArray(valor)) return `[${valor.map(normalizar).join(',')}]`

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Calendar, Pencil, Trash2 } from 'lucide-react'
 import type { AtividadeDetalhes } from '@/types'
+import { HtmlContent } from '@/components/HtmlContent'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -97,7 +98,7 @@ export function AtividadeDetalhesHeader({ atividade }: Props) {
           {atividade.titulo}
         </h1>
 
-        <p className="text-muted-foreground max-w-xl">{atividade.descricao}</p>
+        <HtmlContent html={atividade.descricao} className="text-muted-foreground max-w-xl" />
       </div>
 
       <div className="flex items-center gap-3 shrink-0 pt-1">

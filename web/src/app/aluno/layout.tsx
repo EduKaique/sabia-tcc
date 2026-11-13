@@ -9,8 +9,15 @@ import { nunito } from '@/lib/fontesHome'
 export default function AlunoLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
+  // Editores (atividade e lição): tela cheia, sem navbar.
   if (pathname?.endsWith('/editor')) {
-    return <TrocaSenhaGuard>{children}</TrocaSenhaGuard>
+    return (
+      <TrocaSenhaGuard>
+        <div className={cn(nunito.className, 'h-screen w-screen overflow-hidden flex flex-col bg-[#f6f9ff] text-tinta')}>
+          {children}
+        </div>
+      </TrocaSenhaGuard>
+    )
   }
 
   return (

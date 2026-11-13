@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Calendar, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { HtmlContent } from '@/components/HtmlContent'
 import { fredoka } from '@/lib/fontesHome'
 import { botaoPrincipal, cartao } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
@@ -28,7 +29,7 @@ export function AtividadeCard({ atividade }: Props) {
         </span>
       </div>
 
-      <p className="mb-4 line-clamp-2 text-base text-tinta-apoio">{atividade.descricao}</p>
+      <HtmlContent html={atividade.descricao} className="mb-4 line-clamp-3 text-base text-tinta-apoio" />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span
