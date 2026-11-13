@@ -1,0 +1,37 @@
+[
+  {
+    "codigo": "teste-robo-01",
+    "ordem": 1,
+    "titulo": "Leve o robô até a estrela",
+    "resumo": "Use os blocos de movimento para levar o robô do canto de baixo até o destino.",
+    "conteudo": "<h2>O que é um algoritmo?</h2><p>Um <strong>algoritmo</strong> é uma lista de passos, em ordem, para resolver um problema. Escovar os dentes ou fazer um sanduíche seguem algoritmos!</p><h2>A ordem importa</h2><p>Na <strong>sequência</strong>, cada passo acontece depois do anterior. Se a ordem muda, o resultado também muda.</p><ul><li>Primeiro passo</li><li>Segundo passo</li><li>Terceiro passo</li></ul><h2>No jogo do robô</h2><p>No jogo, o robô segue os blocos de cima para baixo. Monte a sequência certa para ele chegar até a estrela.</p>",
+    "conceito": "Sequência",
+    "habilidadeBncc": null,
+    "videoId": "CANYM34cIuQ",
+    "videoTitulo": "PROGRAMAÇÃO para crianças 👦 Programação em blocos 💻 Parte 2",
+    "videoCanal": "Smile and Learn - Português",
+    "modo": "JOGO_ROBO",
+    "cenario": {
+      "versao": 1,
+      "linhas": 5,
+      "colunas": 5,
+      "inicio": { "linha": 4, "coluna": 0 },
+      "destino": { "linha": 0, "coluna": 4 },
+      "obstaculos": [],
+      "blocosPermitidos": ["robo_mover", "robo_repetir"]
+    }
+  },
+  {
+    "codigo": "teste-blocos-01",
+    "ordem": 2,
+    "titulo": "Diga olá com blocos",
+    "resumo": "Monte um programa com blocos livres que mostre uma mensagem na tela.",
+    "conteudo": "<h2>Saída de dados</h2><p>Programas podem <strong>mostrar mensagens</strong> na tela. Isso se chama <strong>saída de dados</strong>.</p><h2>Como mostrar um texto</h2><p>Para mostrar um texto:</p><ul><li>Pegue o bloco de mostrar mensagem.</li><li>Escreva o texto que quer mostrar.</li><li>Clique em Rodar Código.</li></ul><h2>Onde aparece</h2><p>A mensagem aparece no painel de <strong>Saída</strong>. Experimente mudar o texto e rodar de novo!</p>",
+    "conceito": "Saída de dados",
+    "habilidadeBncc": null,
+    "videoId": null,
+    "videoTitulo": null,
+    "videoCanal": null,
+    "modo": "BLOCOS"
+  }
+]

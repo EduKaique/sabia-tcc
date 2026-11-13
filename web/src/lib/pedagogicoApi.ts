@@ -1,4 +1,5 @@
 import axios from "axios";
+import { registrarRedirecionamentoSenhaTemporaria } from "@/lib/auth-helpers";
 import { PEDAGOGICO_API_URL } from "@/lib/apiBase";
 
 const pedagogicoApi = axios.create({
@@ -17,5 +18,7 @@ pedagogicoApi.interceptors.request.use((config) => {
   }
   return config;
 });
+
+registrarRedirecionamentoSenhaTemporaria(pedagogicoApi);
 
 export default pedagogicoApi;

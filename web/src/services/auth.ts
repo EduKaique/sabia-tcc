@@ -1,3 +1,4 @@
+import api from '@/lib/api'
 import { API_URL } from '@/lib/apiBase'
 import { erroDaResposta, erroDeRede } from '@/lib/erroRequisicao'
 
@@ -14,6 +15,8 @@ export interface LoginResponse {
   tipo: string
   role: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
   nome: string
+  /** true: o usuário precisa trocar a senha antes de usar o sistema. */
+  mustChangePassword: boolean
 }
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
@@ -46,7 +49,6 @@ export interface PrimeiroAcessoRequest {
 }
 
 export interface PrimeiroAcessoResponse extends LoginResponse {
-  mustChangePassword: boolean
   turma: { nome: string }
 }
 
@@ -70,4 +72,16 @@ export async function primeiroAcesso(data: PrimeiroAcessoRequest): Promise<Prime
     throw await erroDaResposta(res)
   }
   return res.json()
+}
+
+export interface TrocarSenhaRequest {
+  senhaAtual: string
+  novaSenha: string
+  confirmarSenha: string
+}
+
+/** Troca a senha do usuário logado; devolve um token novo, já sem a troca pendente. */
+export async function trocarSenha(data: TrocarSenhaRequest): Promise<LoginResponse> {
+  const { data: resposta } = await api.post<LoginResponse>('/api/auth/trocar-senha', data)
+  return resposta
 }

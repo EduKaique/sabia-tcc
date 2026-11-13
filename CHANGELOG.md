@@ -7,6 +7,91 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-13
+
+Segunda versão, publicada como **pré-release**. Notas completas em
+[docs/release-notes/v0.2.0.md](docs/release-notes/v0.2.0.md).
+
+### Adicionado
+
+#### Aluno
+
+- Página de troca de senha (`/trocar-senha`): obrigatória quando há troca pendente e voluntária pelo item "Alterar senha" do menu (#74).
+- Aviso na tela de entrada orientando o aluno que esqueceu a senha a falar com o professor (#74).
+
+#### Professor
+
+- Página da turma (`/professor/turmas/<id>`) com a tabela de alunos: avatar, nome, matrícula, data de entrada, aviso de troca de senha pendente, busca, matrícula e remoção (#74).
+- Redefinição da senha do aluno pelo professor, com senha gerada automaticamente ou digitada e opção de exigir a troca no próximo acesso; a senha aparece uma única vez (#74).
+- Item "Alterar senha" no menu lateral (#74).
+- Relatório da revisão por IA salvo na submissão, com os botões "Gerar novamente" e "Descartar relatório" na página de correção.
+
+#### Lições
+
+- Módulo "Aprender" do aluno (`/aluno/aprender`): lista de lições com a situação de cada uma e página da lição com conteúdo em texto e vídeo opcional do YouTube (#80).
+- Prática da lição no editor de blocos (Jogo do Robô ou blocos livres), com salvamento automático do workspace e conclusão quando o robô chega ao destino ou o programa é executado (#80).
+- Progresso por aluno (vídeo assistido, atividade concluída, lição concluída) e atalho para a próxima lição (#80).
+- API do aluno em `/api/aluno/licoes`: listar, detalhar, marcar vídeo como visto, salvar o workspace e concluir a atividade (#80).
+- Carga das lições a partir de `seed/licoes.json` na subida do serviço pedagógico, em todos os perfis, por código e sem duplicar; lição retirada do arquivo fica inativa e o progresso é mantido (#80).
+
+#### IA
+
+- Revisão por IA gerada automaticamente quando o aluno envia a submissão, por evento no RabbitMQ (só com a mensageria ligada; em produção ela está desligada).
+- Endpoints `GET`, `PUT` e `DELETE /api/professor/submissoes/{id}/relatorio-ia` para ler, salvar e remover o relatório de IA da submissão.
+
+#### Autenticação e convites
+
+- Endpoints do auth-service para o professor listar os alunos da turma e redefinir a senha de um aluno, com a posse da turma conferida pelo serviço pedagógico (#74).
+- Claim `mustChangePassword` no JWT (#74).
+
+#### Infra e deploy
+
+- Mensageria com RabbitMQ entre auth-service, serviço pedagógico e ia-service: retry com backoff, DLQ, idempotência no consumo, logs estruturados e status do broker no health de cada serviço. Veja [docs/mensageria.md](docs/mensageria.md).
+- `scripts/reprocessar-dlq.py` para reenviar mensagens de uma DLQ.
+- Testes de publicação e consumo de eventos no auth-service, no serviço pedagógico e no ia-service.
+
+### Alterado
+
+#### Aluno
+
+- O card da atividade na lista do aluno exibe a descrição com a formatação do editor, em vez do texto bruto.
+
+#### Professor
+
+- O card da turma tem um único botão "Acessar turma"; editar e excluir ficam na página da turma (#74).
+- O diálogo de gerenciar alunos só busca e matricula; a lista de alunos vem do auth-service (#74).
+- A descrição sugerida pela IA é exibida com formatação e sanitizada.
+
+#### Autenticação e convites
+
+- `POST /api/auth/trocar-senha` devolve um token novo, já sem a troca pendente, em vez de só uma mensagem (#74).
+
+#### Infra e deploy
+
+- A fila de correções que o serviço pedagógico declarava sem uso foi substituída pela topologia de eventos `sabia.eventos`.
+- Compose de desenvolvimento: credenciais e portas do RabbitMQ configuráveis por variável, e auth-service e ia-service esperam o broker.
+- Compose de produção: `RABBITMQ_ENABLED=false` também no auth-service e no ia-service.
+
+### Corrigido
+
+#### Autenticação e convites
+
+- O auth-service responde 400 a um corpo JSON malformado, em vez de 500.
+
+### Segurança
+
+#### Autenticação e convites
+
+- Com troca de senha pendente, o gateway, o auth-service e o serviço pedagógico recusam as requisições com 403 `SENHA_TEMPORARIA`, exceto a própria troca (#74).
+- As senhas não aparecem mais no log de DEBUG do perfil dev (#74).
+- A resposta da redefinição de senha do aluno é enviada com `Cache-Control: no-store` (#74).
+- O corpo de uma requisição ilegível não é registrado no log do auth-service.
+
+#### Infra e deploy
+
+- Descrições de atividade sanitizadas com uma lista restrita de tags; links abrem em nova aba com `noopener noreferrer`.
+- O vídeo das lições é incorporado pelo domínio `youtube-nocookie.com`.
+
 ## [0.1.0] - 2026-11-03
 
 Primeira versão, publicada como **pré-release**. Notas completas em
@@ -104,5 +189,6 @@ Primeira versão, publicada como **pré-release**. Notas completas em
 - Cookie de sessão com `secure` em HTTPS.
 - Em produção, apenas o Caddy publica portas; banco, serviços e documentação da API ficam inacessíveis de fora.
 
-[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EduKaique/sabia-tcc/releases/tag/v0.1.0

@@ -93,13 +93,12 @@ public class AuthController {
     }
 
     @PostMapping("/trocar-senha")
-    @Operation(summary = "Troca a senha do usuário autenticado (uso obrigatório quando mustChangePassword=true)")
+    @Operation(summary = "Troca a senha do usuário autenticado e devolve um token novo (obrigatório quando mustChangePassword=true)")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<MensagemResponse> trocarSenha(Authentication authentication,
-                                                          @Valid @RequestBody TrocarSenhaRequest request) {
+    public ResponseEntity<LoginResponse> trocarSenha(Authentication authentication,
+                                                     @Valid @RequestBody TrocarSenhaRequest request) {
         Usuario usuario = (Usuario) authentication.getPrincipal();
-        authService.trocarSenha(usuario, request);
-        return ResponseEntity.ok(new MensagemResponse("Senha alterada com sucesso."));
+        return ResponseEntity.ok(authService.trocarSenha(usuario, request));
     }
 
     @PutMapping("/perfil")

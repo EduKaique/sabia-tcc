@@ -15,6 +15,8 @@ spring:
       mode: never
 
 sabia:
+  mensageria:
+    rabbitmq-enabled: false
   jwt:
     secret: test-secret-test-secret-test-secret-test-secret
     expiration-ms: 3600000

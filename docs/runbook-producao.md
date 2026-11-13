@@ -202,6 +202,10 @@ Manual:
 - [ ] Professor usa "gerar atividade com IA" e "revisar com IA".
 - [ ] Degradação: `deploy/dc.sh stop ia-service` → o professor vê erro amigável e o resto funciona; `deploy/dc.sh start ia-service` depois.
 - [ ] Recuperar senha: o e-mail chega (SMTP) com link para `https://<IP>/redefinir-senha`.
+- [ ] Professor abre a página da turma, vê a tabela de alunos e redefine a senha de um aluno com "exigir troca"; o aluno entra com a senha nova, cai em `/trocar-senha` e troca.
+- [ ] Aluno abre "Aprender", entra numa lição e navega pelas páginas de conteúdo (texto e vídeo).
+- [ ] O vídeo do YouTube carrega e toca dentro da página; "Já assisti" marca o vídeo.
+- [ ] "Ir para a atividade" abre a prática; o robô chega ao destino (ou o programa roda) e a lição aparece como concluída na lista.
 - [ ] 5–10 abas de aluno simultâneas sem erro.
 
 **Operação**

@@ -65,7 +65,10 @@ export async function registerProxies(gateway: FastifyInstance) {
     // @fastify/http-proxy aceita um único preHandler: executa em sequência.
     const preHandler = handlers.length
       ? async (request: FastifyRequest, reply: FastifyReply) => {
-          for (const handler of handlers) await handler(request, reply);
+          for (const handler of handlers) {
+            await handler(request, reply);
+            if (reply.sent) return reply;
+          }
         }
       : undefined;
 

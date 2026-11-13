@@ -12,8 +12,10 @@ import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.SubmissaoNaoEncontradaException;
 import com.sabia.pedagogico.mapper.CorrecaoMapper;
+import com.sabia.pedagogico.messaging.SubmissaoEnviadaEvent;
 import com.sabia.pedagogico.model.atividade.*;
 import com.sabia.pedagogico.repository.*;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +36,7 @@ public class SubmissaoAvaliativaService {
     private final ProjetoAvaliativoRepository projetoScratchRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final CorrecaoMapper correcaoMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     // --------- ALUNO ---------
 
@@ -67,6 +70,7 @@ public class SubmissaoAvaliativaService {
                 .build();
         submissao = submissaoRepository.save(submissao);
 
+        eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
         log.info("Submissão id={} criada pelo aluno id={}", submissao.getId(), alunoId);
         return toResponse(submissao, null);
     }
@@ -110,7 +114,8 @@ public class SubmissaoAvaliativaService {
                 submissao.getDataEnvio(),
                 submissao.getStatus(),
                 projeto != null ? projeto.getEstadoJson() : null,
-                correcao != null ? correcaoMapper.toResponse(correcao) : null
+                correcao != null ? correcaoMapper.toResponse(correcao) : null,
+                submissao.getRelatorioIaPreGeradoJson()
         );
     }
 

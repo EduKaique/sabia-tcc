@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Bell, LogOut } from 'lucide-react'
+import { BookOpen, Bell, KeyRound, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import styles from '@/styles/home.module.css'
 
-const navItems = [{ href: '/aluno/atividades', label: 'Avaliações' }]
+const navItems = [
+  { href: '/aluno/atividades', label: 'Avaliações' },
+  { href: '/aluno/aprender', label: 'Aprender' },
+]
 
 const botaoIcone =
   'flex size-12 items-center justify-center rounded-full text-tinta-apoio transition-colors hover:bg-sabia-azul-claro hover:text-tinta outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul'
@@ -68,6 +71,9 @@ export function AlunoNavbar() {
           <button type="button" aria-label="Notificações" className={cn(botaoIcone, 'hidden sm:flex')}>
             <Bell size={20} aria-hidden="true" />
           </button>
+          <Link href="/trocar-senha" aria-label="Alterar senha" title="Alterar senha" className={botaoIcone}>
+            <KeyRound size={20} aria-hidden="true" />
+          </Link>
           <button type="button" onClick={handleLogout} aria-label="Sair" title="Sair" className={botaoIcone}>
             <LogOut size={20} aria-hidden="true" />
           </button>

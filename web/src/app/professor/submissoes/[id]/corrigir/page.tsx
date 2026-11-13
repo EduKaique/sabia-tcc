@@ -204,7 +204,8 @@ export default function CorrigirSubmissaoPage({
           )
         ) : (
           <PainelRelatorioIa
-            relatorioIaJson={submissao.correcao?.relatorioIaJson}
+            submissaoId={id}
+            relatorioIaJson={submissao.relatorioIaPreGeradoJson ?? submissao.correcao?.relatorioIaJson}
             payload={
               atividade && submissao.estadoJson
                 ? {

@@ -112,6 +112,9 @@ export function PainelLogin({ turmaNome, enviando, erro, onEntrar, onVoltar, onL
       <Link href="/recuperar-senha" className={cn(linkDiscreto, 'self-center')}>
         Esqueci minha senha
       </Link>
+      <p className="-mt-2 self-center text-center text-sm text-tinta-apoio">
+        Aluno: se esqueceu a senha, fale com seu professor.
+      </p>
     </form>
   )
 }

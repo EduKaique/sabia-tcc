@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Endpoints serviço-a-serviço, chamados pelo auth-service com token de perfil SISTEMA
  * (primeiro acesso do aluno). Bloqueados no API Gateway: nunca expostos ao front.
@@ -32,6 +34,14 @@ public class InternoTurmaController {
     @Operation(summary = "Busca a turma pelo código de convite (uso interno)")
     public ResponseEntity<TurmaPorCodigoResponse> buscarPorCodigo(@PathVariable String codigo) {
         return ResponseEntity.ok(turmaService.buscarPorCodigoInterno(codigo));
+    }
+
+    @GetMapping("/{turmaId}/alunos")
+    @Operation(summary = "Lista alunos da turma, só se ela for do professor informado (uso interno)")
+    public ResponseEntity<List<TurmaAlunoResponse>> listarAlunos(
+            @PathVariable Long turmaId,
+            @RequestParam Long professorId) {
+        return ResponseEntity.ok(turmaAlunoService.listar(professorId, turmaId));
     }
 
     @PostMapping("/{turmaId}/alunos")

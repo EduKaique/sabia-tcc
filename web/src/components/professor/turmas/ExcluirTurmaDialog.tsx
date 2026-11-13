@@ -16,14 +16,21 @@ import {
 interface Props {
   turma: Turma | null;
   onOpenChange: (open: boolean) => void;
+  /** Chamado depois da exclusão (ex.: sair da página da turma). */
+  onExcluida?: () => void;
 }
 
-export function ExcluirTurmaDialog({ turma, onOpenChange }: Props) {
+export function ExcluirTurmaDialog({ turma, onOpenChange, onExcluida }: Props) {
   const excluir = useExcluirTurma();
 
   const confirmar = () => {
     if (!turma) return;
-    excluir.mutate(turma.id, { onSuccess: () => onOpenChange(false) });
+    excluir.mutate(turma.id, {
+      onSuccess: () => {
+        onOpenChange(false);
+        onExcluida?.();
+      },
+    });
   };
 
   return (
