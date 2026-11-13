@@ -13,6 +13,7 @@ import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
 import com.sabia.auth.security.JwtTokenProvider;
+import com.sabia.auth.security.LimiteTentativasLogin;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -36,15 +37,20 @@ public class AuthService {
     private final AlunoRepository alunoRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LimiteTentativasLogin limiteTentativas;
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        var usuario = buscarPorLogin(request.login())
-                .orElseThrow(() -> new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS));
+        // Bloqueada: responde 429 sem conferir a senha (nem a correta).
+        limiteTentativas.verificar(request.login());
 
-        if (!passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
+        var usuario = buscarPorLogin(request.login()).orElse(null);
+        if (usuario == null || !passwordEncoder.matches(request.senha(), usuario.getSenhaHash())) {
+            // Conta inexistente também conta, para não revelar se o login existe.
+            limiteTentativas.registrarFalha(request.login());
             throw new BadCredentialsException(MSG_CREDENCIAIS_INVALIDAS);
         }
+        limiteTentativas.registrarSucesso(request.login());
         if (!usuario.isAtivo()) {
             throw new UsuarioInativoException();
         }

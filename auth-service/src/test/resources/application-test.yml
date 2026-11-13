@@ -15,6 +15,10 @@ spring:
       mode: never
 
 sabia:
+  login:
+    # Alto nos testes: as falhas de login de várias classes se somam no contexto compartilhado.
+    # O limite é testado em LoginLimiteTentativasTest, com valor próprio.
+    max-falhas: 1000
   mensageria:
     rabbitmq-enabled: false
   jwt:

@@ -14,6 +14,7 @@ import com.sabia.auth.model.usuario.PerfilUsuario;
 import com.sabia.auth.model.usuario.Usuario;
 import com.sabia.auth.repository.AlunoRepository;
 import com.sabia.auth.repository.UsuarioRepository;
+import com.sabia.auth.security.LimiteTentativasLogin;
 import com.sabia.auth.service.senha.GeradorSenhaAmigavel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ public class ProfessorAlunoService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final GeradorSenhaAmigavel geradorSenha;
+    private final LimiteTentativasLogin limiteTentativas;
 
     @Transactional(readOnly = true)
     public List<AlunoDaTurmaResponse> listar(Usuario professor, Long turmaId) {
@@ -89,6 +91,9 @@ public class ProfessorAlunoService {
         aluno.setSenhaHash(passwordEncoder.encode(senha));
         aluno.setMustChangePassword(request.exigirTroca());
         usuarioRepository.save(aluno);
+        // Senha nova: libera a conta se ela estava bloqueada por tentativas erradas.
+        limiteTentativas.liberar(aluno.getEmail(),
+                alunoRepository.findById(alunoId).map(Aluno::getMatricula).orElse(null));
 
         log.info("Senha do aluno id={} redefinida pelo professor id={} (turma id={}, modo={}, exigirTroca={})",
                 alunoId, professor.getId(), turmaId, request.modo(), request.exigirTroca());

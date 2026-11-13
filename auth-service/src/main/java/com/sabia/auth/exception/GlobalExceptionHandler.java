@@ -2,6 +2,7 @@ package com.sabia.auth.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,6 +33,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponse> handleBadCredentials(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErroResponse.of(401, "Dados de acesso incorretos"));
+    }
+
+    @ExceptionHandler(LoginBloqueadoException.class)
+    public ResponseEntity<ErroResponse> handleLoginBloqueado(LoginBloqueadoException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getSegundosRestantes()))
+                .body(ErroResponse.of(429, ex.getMessage()));
     }
 
     /** Corpo ilegível: a mensagem do parser pode trazer trechos do JSON (ex.: senha), então não é logada. */

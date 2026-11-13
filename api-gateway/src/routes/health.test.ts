@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Fastify from 'fastify';
-import { registerHealthCheck } from '../src/routes/health.ts';
+import { registerHealthCheck } from './health.ts';
 
 test('health responde só o status, sem URLs internas', async () => {
   const gateway = Fastify();

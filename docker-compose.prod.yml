@@ -77,6 +77,11 @@ services:
       AUTH_URL: http://auth-service:8080
       PEDAGOGICO_URL: http://pedagogico-service:8081
       IA_URL: http://ia-service:8002
+      # Limite de tentativas por IP (login, primeiro acesso, convites, redefinir/trocar senha;
+      # esqueci-senha tem limite próprio). Excedeu: 429 com Retry-After.
+      RATE_LIMIT_JANELA_SEGUNDOS: ${RATE_LIMIT_JANELA_SEGUNDOS:-60}
+      RATE_LIMIT_AUTH_MAX: ${RATE_LIMIT_AUTH_MAX:-120}
+      RATE_LIMIT_ESQUECI_SENHA_MAX: ${RATE_LIMIT_ESQUECI_SENHA_MAX:-10}
     healthcheck:
       <<: *health-rapido
       start_period: 20s
@@ -113,6 +118,9 @@ services:
       SABIA_PROFESSOR_SENHA: ${SABIA_PROFESSOR_SENHA:?defina SABIA_PROFESSOR_SENHA (12+ caracteres)}
       SABIA_PROFESSOR_NOME: ${SABIA_PROFESSOR_NOME:-Professor}
       SABIA_PROFESSOR_CPF: ${SABIA_PROFESSOR_CPF:-}
+      # Limite por conta: N falhas na janela bloqueiam o login dessa conta (429) pelo mesmo tempo.
+      SABIA_LOGIN_MAX_FALHAS: ${SABIA_LOGIN_MAX_FALHAS:-10}
+      SABIA_LOGIN_BLOQUEIO_MINUTOS: ${SABIA_LOGIN_BLOQUEIO_MINUTOS:-15}
       RABBITMQ_ENABLED: "false"
     healthcheck:
       <<: *health-rapido
