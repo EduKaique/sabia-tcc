@@ -98,8 +98,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/sabia?currentSchema=auth
       PEDAGOGICO_URL: http://pedagogico-service:8081
       FRONTEND_RECUPERAR_SENHA_URL: ${FRONTEND_RECUPERAR_SENHA_URL:?defina FRONTEND_RECUPERAR_SENHA_URL (https://<IP>/redefinir-senha)}
-      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-dev}
-      EMAIL_FROM: ${EMAIL_FROM:-no-reply@sabia.edu}
+      # Em prod só smtp: o auth-service recusa subir com dev ou com SMTP_*/EMAIL_FROM vazios.
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:?defina EMAIL_PROVIDER=smtp}
+      EMAIL_FROM: ${EMAIL_FROM:?defina EMAIL_FROM}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}

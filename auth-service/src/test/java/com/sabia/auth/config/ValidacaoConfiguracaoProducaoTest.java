@@ -45,15 +45,72 @@ class ValidacaoConfiguracaoProducaoTest {
                 .hasMessageContaining("default");
     }
 
+    @Test
+    void falhaListandoAsVariaveisSmtpFaltando() {
+        MockEnvironment env = prod()
+                .withProperty("JWT_SECRET", SEGREDO_FORTE)
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("sabia.email.provider", "smtp")
+                .withProperty("SMTP_HOST", "smtp.exemplo.invalid");
+
+        assertThatThrownBy(() -> ValidacaoConfiguracaoProducao.validar(env))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SMTP_USERNAME")
+                .hasMessageContaining("SMTP_PASSWORD")
+                .hasMessageContaining("EMAIL_FROM")
+                .hasMessageNotContaining("SMTP_HOST");
+    }
+
+    @Test
+    void falhaComEmailProviderDev() {
+        MockEnvironment env = completo()
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("sabia.email.provider", "dev");
+
+        assertThatThrownBy(() -> ValidacaoConfiguracaoProducao.validar(env))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("EMAIL_PROVIDER deve ser smtp");
+    }
+
+    @Test
+    void falhaComEmailProviderVazioOuAusente() {
+        MockEnvironment vazio = completo()
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("sabia.email.provider", "");
+        MockEnvironment semProvider = prod()
+                .withProperty("JWT_SECRET", SEGREDO_FORTE)
+                .withProperty("DB_PASS", "senha-forte")
+                .withProperty("SMTP_HOST", "smtp.exemplo.invalid")
+                .withProperty("SMTP_USERNAME", "usuario")
+                .withProperty("SMTP_PASSWORD", "senha-smtp")
+                .withProperty("EMAIL_FROM", "remetente@exemplo.invalid");
+
+        assertThatThrownBy(() -> ValidacaoConfiguracaoProducao.validar(vazio))
+                .hasMessageContaining("EMAIL_PROVIDER deve ser smtp");
+        assertThatThrownBy(() -> ValidacaoConfiguracaoProducao.validar(semProvider))
+                .hasMessageContaining("EMAIL_PROVIDER deve ser smtp");
+    }
+
+    @Test
+    void aceitaProdComSmtpCompleto() {
+        assertThatCode(() -> ValidacaoConfiguracaoProducao.validar(completo().withProperty("DB_PASS", "senha-forte")))
+                .doesNotThrowAnyException();
+    }
+
     private static MockEnvironment prod() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("prod");
         return env;
     }
 
-    /** Tudo definido, menos a senha do banco. */
+    /** Tudo definido (SMTP inclusive), menos a senha do banco. */
     private static MockEnvironment completo() {
         return prod()
-                .withProperty("JWT_SECRET", SEGREDO_FORTE);
+                .withProperty("JWT_SECRET", SEGREDO_FORTE)
+                .withProperty("sabia.email.provider", "smtp")
+                .withProperty("SMTP_HOST", "smtp.exemplo.invalid")
+                .withProperty("SMTP_USERNAME", "usuario")
+                .withProperty("SMTP_PASSWORD", "senha-smtp")
+                .withProperty("EMAIL_FROM", "remetente@exemplo.invalid");
     }
 }

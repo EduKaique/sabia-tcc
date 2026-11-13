@@ -11,12 +11,13 @@ exigir_env_file
 # Antes de qualquer pull: o backup.sh roda a cada deploy e precisa deste diretório.
 preparar_dir_backup "$(dir_backup)"
 
-# Valor diferente de smtp/dev derruba o auth-service ("No qualifying bean of type EmailService").
+# Em produção o auth-service só sobe com EMAIL_PROVIDER=smtp e as credenciais SMTP preenchidas.
+# Checado aqui, antes do backup e do pull. Só os nomes aparecem nas mensagens, nunca os valores.
 email_provider="$(ler_env EMAIL_PROVIDER)"
-case "$email_provider" in
-  smtp | dev | "") ;;
-  *) erro "EMAIL_PROVIDER inválido no $ENV_FILE: \"$email_provider\". Use exatamente smtp ou dev (minúsculas, sem espaços e sem comentário na mesma linha)." ;;
-esac
+[[ "$email_provider" == "smtp" ]] || erro "EMAIL_PROVIDER inválido no $ENV_FILE: em produção use exatamente smtp (minúsculas, sem espaços e sem comentário na mesma linha)."
+for variavel in SMTP_HOST SMTP_USERNAME SMTP_PASSWORD EMAIL_FROM; do
+  [[ -n "$(ler_env "$variavel")" ]] || erro "$variavel vazia ou ausente no $ENV_FILE (obrigatória com EMAIL_PROVIDER=smtp)."
+done
 
 anterior="$(tag_atual)"
 if [[ "$1" == "--rollback" ]]; then
