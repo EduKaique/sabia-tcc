@@ -90,7 +90,13 @@ nano .env.prod      # preencha tudo; os comandos para gerar segredos estão no p
 ```
 
 - `SITE_ADDRESS=<IP>`, `CORS_ORIGINS=https://<IP>`, `FRONTEND_RECUPERAR_SENHA_URL=https://<IP>/redefinir-senha`.
-- Senhas iniciais (`SABIA_*_SENHA`) com 12+ caracteres.
+- Senhas iniciais (`SABIA_*_SENHA`) com 12+ caracteres: o auth-service não sobe se precisar criar o
+  usuário inicial com senha ausente ou curta (usuário que já existe não é afetado).
+- E-mail: `EMAIL_PROVIDER=smtp` e `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `EMAIL_FROM` preenchidos.
+  Sem isso o `deploy.sh` recusa o deploy (antes do backup e do pull) e o auth-service não sobe.
+- Limite de tentativas (opcional; os padrões já vêm no compose): `RATE_LIMIT_JANELA_SEGUNDOS=60`,
+  `RATE_LIMIT_AUTH_MAX=120` e `RATE_LIMIT_ESQUECI_SENHA_MAX=10` (por IP, no gateway);
+  `SABIA_LOGIN_MAX_FALHAS=10` e `SABIA_LOGIN_BLOQUEIO_MINUTOS=15` (por conta, no auth-service).
 - Servidor com ~1,6 GB de RAM: acrescente as linhas de `deploy/env.lowmem.example` e crie swap.
 
 ### Pasta de backup (antes do primeiro deploy)
@@ -144,6 +150,17 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 | Limpar imagens antigas | `docker image prune -a --filter "until=168h"` (mantém o que está em uso) |
 | Espaço em disco | `df -h /` e `docker system df` |
 
+**Antes de atualizar:** confira no `.env.prod` as variáveis de e-mail (seção 1, "Configuração") e
+anote a tag atual (`cat deploy/.current_tag`). **Depois:** `deploy/dc.sh ps` com tudo `healthy` e o
+`smoke.sh` de outra máquina (seção 5). Se a subida falhar por configuração, corrija o `.env.prod` e rode
+`deploy/deploy.sh <tag>` de novo; se for a versão, `deploy/deploy.sh --rollback`.
+
+**Limite de tentativas:** acima do limite, o gateway (por IP) ou o auth-service (por conta) respondem
+429 com `Retry-After`. Uma conta bloqueada por senhas erradas volta sozinha depois de
+`SABIA_LOGIN_BLOQUEIO_MINUTOS`. Para liberar um aluno antes, o professor redefine a senha dele na
+página da turma. Reiniciar o gateway ou o auth-service também zera os contadores. O bloqueio aparece no
+log do auth-service com o login mascarado (`deploy/dc.sh logs auth-service | grep bloqueado`).
+
 **Reboot do servidor:** o Docker sobe com o systemd e os containers voltam sozinhos
 (`restart: unless-stopped`). Depois do boot, confira `deploy/dc.sh ps` e rode o `smoke.sh`.
 Um container parado manualmente com `deploy/dc.sh stop` **não** volta no reboot.
@@ -180,9 +197,10 @@ Automático, de **outra máquina** (precisa de `curl` e `nc`):
 deploy/smoke.sh https://<IP>
 ```
 
-Verifica: `/` 200, `/api/health` 200, login do seed de dev recusado, documentação (Swagger/OpenAPI)
+Verifica: `/` 200, `/api/health` 200 (o corpo é só `{"status":"ok"}`), login do seed de dev recusado, documentação (Swagger/OpenAPI)
 inacessível, `/api/pedagogico/api/interno/` 404, CORS do login e portas 5432, 8000, 8002, 8080, 8081,
-3000, 5672 e 15672 fechadas.
+3000, 5672 e 15672 fechadas. Cada execução conta como login errado de duas contas de teste: a partir da
+11ª execução em 15 minutos esses logins recebem 429 em vez de 401 (espere o fim do bloqueio).
 
 Manual:
 
@@ -201,7 +219,9 @@ Manual:
 - [ ] Professor vê a submissão, corrige e lança a nota; o aluno vê a nota.
 - [ ] Professor usa "gerar atividade com IA" e "revisar com IA".
 - [ ] Degradação: `deploy/dc.sh stop ia-service` → o professor vê erro amigável e o resto funciona; `deploy/dc.sh start ia-service` depois.
-- [ ] Recuperar senha: o e-mail chega (SMTP) com link para `https://<IP>/redefinir-senha`.
+- [ ] Recuperar senha: o e-mail chega (SMTP) com link para `https://<IP>/redefinir-senha`, e nada de
+  link no log (`deploy/dc.sh logs auth-service | grep -i "\[DEV\]"` vazio).
+- [ ] 11 logins errados na mesma conta de teste → o 11º recebe 429; outra conta continua entrando.
 - [ ] Professor abre a página da turma, vê a tabela de alunos e redefine a senha de um aluno com "exigir troca"; o aluno entra com a senha nova, cai em `/trocar-senha` e troca.
 - [ ] Aluno abre "Aprender", entra numa lição e navega pelas páginas de conteúdo (texto e vídeo).
 - [ ] O vídeo do YouTube carrega e toca dentro da página; "Já assisti" marca o vídeo.

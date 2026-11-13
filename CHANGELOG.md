@@ -7,6 +7,39 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-13
+
+Correções de segurança e qualidade sobre a v0.2.0, publicada como **pré-release**. Notas completas em
+[docs/release-notes/v0.2.1.md](docs/release-notes/v0.2.1.md).
+
+### Alterado
+
+#### Infra e deploy
+
+- `EMAIL_PROVIDER` e `EMAIL_FROM` passam a ser obrigatórios no compose de produção (sem valor padrão), e o `deploy.sh` aceita só `EMAIL_PROVIDER=smtp` com `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD` e `EMAIL_FROM` preenchidos, checando antes do backup e do pull.
+- Compose de produção repassa as novas variáveis de limite de tentativas com os valores padrão.
+- `pnpm test` (Vitest) roda no CI do front, entre o lint e o build; o api-gateway ganhou testes com `node:test` (`npm test`).
+
+### Corrigido
+
+#### Infra e deploy
+
+- `/api/health` responde só `{"status":"ok"}`, sem as URLs internas dos serviços.
+
+#### Autenticação e convites
+
+- O serviço pedagógico e o auth-service respondem 400 (JSON malformado, valor inválido no corpo, parâmetro com tipo inválido ou ausente), 404 (rota inexistente), 405 (método não suportado) e 415 (tipo de conteúdo não suportado) em vez de 500, no formato `{status, erro, timestamp}`.
+
+### Segurança
+
+#### Autenticação e convites
+
+- Limite de tentativas por IP no gateway: 120 por minuto para login, primeiro acesso, validação de convite, redefinição e troca de senha, e 10 por minuto para "esqueci a senha"; acima disso, 429 com `Retry-After`.
+- Limite de tentativas por conta no auth-service: 10 senhas erradas em 15 minutos bloqueiam o login daquela conta por 15 minutos (429), também para logins inexistentes; o login certo zera e o professor desbloqueia ao redefinir a senha do aluno.
+- O gateway confia só no último salto do `X-Forwarded-For` (`trustProxy: 1`).
+- O auth-service não cria mais o usuário inicial com senha padrão: no perfil prod, `SABIA_*_SENHA` ausente ou com menos de 12 caracteres impede a subida quando o usuário ainda não existe.
+- No perfil prod, o auth-service exige `EMAIL_PROVIDER=smtp` e as credenciais SMTP, para que links de redefinição e senhas temporárias não sejam gravados no log.
+
 ## [0.2.0] - 2026-11-13
 
 Segunda versão, publicada como **pré-release**. Notas completas em
@@ -189,6 +222,7 @@ Primeira versão, publicada como **pré-release**. Notas completas em
 - Cookie de sessão com `secure` em HTTPS.
 - Em produção, apenas o Caddy publica portas; banco, serviços e documentação da API ficam inacessíveis de fora.
 
-[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EduKaique/sabia-tcc/releases/tag/v0.1.0
