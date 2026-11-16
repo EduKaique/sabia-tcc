@@ -7,14 +7,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface AtividadeAvaliativaMapper {
 
-    @Mapping(target = "turmaId", source = "turma.id")
-    @Mapping(target = "modo", source = "modo", defaultValue = "BLOCOS")
-    AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade);
-
-    List<AtividadeAvaliativaProfessorResponse> toProfessorResponseList(List<AtividadeAvaliativa> atividades);
+    @Mapping(target = "turmaId", source = "atividade.turma.id")
+    @Mapping(target = "modo", source = "atividade.modo", defaultValue = "BLOCOS")
+    @Mapping(target = "possuiNotas", source = "possuiNotas")
+    AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade, boolean possuiNotas);
 }
