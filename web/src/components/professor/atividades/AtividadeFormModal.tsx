@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   atividadeSchema,
@@ -16,11 +17,19 @@ import {
   usePublicarAtividade,
 } from "@/hooks/useAtividades";
 import { useTurmas } from "@/hooks/useTurmas";
+import { useCenarios } from "@/hooks/useCenarios";
 import { RichTextEditor } from "./RichTextEditor";
 import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
 import BlocklyEditor from "@/components/BlocklyEditor";
 import { PalcoRobo } from "@/components/aluno/editor/PalcoRobo";
-import { PRESETS_CENARIO, cenarioSemLimite, presetDoCenario } from "@/lib/cenariosRobo";
+import {
+  PREFIXO_CENARIO_SALVO,
+  PRESETS_CENARIO,
+  cenarioSemLimite,
+  lerCenario,
+  opcaoDoCenario,
+  presetDoCenario,
+} from "@/lib/cenariosRobo";
 import type {
   AtividadeAvaliativa,
   CenarioRobo,
@@ -35,7 +44,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -70,12 +81,14 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
   const [gabaritoIa, setGabaritoIa] = useState<string | null>(null);
   const [erroServidor, setErroServidor] = useState<string | null>(null);
   const cenarioSalvo = lerCenarioSalvo(atividade?.cenarioJson);
+  const { data: cenariosDoProfessor = [] } = useCenarios();
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<AtividadeFormInput, unknown, AtividadeFormData>({
     resolver: zodResolver(atividadeSchema),
@@ -106,9 +119,34 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
   const modoJogo = useWatch({ control, name: "modo" }) === "JOGO_ROBO";
   const presetCenario = useWatch({ control, name: "presetCenario" });
   const cenarioPersonalizado = presetCenario === ID_PERSONALIZADO;
-  const cenarioEscolhido = cenarioPersonalizado
-    ? cenarioSalvo
-    : (PRESETS_CENARIO.find((p) => p.id === presetCenario)?.cenario ?? null);
+
+  /** Cenário de uma opção do seletor: preset, cenário salvo do professor ou o snapshot atual da atividade. */
+  function resolverCenario(opcao: string | undefined): CenarioRobo | null {
+    if (opcao === ID_PERSONALIZADO) return cenarioSalvo;
+    if (opcao?.startsWith(PREFIXO_CENARIO_SALVO)) {
+      const id = Number(opcao.slice(PREFIXO_CENARIO_SALVO.length));
+      return lerCenario(cenariosDoProfessor.find((c) => c.id === id)?.cenarioJson);
+    }
+    return PRESETS_CENARIO.find((p) => p.id === opcao)?.cenario ?? null;
+  }
+  const cenarioEscolhido = resolverCenario(presetCenario);
+  // O snapshot só aparece como "personalizado" quando não bate com nenhuma opção da lista.
+  const mostrarPersonalizado =
+    !!cenarioSalvo &&
+    (cenarioPersonalizado || opcaoDoCenario(cenarioSalvo, cenariosDoProfessor) === null);
+
+  // Os cenários salvos chegam depois do form: se o snapshot bater com um deles, seleciona-o (uma vez,
+  // e só se o professor ainda não trocou a opção).
+  const opcaoAjustada = useRef(false);
+  const cenarioJsonAtividade = atividade?.cenarioJson;
+  useEffect(() => {
+    if (opcaoAjustada.current || cenariosDoProfessor.length === 0) return;
+    opcaoAjustada.current = true;
+    const snapshot = lerCenarioSalvo(cenarioJsonAtividade);
+    if (!snapshot || getValues("presetCenario") !== ID_PERSONALIZADO) return;
+    const opcao = opcaoDoCenario(snapshot, cenariosDoProfessor);
+    if (opcao) setValue("presetCenario", opcao);
+  }, [cenariosDoProfessor, cenarioJsonAtividade, getValues, setValue]);
 
   const criar = useCriarAtividade();
   const atualizar = useAtualizarAtividade(atividade?.id ?? "");
@@ -121,13 +159,10 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
     [setValue]
   );
 
-  /** cenarioJson enviado: o preset (ou o cenário personalizado salvo) com o limite de blocos, se houver. */
+  /** cenarioJson enviado (snapshot): a opção escolhida com o limite de blocos, se houver. */
   function montarCenarioJson(data: AtividadeFormData): string | undefined {
     if (data.modo !== "JOGO_ROBO") return undefined;
-    const base =
-      data.presetCenario === ID_PERSONALIZADO
-        ? cenarioSalvo
-        : PRESETS_CENARIO.find((p) => p.id === data.presetCenario)?.cenario;
+    const base = resolverCenario(data.presetCenario);
     if (!base) return undefined;
     const semLimite = cenarioSemLimite(base);
     return JSON.stringify(data.maxBlocos ? { ...semLimite, maxBlocos: data.maxBlocos } : semLimite);
@@ -298,29 +333,56 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto]">
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="presetCenario">
-                  Cenário <span className="text-destructive">*</span>
-                </Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="presetCenario">
+                    Cenário <span className="text-destructive">*</span>
+                  </Label>
+                  <Link
+                    href="/professor/cenarios"
+                    className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Gerenciar cenários
+                  </Link>
+                </div>
                 <Controller
                   control={control}
                   name="presetCenario"
                   render={({ field }) => (
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(opcao) => {
+                        field.onChange(opcao);
+                        // O limite do cenário escolhido preenche o campo; "Limite de blocos" continua valendo.
+                        const limite = resolverCenario(opcao)?.maxBlocos;
+                        if (limite) setValue("maxBlocos", limite);
+                      }}
                       value={field.value}
-                      disabled={cenarioPersonalizado}
                     >
                       <SelectTrigger id="presetCenario" className="w-full">
                         <SelectValue placeholder="Escolha um cenário" />
                       </SelectTrigger>
                       <SelectContent>
-                        {PRESETS_CENARIO.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.nome}
+                        {mostrarPersonalizado && (
+                          <SelectItem value={ID_PERSONALIZADO}>
+                            Cenário personalizado (atual)
                           </SelectItem>
-                        ))}
-                        {cenarioPersonalizado && (
-                          <SelectItem value={ID_PERSONALIZADO}>Cenário personalizado</SelectItem>
+                        )}
+                        <SelectGroup>
+                          <SelectLabel>Prontos</SelectLabel>
+                          {PRESETS_CENARIO.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                        {cenariosDoProfessor.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>Meus cenários</SelectLabel>
+                            {cenariosDoProfessor.map((c) => (
+                              <SelectItem key={c.id} value={`${PREFIXO_CENARIO_SALVO}${c.id}`}>
+                                {c.nome}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
                         )}
                       </SelectContent>
                     </Select>
@@ -328,7 +390,7 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
                 />
                 {cenarioPersonalizado && (
                   <p className="text-xs text-muted-foreground">
-                    Este cenário não corresponde a nenhum modelo e não pode ser trocado aqui.
+                    Este é o cenário atual da atividade e não corresponde a nenhuma opção da lista.
                   </p>
                 )}
                 {errors.presetCenario && (
