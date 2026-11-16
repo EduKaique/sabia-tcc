@@ -158,7 +158,8 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
         await criar.mutateAsync(payload);
       }
     } catch (err) {
-      // 409: o backend recusou trocar modo/cenário de uma atividade com submissões.
+      // 409: o backend recusou trocar modo/cenário de uma atividade com submissões
+      // ou a pontuação máxima de uma atividade com notas publicadas.
       const resposta = (err as { response?: { status?: number; data?: ErroApi } }).response;
       if (resposta?.status === 409) {
         setErroServidor(resposta.data?.erro ?? "Não foi possível salvar a atividade.");
@@ -370,7 +371,13 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
               type="number"
               min={1}
               max={100}
+              disabled={atividade?.possuiNotas}
             />
+            {atividade?.possuiNotas && (
+              <p className="text-xs text-muted-foreground">
+                Não é possível alterar: a atividade já tem notas publicadas.
+              </p>
+            )}
             {errors.pontuacaoMaxima && (
               <p className="text-xs text-destructive">{errors.pontuacaoMaxima.message}</p>
             )}
