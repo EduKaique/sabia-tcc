@@ -11,4 +11,14 @@ export interface AtividadeAlunoDTO {
   status: StatusAtividadeAluno
   modo: ModoAtividade
   cenarioJson: string | null
+  /** Nota, comentário e data da correção: só vêm preenchidos quando status é CORRIGIDA. */
+  nota: number | null
+  feedbackProfessor: string | null
+  avaliadaEm: string | null
+}
+
+/** Projeto entregue pelo próprio aluno (somente leitura). */
+export interface ProjetoEntregueDTO {
+  estadoJson: string | null
+  dataEnvio: string
 }

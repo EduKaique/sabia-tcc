@@ -1,5 +1,5 @@
 import api from '@/lib/pedagogicoApi'
-import type { AtividadeAlunoDTO } from '@/types/atividade'
+import type { AtividadeAlunoDTO, ProjetoEntregueDTO } from '@/types/atividade'
 
 export async function listarAtividadesAluno(): Promise<AtividadeAlunoDTO[]> {
   const { data } = await api.get<AtividadeAlunoDTO[]>('/api/aluno/atividades')
@@ -8,6 +8,11 @@ export async function listarAtividadesAluno(): Promise<AtividadeAlunoDTO[]> {
 
 export async function buscarAtividadeAluno(id: number): Promise<AtividadeAlunoDTO> {
   const { data } = await api.get<AtividadeAlunoDTO>(`/api/aluno/atividades/${id}`)
+  return data
+}
+
+export async function buscarProjetoAluno(id: number): Promise<ProjetoEntregueDTO> {
+  const { data } = await api.get<ProjetoEntregueDTO>(`/api/aluno/atividades/${id}/projeto`)
   return data
 }
 
