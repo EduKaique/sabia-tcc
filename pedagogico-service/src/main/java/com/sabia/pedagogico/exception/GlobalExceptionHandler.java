@@ -58,6 +58,11 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(409, ex.getMessage()));
     }
 
+    @ExceptionHandler(NotaInvalidaException.class)
+    public ResponseEntity<ErroResponse> handleNotaInvalida(NotaInvalidaException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.ofValidation(Map.of("nota", ex.getMessage())));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> campos = new LinkedHashMap<>();

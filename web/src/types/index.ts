@@ -54,6 +54,7 @@ export interface AtividadeAvaliativa {
   criadaEm: string
   modo: ModoAtividade
   cenarioJson: string | null
+  possuiNotas: boolean
 }
 
 export type EtapaEnsino = 'ANOS_INICIAIS' | 'ANOS_FINAIS' | 'MEDIO' | 'TECNICO'

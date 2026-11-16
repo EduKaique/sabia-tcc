@@ -25,9 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,7 +58,13 @@ public class AtividadeAvaliativaService {
         } else {
             resultado = atividadeRepository.findByTurma_ProfessorId(professorId);
         }
-        return atividadeAvaliativaMapper.toProfessorResponseList(resultado);
+        Set<Long> comNotas = resultado.isEmpty()
+                ? Set.of()
+                : new HashSet<>(submissaoAvaliativaRepository.findAtividadeIdsComCorrecao(
+                        resultado.stream().map(AtividadeAvaliativa::getId).toList()));
+        return resultado.stream()
+                .map(a -> atividadeAvaliativaMapper.toProfessorResponse(a, comNotas.contains(a.getId())))
+                .toList();
     }
 
     @Transactional
@@ -84,11 +92,11 @@ public class AtividadeAvaliativaService {
 
         atividade = atividadeRepository.save(atividade);
         log.info("Atividade criada id={} por professor id={}", atividade.getId(), professorId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividade);
+        return atividadeAvaliativaMapper.toProfessorResponse(atividade, false);
     }
 
     public AtividadeAvaliativaProfessorResponse buscarParaProfessor(Long professorId, Long atividadeId) {
-        return atividadeAvaliativaMapper.toProfessorResponse(validarProprietario(professorId, atividadeId));
+        return toProfessorResponse(validarProprietario(professorId, atividadeId));
     }
 
     @Transactional
@@ -97,7 +105,12 @@ public class AtividadeAvaliativaService {
 
         if (request.titulo() != null)         atividade.setTitulo(request.titulo());
         if (request.descricao() != null)      atividade.setDescricao(request.descricao());
-        if (request.pontuacaoMaxima() != null) atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
+        if (request.pontuacaoMaxima() != null && request.pontuacaoMaxima() != atividade.getPontuacaoMaxima()) {
+            if (submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividadeId)) {
+                throw new ConflitoException("Não é possível alterar a pontuação máxima: a atividade já tem notas publicadas.");
+            }
+            atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
+        }
         if (request.dataEntrega() != null)    atividade.setDataEntrega(request.dataEntrega());
         if (request.gabaritoEstadoJson() != null)     atividade.setGabaritoEstadoJson(request.gabaritoEstadoJson());
 
@@ -113,7 +126,7 @@ public class AtividadeAvaliativaService {
             atividade.setCenarioJson(cenario);
         }
 
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
@@ -124,7 +137,7 @@ public class AtividadeAvaliativaService {
         }
         atividade.setStatus(StatusAtividade.PUBLICADA);
         log.info("Atividade id={} publicada", atividadeId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
@@ -135,7 +148,7 @@ public class AtividadeAvaliativaService {
         }
         atividade.setStatus(StatusAtividade.RASCUNHO);
         log.info("Atividade id={} despublicada", atividadeId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     // --------- ALUNO ---------
@@ -199,6 +212,11 @@ public class AtividadeAvaliativaService {
     }
 
     // --------- helpers ---------
+
+    private AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade) {
+        return atividadeAvaliativaMapper.toProfessorResponse(
+                atividade, submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividade.getId()));
+    }
 
     private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
         if (modo != ModoAtividade.JOGO_ROBO) return null;

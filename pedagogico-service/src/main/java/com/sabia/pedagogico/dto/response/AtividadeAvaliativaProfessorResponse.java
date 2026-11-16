@@ -17,5 +17,6 @@ public record AtividadeAvaliativaProfessorResponse(
         LocalDateTime criadaEm,
         String gabaritoEstadoJson,
         ModoAtividade modo,
-        String cenarioJson
+        String cenarioJson,
+        boolean possuiNotas
 ) {}
