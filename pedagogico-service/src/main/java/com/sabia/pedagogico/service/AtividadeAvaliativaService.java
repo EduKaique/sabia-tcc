@@ -4,11 +4,13 @@ import com.sabia.pedagogico.dto.request.CriarAtividadeAvaliativaRequest;
 import com.sabia.pedagogico.dto.request.EditarAtividadeRequest;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaAlunoResponse;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaProfessorResponse;
+import com.sabia.pedagogico.dto.response.ProjetoEntregueResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
 import com.sabia.pedagogico.exception.CenarioInvalidoException;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
+import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
 import com.sabia.pedagogico.model.atividade.Correcao;
@@ -172,6 +174,24 @@ public class AtividadeAvaliativaService {
     }
 
     public AtividadeAvaliativaAlunoResponse buscarParaAluno(Long alunoId, Long atividadeId) {
+        var atividade = buscarDisponivelParaAluno(alunoId, atividadeId);
+
+        SubmissaoAvaliativa sub = submissaoAvaliativaRepository
+                .findByAlunoIdAndAtividadeId(alunoId, atividadeId).orElse(null);
+        return toAlunoResponse(atividade, sub);
+    }
+
+    /** Projeto entregue pelo próprio aluno (somente leitura); 404 se ele ainda não entregou. */
+    public ProjetoEntregueResponse buscarProjetoDoAluno(Long alunoId, Long atividadeId) {
+        buscarDisponivelParaAluno(alunoId, atividadeId);
+
+        var sub = submissaoAvaliativaRepository.findByAlunoIdAndAtividadeId(alunoId, atividadeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Você ainda não entregou esta atividade."));
+        var projeto = sub.getProjeto();
+        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getDataEnvio());
+    }
+
+    private AtividadeAvaliativa buscarDisponivelParaAluno(Long alunoId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
@@ -181,10 +201,7 @@ public class AtividadeAvaliativaService {
         if (!turmaAlunoRepository.existsByTurmaIdAndAlunoId(atividade.getTurma().getId(), alunoId)) {
             throw new AcessoNegadoException("Você não está matriculado nesta turma.");
         }
-
-        SubmissaoAvaliativa sub = submissaoAvaliativaRepository
-                .findByAlunoIdAndAtividadeId(alunoId, atividadeId).orElse(null);
-        return toAlunoResponse(atividade, sub);
+        return atividade;
     }
 
     private AtividadeAvaliativaAlunoResponse toAlunoResponse(AtividadeAvaliativa a, SubmissaoAvaliativa sub) {

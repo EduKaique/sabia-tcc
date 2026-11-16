@@ -1,6 +1,9 @@
 package com.sabia.pedagogico.service;
 
+import com.sabia.pedagogico.exception.AcessoNegadoException;
+import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapperImpl;
+import com.sabia.pedagogico.model.atividade.ProjetoAvaliativo;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
 import com.sabia.pedagogico.model.atividade.Correcao;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -127,5 +131,42 @@ class AtividadeAvaliativaServiceAlunoTest {
         assertThat(lista.get(1).nota()).isNull();
         assertThat(lista.get(2).nota()).isEqualByComparingTo("8.5");
         assertThat(lista.get(2).feedbackProfessor()).startsWith("Muito bem!");
+    }
+
+    @Test
+    void alunoComEntregaRecebeOProprioProjeto() {
+        var a = atividade(1L);
+        var s = submissao(a, StatusSubmissao.PENDENTE);
+        var projeto = new ProjetoAvaliativo();
+        projeto.setEstadoJson("{\"blocks\":{}}");
+        s.setProjeto(projeto);
+        s.setDataEnvio(AVALIADA_EM);
+
+        var r = service.buscarProjetoDoAluno(ALUNO, 1L);
+
+        assertThat(r.estadoJson()).isEqualTo("{\"blocks\":{}}");
+        assertThat(r.dataEnvio()).isEqualTo(AVALIADA_EM);
+    }
+
+    @Test
+    void alunoSemEntregaRecebe404() {
+        atividade(1L);
+        when(submissaoRepo.findByAlunoIdAndAtividadeId(ALUNO, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.buscarProjetoDoAluno(ALUNO, 1L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Você ainda não entregou esta atividade.");
+    }
+
+    @Test
+    void alunoForaDaTurmaERecusadoComoNoBuscar() {
+        atividade(1L);
+        when(turmaAlunoRepo.existsByTurmaIdAndAlunoId(3L, 99L)).thenReturn(false);
+
+        assertThatThrownBy(() -> service.buscarProjetoDoAluno(99L, 1L))
+                .isInstanceOf(AcessoNegadoException.class)
+                .hasMessage("Você não está matriculado nesta turma.");
+        assertThatThrownBy(() -> service.buscarParaAluno(99L, 1L))
+                .isInstanceOf(AcessoNegadoException.class);
     }
 }
