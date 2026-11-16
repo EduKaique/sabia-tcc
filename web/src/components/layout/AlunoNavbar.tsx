@@ -2,11 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { BookOpen, Bell, KeyRound, LogOut, UserRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { buscarPerfil } from '@/services/auth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
+import { AvatarCabecalhoAluno } from '@/components/layout/AvatarCabecalhoAluno'
 import styles from '@/styles/home.module.css'
 
 const navItems = [
@@ -20,13 +23,13 @@ const botaoIcone =
 export function AlunoNavbar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  // O avatar não vem no token. Mesma chave da tela de perfil, que atualiza este cache ao salvar.
+  const { data: perfil } = useQuery({ queryKey: ['perfil'], queryFn: buscarPerfil, enabled: !!user })
 
   const handleLogout = () => {
     encerrarSessao()
     window.location.href = '/'
   }
-
-  const initial = user?.nome?.charAt(0).toUpperCase() ?? '?'
 
   return (
     <header className="sticky top-0 z-30 shrink-0 border-b-2 border-tinta bg-white/90 backdrop-blur">
@@ -80,15 +83,7 @@ export function AlunoNavbar() {
           <button type="button" onClick={handleLogout} aria-label="Sair" title="Sair" className={botaoIcone}>
             <LogOut size={20} aria-hidden="true" />
           </button>
-          <div
-            aria-hidden="true"
-            className={cn(
-              fredoka.className,
-              'flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-tinta bg-sabia-amarelo text-base font-bold text-tinta',
-            )}
-          >
-            {initial}
-          </div>
+          <AvatarCabecalhoAluno nome={user?.nome} avatar={perfil?.avatar} />
         </div>
       </div>
     </header>
