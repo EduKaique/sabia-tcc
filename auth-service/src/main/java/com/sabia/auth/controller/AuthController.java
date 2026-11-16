@@ -1,6 +1,7 @@
 package com.sabia.auth.controller;
 
 import com.sabia.auth.dto.request.BuscarAlunoRequest;
+import com.sabia.auth.dto.request.EditarPerfilRequest;
 import com.sabia.auth.dto.request.EsqueciSenhaRequest;
 import com.sabia.auth.dto.request.LoginRequest;
 import com.sabia.auth.dto.request.PerfilRequest;
@@ -9,9 +10,11 @@ import com.sabia.auth.dto.request.RedefinirSenhaRequest;
 import com.sabia.auth.dto.request.TrocarSenhaRequest;
 import com.sabia.auth.dto.request.ValidateRequest;
 import com.sabia.auth.dto.response.AlunoBuscaResponse;
+import com.sabia.auth.dto.response.EditarPerfilResponse;
 import com.sabia.auth.dto.response.LoginResponse;
 import com.sabia.auth.dto.response.MensagemResponse;
 import com.sabia.auth.dto.response.MeResponse;
+import com.sabia.auth.dto.response.PerfilResponse;
 import com.sabia.auth.dto.response.PerfilStatusResponse;
 import com.sabia.auth.dto.response.PrimeiroAcessoResponse;
 import com.sabia.auth.dto.response.ValidateResponse;
@@ -30,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -109,6 +113,32 @@ public class AuthController {
         Usuario usuario = (Usuario) authentication.getPrincipal();
         perfilService.completarPerfil(usuario, request);
         return ResponseEntity.ok(new MensagemResponse("Perfil atualizado com sucesso."));
+    }
+
+    @GetMapping("/perfil")
+    @Operation(summary = "Retorna o perfil do usuário autenticado (matrícula e avatar só para aluno)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PerfilResponse> consultarPerfil(Authentication authentication) {
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        return ResponseEntity.ok(perfilService.consultar(usuario));
+    }
+
+    @PatchMapping("/perfil")
+    @Operation(summary = "Edita o próprio nome (e o avatar, se aluno) e devolve um token novo")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<EditarPerfilResponse> editarPerfil(Authentication authentication,
+                                                             @Valid @RequestBody EditarPerfilRequest request) {
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        // editar() faz commit ao retornar; só depois o nome novo do aluno vai ao pedagógico.
+        PerfilService.ResultadoEdicao resultado = perfilService.editar(usuario, request);
+        EditarPerfilResponse resposta = resultado.resposta();
+        if (resultado.propagarNome()) {
+            String aviso = perfilService.propagarNomeAluno(usuario.getId(), resposta.nome());
+            if (aviso != null) {
+                resposta = resposta.comAviso(aviso);
+            }
+        }
+        return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/perfil/status")
