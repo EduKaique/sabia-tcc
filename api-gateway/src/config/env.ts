@@ -21,10 +21,21 @@ function jwtSecret(): string {
   return segredo;
 }
 
+/** Inteiro positivo da variável; senão o padrão. */
+function inteiroPositivo(nome: string, padrao: number): number {
+  const valor = Number(process.env[nome]);
+  return Number.isInteger(valor) && valor > 0 ? valor : padrao;
+}
+
 export const env = {
   PORT: Number(process.env.GATEWAY_PORT) || 8000,
   JWT_SECRET: jwtSecret(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
+  limiteTentativas: {
+    janelaSegundos: inteiroPositivo('RATE_LIMIT_JANELA_SEGUNDOS', 60),
+    authMax: inteiroPositivo('RATE_LIMIT_AUTH_MAX', 120),
+    esqueciSenhaMax: inteiroPositivo('RATE_LIMIT_ESQUECI_SENHA_MAX', 10),
+  },
   upstreams: {
     auth: process.env.AUTH_URL || 'http://localhost:8080',
     pedagogico: process.env.PEDAGOGICO_URL || 'http://localhost:8081',

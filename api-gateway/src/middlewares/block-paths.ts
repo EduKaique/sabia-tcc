@@ -16,7 +16,7 @@ export function blockPaths(...trechos: string[]) {
   };
 }
 
-function normalizar(caminho: string): string | null {
+export function normalizar(caminho: string): string | null {
   try {
     return decodeURIComponent(caminho).toLowerCase().replace(/\/{2,}/g, '/');
   } catch {

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 /**
  * Em produção não há data.sql: cria o administrador e o professor iniciais a partir de
  * SABIA_ADMIN_* e SABIA_PROFESSOR_*. Idempotente — usuário com o mesmo e-mail é mantido.
+ * Para criar, exige SABIA_*_SENHA com no mínimo 12 caracteres; senão a aplicação não sobe.
+ * A senha só é lida quando o usuário ainda não existe: servidor já implantado não é afetado.
  */
 @Component
 @Profile("prod")
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class BootstrapUsuariosIniciais implements ApplicationRunner {
 
-    static final String SENHA_PADRAO = "senha123";
+    static final int TAMANHO_MINIMO_SENHA = 12;
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -46,9 +48,10 @@ public class BootstrapUsuariosIniciais implements ApplicationRunner {
         }
 
         String senha = valor(prefixo + "_SENHA");
-        if (senha == null) {
-            log.warn("{}_SENHA não definido: usuário inicial {} criado com a senha padrão. Troque-a.", prefixo, perfil);
-            senha = SENHA_PADRAO;
+        if (senha == null || senha.length() < TAMANHO_MINIMO_SENHA) {
+            // Só o nome da variável: o valor nunca vai para mensagem ou log.
+            throw new IllegalStateException(prefixo + "_SENHA ausente ou com menos de "
+                    + TAMANHO_MINIMO_SENHA + " caracteres: usuário inicial não criado");
         }
 
         usuarioRepository.save(Usuario.builder()

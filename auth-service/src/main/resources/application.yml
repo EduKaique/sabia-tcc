@@ -67,6 +67,11 @@ sabia:
         url: ${PEDAGOGICO_URL:http://pedagogico-service:8081}
     frontend:
         recuperar-senha-url: ${FRONTEND_RECUPERAR_SENHA_URL:http://localhost:3000/redefinir-senha}
+    login:
+        # Limite de tentativas por conta: com max-falhas erradas dentro de bloqueio-minutos, o login
+        # dessa conta fica bloqueado (429) por bloqueio-minutos. Login certo zera o contador.
+        max-falhas: ${SABIA_LOGIN_MAX_FALHAS:10}
+        bloqueio-minutos: ${SABIA_LOGIN_BLOQUEIO_MINUTOS:15}
     email:
         # Provedor do EmailService: "dev" apenas loga o link (padrão);
         # "smtp" envia de fato via SmtpEmailService (usa as credenciais em spring.mail acima).

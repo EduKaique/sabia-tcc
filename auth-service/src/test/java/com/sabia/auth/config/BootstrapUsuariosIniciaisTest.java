@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -80,15 +82,47 @@ class BootstrapUsuariosIniciaisTest {
     }
 
     @Test
-    void semSenhaUsaSenhaPadrao() {
+    void semSenhaFalhaCitandoSoONomeDaVariavel() {
         env.withProperty("SABIA_PROFESSOR_EMAIL", "prof@escola.edu");
+
+        assertThatThrownBy(() -> bootstrap.run(null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SABIA_PROFESSOR_SENHA");
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void senhaComOnzeCaracteresFalhaSemExporOValor() {
+        env.withProperty("SABIA_ADMIN_EMAIL", "admin@escola.edu")
+                .withProperty("SABIA_ADMIN_SENHA", "onzecaract1");
+
+        assertThatThrownBy(() -> bootstrap.run(null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SABIA_ADMIN_SENHA")
+                .hasMessageNotContaining("onzecaract1");
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void senhaComDozeCaracteresCriaOUsuario() {
+        env.withProperty("SABIA_PROFESSOR_EMAIL", "prof@escola.edu")
+                .withProperty("SABIA_PROFESSOR_SENHA", "dozecaracter");
 
         bootstrap.run(null);
 
         Usuario professor = capturarSalvos(1).get(0);
         assertThat(professor.getCpf()).isEqualTo("00000000001");
-        assertThat(passwordEncoder.matches(BootstrapUsuariosIniciais.SENHA_PADRAO, professor.getSenhaHash()))
-                .isTrue();
+        assertThat(passwordEncoder.matches("dozecaracter", professor.getSenhaHash())).isTrue();
+    }
+
+    @Test
+    void usuarioExistenteComSenhaInvalidaNaoFalha() {
+        env.withProperty("SABIA_ADMIN_EMAIL", "admin@escola.edu")
+                .withProperty("SABIA_ADMIN_SENHA", "curta");
+        when(usuarioRepository.existsByEmailIgnoreCase("admin@escola.edu")).thenReturn(true);
+
+        assertThatCode(() -> bootstrap.run(null)).doesNotThrowAnyException();
+        verify(usuarioRepository, never()).save(any());
     }
 
     private List<Usuario> capturarSalvos(int quantidade) {
