@@ -85,3 +85,39 @@ export async function trocarSenha(data: TrocarSenhaRequest): Promise<LoginRespon
   const { data: resposta } = await api.post<LoginResponse>('/api/auth/trocar-senha', data)
   return resposta
 }
+
+export interface Perfil {
+  nome: string
+  /** Pode faltar para aluno que entrou só pela matrícula. */
+  email?: string
+  perfil: LoginResponse['role']
+  /** Só aluno. */
+  matricula?: string
+  /** Só aluno. */
+  avatar?: string
+}
+
+export interface EditarPerfilRequest {
+  nome: string
+  /** Só aluno; ausente mantém o atual. */
+  avatar?: string
+}
+
+export interface EditarPerfilResponse {
+  nome: string
+  avatar?: string
+  /** Token novo, já com o nome atualizado. */
+  token: string
+  /** Presente quando o nome ainda não chegou às atividades (pedagógico indisponível). */
+  aviso?: string
+}
+
+export async function buscarPerfil(): Promise<Perfil> {
+  const { data } = await api.get<Perfil>('/api/auth/perfil')
+  return data
+}
+
+export async function editarPerfil(data: EditarPerfilRequest): Promise<EditarPerfilResponse> {
+  const { data: resposta } = await api.patch<EditarPerfilResponse>('/api/auth/perfil', data)
+  return resposta
+}

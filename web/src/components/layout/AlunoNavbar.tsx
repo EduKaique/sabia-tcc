@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Bell, KeyRound, LogOut } from 'lucide-react'
+import { BookOpen, Bell, KeyRound, LogOut, UserRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 import { cn } from '@/lib/utils'
@@ -71,6 +71,9 @@ export function AlunoNavbar() {
           <button type="button" aria-label="Notificações" className={cn(botaoIcone, 'hidden sm:flex')}>
             <Bell size={20} aria-hidden="true" />
           </button>
+          <Link href="/perfil" aria-label="Meu perfil" title="Meu perfil" className={botaoIcone}>
+            <UserRound size={20} aria-hidden="true" />
+          </Link>
           <Link href="/trocar-senha" aria-label="Alterar senha" title="Alterar senha" className={botaoIcone}>
             <KeyRound size={20} aria-hidden="true" />
           </Link>
