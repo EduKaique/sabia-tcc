@@ -9,6 +9,7 @@ import com.sabia.pedagogico.dto.response.SubmissaoListagemResponse;
 import com.sabia.pedagogico.dto.response.SubmissaoProfessorDetalheResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
+import com.sabia.pedagogico.exception.NotaInvalidaException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.SubmissaoNaoEncontradaException;
 import com.sabia.pedagogico.mapper.CorrecaoMapper;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -126,6 +128,10 @@ public class SubmissaoAvaliativaService {
 
         if (submissao.getCorrecao() != null) {
             throw new OperacaoInvalidaException("Esta submissão já foi avaliada.");
+        }
+        int maxima = submissao.getAtividade().getPontuacaoMaxima();
+        if (request.nota().compareTo(BigDecimal.valueOf(maxima)) > 0) {
+            throw new NotaInvalidaException("A nota deve ficar entre 0 e " + maxima + ".");
         }
 
         var correcao = Correcao.builder()
