@@ -11,6 +11,7 @@ import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
+import com.sabia.pedagogico.model.atividade.Correcao;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
@@ -164,7 +165,7 @@ public class AtividadeAvaliativaService {
                 atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA);
 
         Map<Long, SubmissaoAvaliativa> submissaoPorAtividade =
-                submissaoAvaliativaRepository.findByAlunoId(alunoId).stream()
+                submissaoAvaliativaRepository.findByAlunoIdComCorrecao(alunoId).stream()
                         .collect(Collectors.toMap(s -> s.getAtividade().getId(), s -> s));
 
         return atividades.stream().map(a -> toAlunoResponse(a, submissaoPorAtividade.get(a.getId()))).toList();
@@ -195,13 +196,17 @@ public class AtividadeAvaliativaService {
         } else {
             statusAluno = StatusAtividadeAluno.ENTREGUE;
         }
+        Correcao correcao = statusAluno == StatusAtividadeAluno.CORRIGIDA ? sub.getCorrecao() : null;
         return new AtividadeAvaliativaAlunoResponse(
                 a.getId(), a.getTitulo(), a.getDescricao(),
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
                 a.getDataEntrega(), a.isEGeradaIa(),
                 statusAluno, a.getCriadaEm(),
                 a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
-                a.getCenarioJson()
+                a.getCenarioJson(),
+                correcao != null ? correcao.getNota() : null,
+                correcao != null ? correcao.getFeedbackProfessor() : null,
+                correcao != null ? correcao.getAvaliadaEm() : null
         );
     }
 
