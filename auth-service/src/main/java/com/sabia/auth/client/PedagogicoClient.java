@@ -107,6 +107,21 @@ public class PedagogicoClient {
         }
     }
 
+    /** Atualiza o nome copiado do aluno no pedagógico (idempotente). Qualquer falha vira indisponível. */
+    public void atualizarNomeAluno(Long alunoId, String nome) {
+        try {
+            restClient.put()
+                    .uri("/api/interno/alunos/{alunoId}/nome", alunoId)
+                    .header(HttpHeaders.AUTHORIZATION, bearer())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("nome", nome))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException e) {
+            throw new PedagogicoIndisponivelException(e);
+        }
+    }
+
     private String bearer() {
         return "Bearer " + jwtTokenProvider.generateServiceToken();
     }
