@@ -2,6 +2,7 @@ package com.sabia.pedagogico.controller.aluno;
 
 import com.sabia.pedagogico.dto.request.SubmeterAtividadeRequest;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaAlunoResponse;
+import com.sabia.pedagogico.dto.response.ProjetoEntregueResponse;
 import com.sabia.pedagogico.dto.response.SubmissaoAvaliativaResponse;
 import com.sabia.pedagogico.security.AuthenticatedUser;
 import com.sabia.pedagogico.service.AtividadeAvaliativaService;
@@ -38,6 +39,12 @@ public class AlunoAtividadeController {
     @Operation(summary = "Detalhe de uma atividade disponível")
     public ResponseEntity<AtividadeAvaliativaAlunoResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(atividadeAvaliativaService.buscarParaAluno(alunoId(auth), id));
+    }
+
+    @GetMapping("/{id}/projeto")
+    @Operation(summary = "Projeto entregue pelo próprio aluno, somente leitura (404 se ainda não entregou)")
+    public ResponseEntity<ProjetoEntregueResponse> projeto(Authentication auth, @PathVariable Long id) {
+        return ResponseEntity.ok(atividadeAvaliativaService.buscarProjetoDoAluno(alunoId(auth), id));
     }
 
     @PostMapping("/{id}/submeter")

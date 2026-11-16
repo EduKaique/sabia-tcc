@@ -42,6 +42,10 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
 
     List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);
 
+    /** Submissões do aluno com a correção já carregada (uma consulta para a lista de atividades). */
+    @Query("SELECT s FROM SubmissaoAvaliativa s LEFT JOIN FETCH s.correcao WHERE s.alunoId = :alunoId")
+    List<SubmissaoAvaliativa> findByAlunoIdComCorrecao(@Param("alunoId") Long alunoId);
+
     List<SubmissaoAvaliativa> findByAtividade_Turma_ProfessorId(Long professorId);
 
     List<SubmissaoAvaliativa> findByAtividade_IdIn(Collection<Long> atividadeIds);

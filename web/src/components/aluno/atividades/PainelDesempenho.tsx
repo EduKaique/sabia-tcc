@@ -13,7 +13,7 @@ export function PainelDesempenho({ atividades }: Props) {
 
   const corrigidas = atividades.filter((a) => a.status === 'CORRIGIDA').length
 
-  const metaSemanal =
+  const progressoCorrigidas =
     atividades.length > 0 ? Math.round((corrigidas / atividades.length) * 100) : 0
 
   return (
@@ -23,13 +23,15 @@ export function PainelDesempenho({ atividades }: Props) {
 
         <div className="mb-4">
           <div className="mb-1.5 flex items-center justify-between text-sm">
-            <span className="font-semibold">Meta Semanal</span>
-            <span className="font-bold">{metaSemanal}%</span>
+            <span className="font-semibold">Atividades corrigidas</span>
+            <span className="font-bold">
+              {corrigidas} de {atividades.length}
+            </span>
           </div>
           <div className="h-3 w-full rounded-full border-2 border-tinta bg-white/30">
             <div
               className="h-full rounded-full bg-sabia-amarelo transition-all"
-              style={{ width: `${metaSemanal}%` }}
+              style={{ width: `${progressoCorrigidas}%` }}
             />
           </div>
         </div>

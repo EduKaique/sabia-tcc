@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Star } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatarPontos } from '@/lib/formatarNota'
 import { HtmlContent } from '@/components/HtmlContent'
 import { fredoka } from '@/lib/fontesHome'
 import { botaoPrincipal, cartao } from '@/lib/estilos'
@@ -23,9 +24,8 @@ export function AtividadeCard({ atividade }: Props) {
     <article className={cn(cartao, 'p-5', urgent && 'border-l-8 border-l-sabia-erro')}>
       <div className="mb-2 flex items-start justify-between gap-3">
         <h3 className={cn(fredoka.className, 'text-xl font-bold text-tinta')}>{atividade.titulo}</h3>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-sabia-amarelo/30 px-3 py-1 text-sm font-bold text-tinta">
-          <Star size={14} className="fill-sabia-amarelo text-sabia-amarelo" aria-hidden="true" />
-          {atividade.pontuacaoMaxima} XP
+        <span className="shrink-0 rounded-full border-2 border-tinta/15 bg-white px-3 py-1 text-sm font-bold text-tinta">
+          {formatarPontos(atividade.pontuacaoMaxima)}
         </span>
       </div>
 

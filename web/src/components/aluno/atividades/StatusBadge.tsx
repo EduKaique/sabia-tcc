@@ -15,11 +15,11 @@ const config: Record<StatusAtividadeAluno, { label: string; className: string }>
     className: 'border-sabia-azul bg-sabia-azul-claro',
   },
   ENTREGUE: {
-    label: 'Em Avaliação',
+    label: 'Em avaliação',
     className: 'border-sabia-laranja bg-sabia-laranja/15',
   },
   CORRIGIDA: {
-    label: '✓ Corrigido',
+    label: 'Corrigida',
     className: 'border-sabia-verde bg-sabia-verde/20',
   },
 }
