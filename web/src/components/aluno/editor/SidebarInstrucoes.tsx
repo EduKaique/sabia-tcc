@@ -1,5 +1,6 @@
-import { Calendar, Star } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatarPontos } from '@/lib/formatarNota'
 import { HtmlContent } from '@/components/HtmlContent'
 import { fredoka } from '@/lib/fontesHome'
 import { textoApoio } from '@/lib/estilos'
@@ -34,9 +35,8 @@ export function SidebarInstrucoes({ atividade }: Props) {
             <Calendar size={16} aria-hidden="true" />
             <span>Data limite: {formatDate(atividade.dataEntrega)}</span>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-sabia-amarelo/30 px-3 py-1 text-sm font-bold text-tinta">
-            <Star size={14} className="fill-sabia-amarelo text-sabia-amarelo" aria-hidden="true" />
-            {atividade.pontuacaoMaxima} XP
+          <span className="inline-flex rounded-full border-2 border-tinta/15 bg-white px-3 py-1 text-sm font-bold text-tinta">
+            {formatarPontos(atividade.pontuacaoMaxima)}
           </span>
         </div>
       </div>
