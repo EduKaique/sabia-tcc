@@ -9,7 +9,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -47,14 +49,18 @@ public class SimuladorRobo {
      * Qualquer estado (nulo, inválido, aninhado demais) produz um resultado, nunca exceção.
      */
     public ResultadoSimulacao simular(String cenarioJson, String estadoJson) {
+        return simularEstado(cenarioJson, lerEstado(estadoJson));
+    }
+
+    /** Mesmo que {@link #simular(String, String)}, com o estado já lido (null = ilegível, R1). */
+    public ResultadoSimulacao simularEstado(String cenarioJson, JsonNode estado) {
         Grade grade = leitorCenario.lerGrade(cenarioJson);
-        JsonNode[] topo = lerBlocosDeTopo(estadoJson);
+        JsonNode[] topo = blocosDeTopo(estado);
         int blocosSoltos = Math.max(0, topo.length - 1);
 
-        int[] analise = analisarWorkspace(topo);
-        int totalBlocos = analise[0];
-        int profundidadeMaxima = analise[1];
-        if (profundidadeMaxima > MAX_PROFUNDIDADE || totalBlocos > MAX_BLOCOS_WORKSPACE) {
+        AnaliseWorkspace analise = analisar(topo);
+        int totalBlocos = analise.totalBlocos();
+        if (analise.acimaDosLimites()) {
             return new ResultadoSimulacao(StatusSimulacao.LIMITE_EXCEDIDO, 0, 0, blocosSoltos,
                     grade.inicio(), totalBlocos);
         }
@@ -76,17 +82,23 @@ public class SimuladorRobo {
         return execucao.resultado(status, blocosUsados, blocosSoltos, totalBlocos);
     }
 
-    /** R1: só blocks.blocks; JSON inválido, aninhado demais ou com formato inesperado = lista vazia. */
-    private static JsonNode[] lerBlocosDeTopo(String estadoJson) {
+    /**
+     * Lê o estado com as restrições padrão do Jackson (inclusive 500 níveis de aninhamento).
+     * Devolve null se o texto for nulo, ilegível ou aninhado demais.
+     */
+    public static JsonNode lerEstado(String estadoJson) {
         if (estadoJson == null) {
-            return new JsonNode[0];
+            return null;
         }
-        JsonNode estado;
         try {
-            estado = LEITOR_ESTADO.readTree(estadoJson);
+            return LEITOR_ESTADO.readTree(estadoJson);
         } catch (JacksonException e) {
-            return new JsonNode[0];
+            return null;
         }
+    }
+
+    /** R1: só blocks.blocks; estado nulo ou com formato inesperado = lista vazia. */
+    public static JsonNode[] blocosDeTopo(JsonNode estado) {
         if (estado == null) {
             return new JsonNode[0];
         }
@@ -101,10 +113,14 @@ public class SimuladorRobo {
         return topo;
     }
 
-    /** Total de blocos (sem sombras) e maior profundidade via inputs, sem recursão. */
-    private static int[] analisarWorkspace(JsonNode[] topo) {
+    /**
+     * Análise estrutural do workspace inteiro: total de blocos (sem sombras), maior profundidade via
+     * inputs e tipos dos blocos. Iterativa, sem recursão.
+     */
+    public static AnaliseWorkspace analisar(JsonNode[] topo) {
         int total = 0;
         int profundidadeMaxima = 0;
+        Set<String> tipos = new HashSet<>();
         Deque<Object[]> pendentes = new ArrayDeque<>();
         for (JsonNode bloco : topo) {
             pendentes.push(new Object[]{bloco, 1});
@@ -118,6 +134,10 @@ public class SimuladorRobo {
             }
             total++;
             profundidadeMaxima = Math.max(profundidadeMaxima, profundidade);
+            String tipo = tipo(bloco);
+            if (tipo != null) {
+                tipos.add(tipo);
+            }
             pendentes.push(new Object[]{bloco.path("next").path("block"), profundidade});
             JsonNode inputs = bloco.path("inputs");
             if (inputs.isContainer()) {
@@ -126,7 +146,14 @@ public class SimuladorRobo {
                 }
             }
         }
-        return new int[]{total, profundidadeMaxima};
+        return new AnaliseWorkspace(total, profundidadeMaxima, Set.copyOf(tipos));
+    }
+
+    /** Resultado de {@link #analisar}; os tipos são os de todos os blocos não-sombra, de todas as pilhas. */
+    public record AnaliseWorkspace(int totalBlocos, int profundidadeMaxima, Set<String> tipos) {
+        public boolean acimaDosLimites() {
+            return profundidadeMaxima > MAX_PROFUNDIDADE || totalBlocos > MAX_BLOCOS_WORKSPACE;
+        }
     }
 
     /** R2: menor y, depois menor x (ausentes = 0); no empate total, o primeiro da lista. */
@@ -169,7 +196,8 @@ public class SimuladorRobo {
         return no != null && no.isObject();
     }
 
-    private static String tipo(JsonNode bloco) {
+    /** O type do bloco, se for texto; senão null. */
+    public static String tipo(JsonNode bloco) {
         JsonNode tipo = bloco.path("type");
         return tipo.isString() ? tipo.stringValue() : null;
     }

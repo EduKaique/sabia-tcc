@@ -134,3 +134,7 @@ Estas entradas só aparecem com estado adulterado. As implementações podem div
 - **Valores que não são objeto** onde se espera um bloco (por exemplo, `"next": {"block": 5}`): o JS visita o valor como bloco sem tipo, e o Java o trata como ausente. A diferença é no máximo de uma operação.
 - **Aninhamento de JSON acima do limite do Jackson:** o leitor do Java (`StreamReadConstraints`, padrão de 500 níveis no Jackson 3.1) recusa o texto, e o resultado é `SEM_BLOCOS` (R1). Um workspace dentro dos limites de blocos e de profundidade fica bem abaixo disso: 200 blocos em cadeia dão cerca de 405 níveis. O JS lê qualquer profundidade e, para o mesmo estado (mais de cerca de 245 blocos em cadeia), devolve `LIMITE_EXCEDIDO`. Nos dois casos a entrega não é aceita como concluída, e nenhum deles estoura a pilha.
 - **Cenário inválido:** o TS supõe um cenário válido e o Java lança `CenarioInvalidoException`.
+
+## Validação da prática (servidor)
+
+O simulador é usado pelo `ValidadorPratica` do pedagogico-service. Ele decide a conclusão da prática na entrega da atividade e na lição e, além do simulador, verifica `maxBlocos` e `blocosPermitidos` do cenário (R10). As regras, o formato do resultado e a classificação dos blocos livres estão em [`fixtures/blocos-livres/README.md`](../blocos-livres/README.md).
