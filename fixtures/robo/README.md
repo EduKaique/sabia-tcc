@@ -138,3 +138,38 @@ Estas entradas só aparecem com estado adulterado. As implementações podem div
 ## Validação da prática (servidor)
 
 O simulador é usado pelo `ValidadorPratica` do pedagogico-service. Ele decide a conclusão da prática na entrega da atividade e na lição e, além do simulador, verifica `maxBlocos` e `blocosPermitidos` do cenário (R10). As regras, o formato do resultado e a classificação dos blocos livres estão em [`fixtures/blocos-livres/README.md`](../blocos-livres/README.md).
+
+## Análise para o relatório
+
+O detalhe da submissão para o professor traz `analiseRobo`, calculada pelo `AnaliseRoboService` (pedagogico-service) para o relatório de correção por IA. Ela é recalculada a cada consulta, a partir do `estadoJson` da entrega e do cenário da atividade, e nada é gravado; por isso vale também para entregas antigas.
+
+**Quando vem nula:** atividade fora do modo robô, entrega sem projeto, cenário ausente ou ilegível, ou estado que não é JSON válido. A análise nunca faz o detalhe falhar.
+
+**Programa = pilha principal** (R2: menor `y`, depois menor `x`; no empate, a primeira). Blocos soltos não executam e não entram nas contagens de estrutura nem no pseudocódigo; aparecem só em `blocosSoltos`.
+
+### Métricas
+
+| Campo | Definição |
+|---|---|
+| `status`, `concluida`, `blocosUsados`, `totalBlocosWorkspace`, `maxBlocos`, `blocosSoltos`, `excedeuLimiteBlocos`, `usouBlocoNaoPermitido`, `passosExecutados` | Os mesmos da validação da prática, recalculados com o simulador. |
+| `passosMinimos` | Menor caminho do início ao destino (BFS em 4 direções, `CenarioRoboValidador.menorCaminho`). Nulo se o cenário não tem caminho. |
+| `eficiencia` | `passosMinimos / passosExecutados`, com 2 casas (arredondamento meio para cima). Só quando o status é `CHEGOU`, `passosExecutados > 0` e `passosMinimos` existe; senão, nula. |
+| `quantidadeRepetir` | Número de `robo_repetir` na pilha principal, inclusive aninhados. |
+| `profundidadeMaxima` | Aninhamento máximo de `robo_repetir` (um repetir = 1; repetir dentro de repetir = 2); 0 sem repetir. |
+| `maiorSequenciaIgual` | Maior número de blocos `robo_mover` **consecutivos** com a mesma direção numa mesma cadeia `next` (a principal ou o `FAZER` de um repetir). Conta blocos, não casas. Qualquer outro bloco interrompe a sequência, inclusive `mover` com direção inválida. |
+| `sequenciaRepetivel` | `maiorSequenciaIgual >= 3`. |
+| `distanciaAoDestino` | Distância de Manhattan da posição final ao destino. Nula sem posição final. |
+| `pseudocodigo`, `pseudocodigoTruncado` | Ver abaixo. |
+
+### Pseudocódigo
+
+- Uma linha por bloco, com recuo de 2 espaços por nível de `repetir`:
+  ```
+  repetir 4 vezes
+    mover CIMA 1
+  mover DIREITA 4
+  ```
+- `mover <DIREÇÃO> <casas>` e `repetir <n> vezes`, com os valores **já coagidos** (casas de 1 a 9, vezes de 1 a 10) e os nomes de direção do contrato (`CIMA`, `BAIXO`, `ESQUERDA`, `DIREITA`).
+- Omitidos: `mover` com direção inválida ou ausente e blocos de outros tipos (o simulador os ignora). Sem ids nem coordenadas.
+- Programa sem nenhuma linha: `(programa vazio)`.
+- **Limites:** no máximo 60 linhas; depois disso, a linha `... (programa truncado)` e `pseudocodigoTruncado = true`. O percurso segue a cadeia `next` em laço e só usa recursão no `FAZER`, até a profundidade 10 (`MAX_PROFUNDIDADE`) e no máximo 200 blocos visitados; ao passar disso, também trunca. As métricas de estrutura contam o programa inteiro dentro desses limites, mesmo quando o pseudocódigo é cortado.

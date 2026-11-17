@@ -15,6 +15,7 @@ import com.sabia.pedagogico.repository.ProjetoAvaliativoRepository;
 import com.sabia.pedagogico.repository.SubmissaoAvaliativaRepository;
 import com.sabia.pedagogico.repository.TurmaAlunoRepository;
 import com.sabia.pedagogico.service.pratica.ValidadorPratica;
+import com.sabia.pedagogico.service.robo.AnaliseRoboService;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 import org.springframework.context.ApplicationEventPublisher;
@@ -38,7 +39,7 @@ class SubmissaoAvaliativaServiceCorrecaoTest {
             submissaoRepo, correcaoRepo, mock(AtividadeAvaliativaRepository.class),
             mock(ProjetoAvaliativoRepository.class), mock(TurmaAlunoRepository.class),
             mock(CorrecaoMapper.class), mock(ApplicationEventPublisher.class), mock(ValidadorPratica.class),
-            JsonMapper.builder().build());
+            JsonMapper.builder().build(), mock(AnaliseRoboService.class));
     private final SubmissaoAvaliativa submissao = new SubmissaoAvaliativa();
 
     SubmissaoAvaliativaServiceCorrecaoTest() {

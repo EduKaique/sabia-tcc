@@ -18,6 +18,8 @@ import com.sabia.pedagogico.model.atividade.*;
 import com.sabia.pedagogico.repository.*;
 import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
 import com.sabia.pedagogico.service.pratica.ValidadorPratica;
+import com.sabia.pedagogico.service.robo.AnaliseRobo;
+import com.sabia.pedagogico.service.robo.AnaliseRoboService;
 import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +47,7 @@ public class SubmissaoAvaliativaService {
     private final ApplicationEventPublisher eventPublisher;
     private final ValidadorPratica validadorPratica;
     private final ObjectMapper objectMapper;
+    private final AnaliseRoboService analiseRoboService;
 
     // --------- ALUNO ---------
 
@@ -129,8 +132,23 @@ public class SubmissaoAvaliativaService {
                 projeto != null ? projeto.getEstadoJson() : null,
                 correcao != null ? correcaoMapper.toResponse(correcao) : null,
                 submissao.getRelatorioIaPreGeradoJson(),
-                lerValidacao(submissao)
+                lerValidacao(submissao),
+                analisarRobo(submissao, projeto != null ? projeto.getEstadoJson() : null)
         );
+    }
+
+    /** Análise do programa do robô; nula fora do modo robô e se cenário ou estado não forem legíveis. */
+    private AnaliseRobo analisarRobo(SubmissaoAvaliativa submissao, String estadoJson) {
+        var atividade = submissao.getAtividade();
+        if (atividade.getModo() != ModoAtividade.JOGO_ROBO || estadoJson == null) {
+            return null;
+        }
+        try {
+            return analiseRoboService.analisar(atividade.getCenarioJson(), estadoJson);
+        } catch (RuntimeException e) {
+            log.warn("Análise do robô indisponível na submissão id={}", submissao.getId());
+            return null;
+        }
     }
 
     /** Resultado gravado na entrega; nulo para entregas antigas ou se o registro não for legível. */
