@@ -1,0 +1,46 @@
+{
+  "nome": "CASAS 99 vira 9 (R5)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 10,
+    "colunas": 10,
+    "inicio": {
+      "linha": 9,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 9
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m33",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 99
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 1,
+    "passosExecutados": 9,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 0,
+      "coluna": 0
+    }
+  }
+}

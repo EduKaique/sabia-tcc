@@ -1,0 +1,89 @@
+{
+  "nome": "LIMITE_EXCEDIDO: laços aninhados passam de 500 passos (R7)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r13",
+          "fields": {
+            "VEZES": 10
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r12",
+                "fields": {
+                  "VEZES": 10
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r11",
+                      "fields": {
+                        "VEZES": 10
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_mover",
+                            "id": "m10",
+                            "fields": {
+                              "DIRECAO": "DIREITA",
+                              "CASAS": 1
+                            },
+                            "next": {
+                              "block": {
+                                "type": "robo_mover",
+                                "id": "m9",
+                                "fields": {
+                                  "DIRECAO": "ESQUERDA",
+                                  "CASAS": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "LIMITE_EXCEDIDO",
+    "blocosUsados": 5,
+    "passosExecutados": 500,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

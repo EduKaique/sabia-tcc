@@ -1,0 +1,54 @@
+{
+  "nome": "Pilha principal sem blocos do robô e um solto do robô: SEM_BLOCOS (R3, R4)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "text_print",
+          "id": "t56",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "robo_mover",
+          "id": "m57",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 4
+          },
+          "x": 0,
+          "y": 100
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "SEM_BLOCOS",
+    "blocosUsados": 0,
+    "passosExecutados": 0,
+    "blocosSoltos": 1,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

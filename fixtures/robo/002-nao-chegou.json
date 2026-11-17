@@ -1,0 +1,46 @@
+{
+  "nome": "NAO_CHEGOU: termina dentro da grade fora do destino",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m3",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 1
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 1,
+    "passosExecutados": 1,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 3,
+      "coluna": 0
+    }
+  }
+}

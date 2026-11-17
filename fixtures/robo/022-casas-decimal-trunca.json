@@ -1,0 +1,56 @@
+{
+  "nome": "CASAS decimal (número ou string) é truncado (R5)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m40",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 2.9
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m39",
+              "fields": {
+                "DIRECAO": "DIREITA",
+                "CASAS": "3.7"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 2,
+    "passosExecutados": 5,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 2,
+      "coluna": 3
+    }
+  }
+}

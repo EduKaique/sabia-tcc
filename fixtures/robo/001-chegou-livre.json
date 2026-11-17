@@ -1,0 +1,56 @@
+{
+  "nome": "CHEGOU: 4 para cima e 4 para a direita no cenário livre",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m2",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 4
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m1",
+              "fields": {
+                "DIRECAO": "DIREITA",
+                "CASAS": 4
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "CHEGOU",
+    "blocosUsados": 2,
+    "passosExecutados": 8,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 0,
+      "coluna": 4
+    }
+  }
+}

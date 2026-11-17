@@ -1,0 +1,68 @@
+{
+  "nome": "Blocos soltos são contados e não executam (R2)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m15",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 4
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m14",
+              "fields": {
+                "DIRECAO": "DIREITA",
+                "CASAS": 4
+              }
+            }
+          },
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "robo_mover",
+          "id": "m16",
+          "fields": {
+            "DIRECAO": "BAIXO",
+            "CASAS": 1
+          },
+          "x": 0,
+          "y": 200
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "CHEGOU",
+    "blocosUsados": 2,
+    "passosExecutados": 8,
+    "blocosSoltos": 1,
+    "posicaoFinal": {
+      "linha": 0,
+      "coluna": 4
+    }
+  }
+}

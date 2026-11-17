@@ -1,0 +1,58 @@
+{
+  "nome": "Empate em y: vence o menor x (R2)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m19",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 3
+          },
+          "x": 80,
+          "y": 10
+        },
+        {
+          "type": "robo_mover",
+          "id": "m20",
+          "fields": {
+            "DIRECAO": "DIREITA",
+            "CASAS": 2
+          },
+          "x": 20,
+          "y": 10
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 1,
+    "passosExecutados": 2,
+    "blocosSoltos": 1,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 2
+    }
+  }
+}
