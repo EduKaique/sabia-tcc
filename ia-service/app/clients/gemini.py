@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 LIMITE_CORPO_LOG = 300
+TEMPERATURA_PADRAO = 0.7
 _PADRAO_KEY = re.compile(r"key=[^&\s\"']+", re.IGNORECASE)
 
 
@@ -37,14 +38,14 @@ class GeminiClient:
         # Só para testes: permite simular respostas do Gemini.
         self._transport = transport
 
-    async def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str, temperatura: float = TEMPERATURA_PADRAO) -> str:
         if not self.api_key:
             raise GeminiNotConfiguredError("GEMINI_API_KEY não configurada.")
 
         body = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
-                "temperature": 0.7,
+                "temperature": temperatura,
                 "responseMimeType": "application/json",
             },
         }
