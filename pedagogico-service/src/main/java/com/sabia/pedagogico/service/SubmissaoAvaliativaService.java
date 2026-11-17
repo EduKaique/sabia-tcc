@@ -16,12 +16,16 @@ import com.sabia.pedagogico.mapper.CorrecaoMapper;
 import com.sabia.pedagogico.messaging.SubmissaoEnviadaEvent;
 import com.sabia.pedagogico.model.atividade.*;
 import com.sabia.pedagogico.repository.*;
+import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
+import com.sabia.pedagogico.service.pratica.ValidadorPratica;
 import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,6 +43,8 @@ public class SubmissaoAvaliativaService {
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final CorrecaoMapper correcaoMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final ValidadorPratica validadorPratica;
+    private final ObjectMapper objectMapper;
 
     // --------- ALUNO ---------
 
@@ -57,6 +63,10 @@ public class SubmissaoAvaliativaService {
             throw new OperacaoInvalidaException("Você já submeteu esta atividade.");
         }
 
+        // Valida antes de gravar: entrada ilegível vira 400 sem salvar nada; resultado negativo é registrado.
+        ResultadoValidacao validacao = validadorPratica.validar(atividade.getModo(), atividade.getCenarioJson(),
+                request.estadoJson());
+
         var projeto = ProjetoAvaliativo.builder()
                 .alunoId(alunoId)
                 .estadoJson(request.estadoJson())
@@ -69,11 +79,12 @@ public class SubmissaoAvaliativaService {
                 .alunoNome(alunoNome)
                 .projeto(projeto)
                 .status(StatusSubmissao.PENDENTE)
+                .validacaoJson(objectMapper.writeValueAsString(validacao))
                 .build();
         submissao = submissaoRepository.save(submissao);
 
         eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
-        log.info("Submissão id={} criada pelo aluno id={}", submissao.getId(), alunoId);
+        log.info("Submissão id={} criada pelo aluno id={} (prática {})", submissao.getId(), alunoId, validacao.status());
         return toResponse(submissao, null);
     }
 
@@ -117,8 +128,23 @@ public class SubmissaoAvaliativaService {
                 submissao.getStatus(),
                 projeto != null ? projeto.getEstadoJson() : null,
                 correcao != null ? correcaoMapper.toResponse(correcao) : null,
-                submissao.getRelatorioIaPreGeradoJson()
+                submissao.getRelatorioIaPreGeradoJson(),
+                lerValidacao(submissao)
         );
+    }
+
+    /** Resultado gravado na entrega; nulo para entregas antigas ou se o registro não for legível. */
+    private ResultadoValidacao lerValidacao(SubmissaoAvaliativa submissao) {
+        String json = submissao.getValidacaoJson();
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, ResultadoValidacao.class);
+        } catch (JacksonException e) {
+            log.warn("validacao_json ilegível na submissão id={}", submissao.getId());
+            return null;
+        }
     }
 
     @Transactional

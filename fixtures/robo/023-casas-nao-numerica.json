@@ -1,0 +1,76 @@
+{
+  "nome": "CASAS não numérica, nula ou vazia vira 1 (R5)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m44",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": "abc"
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m43",
+              "fields": {
+                "DIRECAO": "CIMA",
+                "CASAS": null
+              },
+              "next": {
+                "block": {
+                  "type": "robo_mover",
+                  "id": "m42",
+                  "fields": {
+                    "DIRECAO": "DIREITA",
+                    "CASAS": ""
+                  },
+                  "next": {
+                    "block": {
+                      "type": "robo_mover",
+                      "id": "m41",
+                      "fields": {
+                        "DIRECAO": "DIREITA",
+                        "CASAS": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 4,
+    "passosExecutados": 4,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 2,
+      "coluna": 2
+    }
+  }
+}

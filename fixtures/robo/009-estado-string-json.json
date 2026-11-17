@@ -1,0 +1,32 @@
+{
+  "nome": "Estado como string JSON é aceito (R1)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"robo_mover\",\"id\":\"m8\",\"fields\":{\"DIRECAO\":\"CIMA\",\"CASAS\":4},\"next\":{\"block\":{\"type\":\"robo_mover\",\"id\":\"m7\",\"fields\":{\"DIRECAO\":\"DIREITA\",\"CASAS\":4}}}}]}}",
+  "esperado": {
+    "status": "CHEGOU",
+    "blocosUsados": 2,
+    "passosExecutados": 8,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 0,
+      "coluna": 4
+    }
+  }
+}

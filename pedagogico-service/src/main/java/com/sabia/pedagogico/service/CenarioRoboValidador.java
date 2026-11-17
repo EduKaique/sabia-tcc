@@ -70,7 +70,16 @@ public class CenarioRoboValidador {
      * do cenário (grade, posições, obstáculos) for inválida.
      */
     public int menorCaminho(String cenarioJson) {
-        return menorCaminho(lerGrade(ler(cenarioJson)));
+        return menorCaminho(lerGrade(cenarioJson));
+    }
+
+    /**
+     * Grade do cenário (tamanho, início, destino e obstáculos) com as mesmas checagens de forma de
+     * {@link #validar}; lança {@link CenarioInvalidoException} se a forma for inválida. Usado pelo
+     * simulador do robô.
+     */
+    public Grade lerGrade(String cenarioJson) {
+        return lerGrade(ler(cenarioJson));
     }
 
     /** Busca em largura na grade, a partir do início. */
@@ -164,7 +173,7 @@ public class CenarioRoboValidador {
         return new Posicao(linha, coluna);
     }
 
-    private record Posicao(int linha, int coluna) {}
+    public record Posicao(int linha, int coluna) {}
 
-    private record Grade(int linhas, int colunas, Posicao inicio, Posicao destino, Set<Posicao> obstaculos) {}
+    public record Grade(int linhas, int colunas, Posicao inicio, Posicao destino, Set<Posicao> obstaculos) {}
 }

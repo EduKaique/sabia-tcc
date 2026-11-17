@@ -7,6 +7,7 @@ import { isAxiosError } from 'axios'
 import { Skeleton } from '@/components/ui/skeleton'
 import { linkDiscreto, textoErro } from '@/lib/estilos'
 import { lerCenario } from '@/lib/cenariosRobo'
+import { veredictoConclusao } from '@/lib/veredictoLicao'
 import { hasBlocks } from '@/lib/workspaceBlockly'
 import { temConteudo } from '@/lib/conteudoLicao'
 import type { CenarioRobo } from '@/types'
@@ -84,6 +85,8 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
   const ultimoSalvoRef = useRef<string | null>(salvoValido)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const concluindoRef = useRef(false)
+  /** Mensagem do servidor quando a prática enviada ainda não foi aceita. */
+  const [aviso, setAviso] = useState<string | null>(null)
 
   const { salvarEstado, concluirAtividade } = useMutacoesLicao(licao.id)
   const { data: licoes } = useLicoes()
@@ -137,6 +140,12 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
     timerRef.current = undefined
     ultimoSalvoRef.current = estado
     concluirAtividade.mutate(estado, {
+      // O servidor decide: se não concluiu, mostra o motivo e libera uma nova tentativa.
+      onSuccess: (resposta) => {
+        const veredicto = veredictoConclusao(resposta)
+        setAviso(veredicto.mensagem)
+        if (!veredicto.concluida) concluindoRef.current = false
+      },
       onError: () => {
         concluindoRef.current = false
       },
@@ -170,6 +179,7 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
             licao={licao}
             proximaId={proximaId}
             erro={erro}
+            aviso={aviso}
           />
         }
       />

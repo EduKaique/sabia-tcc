@@ -24,6 +24,10 @@ public class SubmissaoAvaliativa extends Submissao {
     @Column(name = "relatorio_ia_pre_gerado_json", columnDefinition = "TEXT")
     private String relatorioIaPreGeradoJson;
 
+    /** ResultadoValidacao da prática, calculado no servidor na entrega; nulo em entregas antigas. */
+    @Column(name = "validacao_json", columnDefinition = "TEXT")
+    private String validacaoJson;
+
     @OneToOne(mappedBy = "submissao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Correcao correcao;
 

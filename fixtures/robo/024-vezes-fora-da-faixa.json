@@ -1,0 +1,78 @@
+{
+  "nome": "VEZES 0 vira 1 e 50 vira 10 (R6)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 10,
+    "colunas": 10,
+    "inicio": {
+      "linha": 9,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 9
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r48",
+          "fields": {
+            "VEZES": 0
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_mover",
+                "id": "m45",
+                "fields": {
+                  "DIRECAO": "CIMA",
+                  "CASAS": 1
+                }
+              }
+            }
+          },
+          "next": {
+            "block": {
+              "type": "robo_repetir",
+              "id": "r47",
+              "fields": {
+                "VEZES": 50
+              },
+              "inputs": {
+                "FAZER": {
+                  "block": {
+                    "type": "robo_mover",
+                    "id": "m46",
+                    "fields": {
+                      "DIRECAO": "DIREITA",
+                      "CASAS": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "SAIU_DO_GRID",
+    "blocosUsados": 4,
+    "passosExecutados": 11,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 8,
+      "coluna": 9
+    }
+  }
+}

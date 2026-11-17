@@ -1,0 +1,167 @@
+{
+  "nome": "Profundidade 11 numa pilha solta também conta (workspace inteiro)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m107",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 1
+          },
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "robo_repetir",
+          "id": "r118",
+          "fields": {
+            "VEZES": 1
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r117",
+                "fields": {
+                  "VEZES": 1
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r116",
+                      "fields": {
+                        "VEZES": 1
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_repetir",
+                            "id": "r115",
+                            "fields": {
+                              "VEZES": 1
+                            },
+                            "inputs": {
+                              "FAZER": {
+                                "block": {
+                                  "type": "robo_repetir",
+                                  "id": "r114",
+                                  "fields": {
+                                    "VEZES": 1
+                                  },
+                                  "inputs": {
+                                    "FAZER": {
+                                      "block": {
+                                        "type": "robo_repetir",
+                                        "id": "r113",
+                                        "fields": {
+                                          "VEZES": 1
+                                        },
+                                        "inputs": {
+                                          "FAZER": {
+                                            "block": {
+                                              "type": "robo_repetir",
+                                              "id": "r112",
+                                              "fields": {
+                                                "VEZES": 1
+                                              },
+                                              "inputs": {
+                                                "FAZER": {
+                                                  "block": {
+                                                    "type": "robo_repetir",
+                                                    "id": "r111",
+                                                    "fields": {
+                                                      "VEZES": 1
+                                                    },
+                                                    "inputs": {
+                                                      "FAZER": {
+                                                        "block": {
+                                                          "type": "robo_repetir",
+                                                          "id": "r110",
+                                                          "fields": {
+                                                            "VEZES": 1
+                                                          },
+                                                          "inputs": {
+                                                            "FAZER": {
+                                                              "block": {
+                                                                "type": "robo_repetir",
+                                                                "id": "r109",
+                                                                "fields": {
+                                                                  "VEZES": 1
+                                                                },
+                                                                "inputs": {
+                                                                  "FAZER": {
+                                                                    "block": {
+                                                                      "type": "robo_repetir",
+                                                                      "id": "r108",
+                                                                      "fields": {
+                                                                        "VEZES": 1
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "x": 0,
+          "y": 100
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "LIMITE_EXCEDIDO",
+    "blocosUsados": 0,
+    "passosExecutados": 0,
+    "blocosSoltos": 1,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}
