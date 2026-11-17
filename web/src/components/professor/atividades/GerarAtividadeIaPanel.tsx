@@ -18,6 +18,7 @@ import {
   montarPedidoRobo,
 } from "@/lib/assistenteRoboIa";
 import { GRADE_MAX, GRADE_MIN } from "@/lib/editorCenario";
+import { mensagemErroIa } from "@/lib/mensagemErroIa";
 import { HtmlContent } from "@/components/HtmlContent";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -122,7 +123,7 @@ export function GerarAtividadeIaPanel({
       setSugestao(resultado);
     } catch (err) {
       const msg = (err as { response?: { data?: { erro?: string } } })?.response?.data?.erro;
-      setErro(msg ?? "Nao foi possivel gerar a atividade. Tente novamente.");
+      setErro(mensagemErroIa(err, msg ?? "Nao foi possivel gerar a atividade. Tente novamente."));
     }
   }
 
