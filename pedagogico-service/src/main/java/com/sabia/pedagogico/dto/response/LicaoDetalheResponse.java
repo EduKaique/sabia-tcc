@@ -10,7 +10,6 @@ public record LicaoDetalheResponse(
         String resumo,
         String conteudo,
         String conceito,
-        String habilidadeBncc,
         String videoId,
         String videoTitulo,
         String videoCanal,

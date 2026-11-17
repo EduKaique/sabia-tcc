@@ -21,7 +21,6 @@ export interface LicaoResumo {
   titulo: string
   resumo: string | null
   conceito: string
-  habilidadeBncc: string | null
   modo: ModoAtividade
   videoId: string | null
   progresso: ProgressoLicao
@@ -37,7 +36,6 @@ export interface LicaoDetalhe {
   /** HTML; exibir sempre via sanitizarHtml. */
   conteudo: string | null
   conceito: string
-  habilidadeBncc: string | null
   videoId: string | null
   videoTitulo: string | null
   videoCanal: string | null

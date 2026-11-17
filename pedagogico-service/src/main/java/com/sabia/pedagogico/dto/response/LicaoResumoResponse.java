@@ -9,7 +9,6 @@ public record LicaoResumoResponse(
         String titulo,
         String resumo,
         String conceito,
-        String habilidadeBncc,
         ModoAtividade modo,
         String videoId,
         ProgressoLicaoResponse progresso

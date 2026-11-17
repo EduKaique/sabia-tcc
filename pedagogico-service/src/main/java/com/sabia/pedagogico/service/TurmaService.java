@@ -8,6 +8,7 @@ import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.turma.Turma;
 import com.sabia.pedagogico.repository.AtividadeAvaliativaRepository;
+import com.sabia.pedagogico.repository.LicaoTurmaRepository;
 import com.sabia.pedagogico.repository.TurmaAlunoRepository;
 import com.sabia.pedagogico.repository.TurmaRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class TurmaService {
     private final TurmaRepository turmaRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final AtividadeAvaliativaRepository atividadeAvaliativaRepository;
+    private final LicaoTurmaRepository licaoTurmaRepository;
 
     public List<TurmaResponse> listarDoProfessor(Long professorId) {
         return turmaRepository.findByProfessorId(professorId).stream()
@@ -77,6 +79,8 @@ public class TurmaService {
             throw new ConflitoException("Não é possível excluir a turma: existem " + alunos
                     + " alunos e " + atividades + " atividades vinculados.");
         }
+        // Lições vinculadas não impedem a exclusão: só o vínculo sai (as lições continuam do professor).
+        licaoTurmaRepository.deleteByTurmaId(id);
         turmaRepository.delete(turma);
     }
 

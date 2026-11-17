@@ -41,7 +41,7 @@ public class LicaoService {
         return licaoRepository.findByStatusOrderByOrdemAsc(StatusLicao.ATIVA).stream()
                 .map(l -> new LicaoResumoResponse(
                         l.getId(), l.getCodigo(), l.getOrdem(), l.getTitulo(), l.getResumo(),
-                        l.getConceito(), l.getHabilidadeBncc(), l.getModo(), l.getVideoId(),
+                        l.getConceito(), l.getModo(), l.getVideoId(),
                         toProgressoResponse(l, progressoPorLicao.get(l.getId()))))
                 .toList();
     }
@@ -51,7 +51,7 @@ public class LicaoService {
         var progresso = progressoRepository.findByAlunoIdAndLicaoId(alunoId, licaoId).orElse(null);
         return new LicaoDetalheResponse(
                 licao.getId(), licao.getCodigo(), licao.getOrdem(), licao.getTitulo(), licao.getResumo(),
-                licao.getConteudo(), licao.getConceito(), licao.getHabilidadeBncc(),
+                licao.getConteudo(), licao.getConceito(),
                 licao.getVideoId(), licao.getVideoTitulo(), licao.getVideoCanal(),
                 licao.getModo(), licao.getCenarioJson(),
                 toProgressoResponse(licao, progresso),
