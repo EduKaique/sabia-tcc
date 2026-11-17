@@ -4,6 +4,7 @@ import com.sabia.pedagogico.dto.request.SubmeterAtividadeRequest;
 import com.sabia.pedagogico.exception.EstadoPraticaInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.mapper.CorrecaoMapper;
+import com.sabia.pedagogico.messaging.SubmissaoEnviadaEvent;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.ProjetoAvaliativo;
@@ -18,6 +19,8 @@ import com.sabia.pedagogico.repository.TurmaAlunoRepository;
 import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
 import com.sabia.pedagogico.service.pratica.StatusPratica;
 import com.sabia.pedagogico.service.pratica.ValidadorPratica;
+import com.sabia.pedagogico.service.robo.AnaliseRobo;
+import com.sabia.pedagogico.service.robo.AnaliseRoboService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -50,10 +53,12 @@ class SubmissaoAvaliativaServiceEntregaTest {
     private final AtividadeAvaliativaRepository atividadeRepo = mock(AtividadeAvaliativaRepository.class);
     private final ProjetoAvaliativoRepository projetoRepo = mock(ProjetoAvaliativoRepository.class);
     private final TurmaAlunoRepository turmaAlunoRepo = mock(TurmaAlunoRepository.class);
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     private final SubmissaoAvaliativaService service = new SubmissaoAvaliativaService(
             submissaoRepo, mock(CorrecaoRepository.class), atividadeRepo, projetoRepo, turmaAlunoRepo,
-            mock(CorrecaoMapper.class), mock(ApplicationEventPublisher.class),
-            new ValidadorPratica(new CenarioRoboValidador(json)), json);
+            mock(CorrecaoMapper.class), eventPublisher,
+            new ValidadorPratica(new CenarioRoboValidador(json)), json,
+            new AnaliseRoboService(new CenarioRoboValidador(json)));
     private final AtividadeAvaliativa atividade = new AtividadeAvaliativa();
 
     SubmissaoAvaliativaServiceEntregaTest() {
@@ -158,5 +163,60 @@ class SubmissaoAvaliativaServiceEntregaTest {
 
         submissaoGravada("{nao é json");
         assertThat(service.buscarParaProfessor(5L, 50L).validacao()).isNull();
+    }
+
+    private void comProjeto(SubmissaoAvaliativa s, String estadoJson) {
+        ProjetoAvaliativo projeto = new ProjetoAvaliativo();
+        projeto.setEstadoJson(estadoJson);
+        s.setProjeto(projeto);
+    }
+
+    @Test
+    void detalheDoRoboTrazAAnaliseMesmoEmEntregaAntigaSemValidacao() {
+        comProjeto(submissaoGravada(null), CHEGA);
+
+        var detalhe = service.buscarParaProfessor(5L, 50L);
+
+        assertThat(detalhe.validacao()).isNull();
+        AnaliseRobo analise = detalhe.analiseRobo();
+        assertThat(analise).isNotNull();
+        assertThat(analise.status()).isEqualTo(StatusPratica.CHEGOU);
+        assertThat(analise.pseudocodigo()).isEqualTo("mover CIMA 4\nmover DIREITA 4");
+    }
+
+    @Test
+    void detalheDeBlocosLivresNaoTemAnalise() {
+        atividade.setModo(ModoAtividade.BLOCOS);
+        atividade.setCenarioJson(null);
+        comProjeto(submissaoGravada(null), "{\"blocks\":{\"blocks\":[{\"type\":\"text_print\"}]}}");
+
+        assertThat(service.buscarParaProfessor(5L, 50L).analiseRobo()).isNull();
+    }
+
+    @Test
+    void detalheComCenarioIlegivelOuEstadoMalformadoTemAnaliseNulaSemErro() {
+        comProjeto(submissaoGravada(null), "{quebrado");
+        assertThat(service.buscarParaProfessor(5L, 50L).analiseRobo()).isNull();
+
+        atividade.setCenarioJson("{\"versao\":1}");
+        comProjeto(submissaoGravada(null), CHEGA);
+        assertThat(service.buscarParaProfessor(5L, 50L).analiseRobo()).isNull();
+    }
+
+    @Test
+    void entregaDoRoboNaoPublicaOEventoDeRevisaoGenerica() {
+        entregarELerResultado(CHEGA);
+
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void entregaDeBlocosLivresContinuaPublicandoOEvento() {
+        atividade.setModo(ModoAtividade.BLOCOS);
+        atividade.setCenarioJson(null);
+
+        entregarELerResultado("{\"blocks\":{\"blocks\":[{\"type\":\"text_print\"}]}}");
+
+        verify(eventPublisher).publishEvent(any(SubmissaoEnviadaEvent.class));
     }
 }

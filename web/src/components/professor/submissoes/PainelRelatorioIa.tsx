@@ -5,6 +5,7 @@ import { useRevisarSubmissaoIa } from '@/hooks/useRevisarSubmissaoIa'
 import { useRemoverRelatorioIa, useSalvarRelatorioIa } from '@/hooks/useRelatorioIaSubmissao'
 import type { RevisarSubmissaoIaPayload } from '@/services/ia'
 import { mensagemErroIa } from '@/lib/mensagemErroIa'
+import { AVISO_RELATORIO_ROBO, relatorioSemNota } from '@/lib/relatorioIaRobo'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -36,9 +37,19 @@ interface Props {
   submissaoId: string
   relatorioIaJson: string | null | undefined
   payload: RevisarSubmissaoIaPayload | null
+  /** Jogo do Robô: mostra o aviso fixo e não usa a nota sugerida da IA. */
+  modoRobo?: boolean
+  /** Motivo de o relatório não poder ser gerado (botão desabilitado com a mensagem). */
+  indisponivel?: string | null
 }
 
-export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Props) {
+export function PainelRelatorioIa({
+  submissaoId,
+  relatorioIaJson,
+  payload,
+  modoRobo = false,
+  indisponivel = null,
+}: Props) {
   const revisar = useRevisarSubmissaoIa()
   const salvar = useSalvarRelatorioIa(submissaoId)
   const remover = useRemoverRelatorioIa(submissaoId)
@@ -50,8 +61,9 @@ export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Pro
     if (!payload) return
     revisar.mutate(payload, {
       onSuccess: (gerado) => {
-        setRelatorioGerado(gerado)
-        salvar.mutate(gerado)
+        const relatorioFinal = modoRobo ? relatorioSemNota(gerado) : gerado
+        setRelatorioGerado(relatorioFinal)
+        salvar.mutate(relatorioFinal)
       },
     })
   }
@@ -69,9 +81,11 @@ export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Pro
         </div>
       </div>
       <div className="space-y-3 p-3 text-sm text-foreground">
+        {modoRobo && <p className="text-xs font-medium text-slate-600">{AVISO_RELATORIO_ROBO}</p>}
         {!relatorio ? (
           <div className="space-y-3">
             <p className="text-muted-foreground">Relatório de IA ainda não disponível.</p>
+            {indisponivel && <p className="text-muted-foreground">{indisponivel}</p>}
             <Button onClick={gerarRelatorio} disabled={!payload || revisar.isPending}>
               {revisar.isPending ? 'Gerando relatório...' : 'Gerar relatório com IA'}
             </Button>
@@ -83,7 +97,7 @@ export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Pro
           </div>
         ) : (
           <>
-            {relatorio.notaSugerida !== undefined && (
+            {!modoRobo && relatorio.notaSugerida !== undefined && (
               <div className="flex items-center justify-between rounded-lg bg-white px-3 py-3 shadow-sm">
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                   Nota sugerida

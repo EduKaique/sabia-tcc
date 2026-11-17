@@ -1,5 +1,5 @@
 import api from '@/lib/api'
-import type { CenarioRobo, RelatorioIa, TipoAtividade } from '@/types'
+import type { AnaliseRobo, CenarioRobo, RelatorioIa, TipoAtividade } from '@/types'
 
 export interface GerarAtividadeIaPayload {
   idTurma: number
@@ -13,6 +13,13 @@ export interface GerarAtividadeIaRequest {
   gabaritoEstadoJson?: string
 }
 
+/** Contexto do Jogo do Robô para o relatório: métricas e pseudocódigo calculados pelo servidor. */
+export interface ContextoRoboIa {
+  cenario: CenarioRobo
+  metricas: Omit<AnaliseRobo, 'pseudocodigo'>
+  pseudocodigo: string
+}
+
 export interface RevisarSubmissaoIaPayload {
   atividade: {
     titulo: string
@@ -21,6 +28,8 @@ export interface RevisarSubmissaoIaPayload {
     gabaritoEstadoJson: string | null
   },
   submissaoEstadoJson: string,
+  /** Só no Jogo do Robô: o ia-service usa o prompt do robô e devolve a nota sugerida nula. */
+  contextoRobo?: ContextoRoboIa
 }
 
 export type RevisarSubmissaoIaResponse = RelatorioIa

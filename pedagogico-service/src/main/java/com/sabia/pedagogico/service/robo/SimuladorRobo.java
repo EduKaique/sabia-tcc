@@ -26,10 +26,10 @@ public class SimuladorRobo {
     public static final int MAX_PROFUNDIDADE = 10;
     public static final int MAX_BLOCOS_WORKSPACE = 200;
 
-    private static final int CASAS_MAX = 9;
-    private static final int VEZES_MAX = 10;
+    static final int CASAS_MAX = 9;
+    static final int VEZES_MAX = 10;
     private static final Pattern DECIMAL = Pattern.compile("[+-]?(\\d+\\.?\\d*|\\.\\d+)");
-    private static final Map<String, Posicao> DESLOCAMENTO = Map.of(
+    static final Map<String, Posicao> DESLOCAMENTO = Map.of(
             "CIMA", new Posicao(-1, 0),
             "BAIXO", new Posicao(1, 0),
             "ESQUERDA", new Posicao(0, -1),
@@ -157,7 +157,7 @@ public class SimuladorRobo {
     }
 
     /** R2: menor y, depois menor x (ausentes = 0); no empate total, o primeiro da lista. */
-    private static JsonNode pilhaPrincipal(JsonNode[] topo) {
+    static JsonNode pilhaPrincipal(JsonNode[] topo) {
         JsonNode principal = null;
         double menorY = 0;
         double menorX = 0;

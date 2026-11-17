@@ -23,6 +23,7 @@ import { PainelJogo } from '@/components/aluno/editor/PainelJogo'
 import { simular } from '@/lib/simuladorRobo'
 import { lerCenario } from '@/lib/cenariosRobo'
 import { resultadoPraticaRobo } from '@/lib/resultadoPratica'
+import { montarPedidoRelatorioRobo } from '@/lib/relatorioIaRobo'
 
 function Voltar({ href, texto }: { href: string; texto: string }) {
   return (
@@ -101,6 +102,9 @@ export default function CorrigirSubmissaoPage({
     )
   }
 
+  // Robô: o relatório de IA usa as métricas e o pseudocódigo calculados pelo servidor.
+  const pedidoRobo = modoJogo && atividade ? montarPedidoRelatorioRobo(atividade, submissao) : null
+
   return (
     <div className="px-8 py-6 space-y-6">
       <Voltar href={`/professor/atividades/${submissao.atividadeId}`} texto="Voltar para a atividade" />
@@ -170,20 +174,29 @@ export default function CorrigirSubmissaoPage({
         </div>
 
         {modoJogo ? (
-          resultado && atividade ? (
-            <PainelResultadoSimulacao resultado={resultado} pontuacaoMaxima={atividade.pontuacaoMaxima} />
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Resultado da simulação</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {cenario ? 'Não há projeto do aluno para simular.' : MENSAGEM_CENARIO_INVALIDO}
-                </p>
-              </CardContent>
-            </Card>
-          )
+          <div className="space-y-6">
+            {resultado && atividade ? (
+              <PainelResultadoSimulacao resultado={resultado} pontuacaoMaxima={atividade.pontuacaoMaxima} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resultado da simulação</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {cenario ? 'Não há projeto do aluno para simular.' : MENSAGEM_CENARIO_INVALIDO}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            <PainelRelatorioIa
+              submissaoId={id}
+              relatorioIaJson={submissao.relatorioIaPreGeradoJson ?? submissao.correcao?.relatorioIaJson}
+              payload={pedidoRobo && 'payload' in pedidoRobo ? pedidoRobo.payload : null}
+              indisponivel={pedidoRobo && 'indisponivel' in pedidoRobo ? pedidoRobo.indisponivel : null}
+              modoRobo
+            />
+          </div>
         ) : (
           <PainelRelatorioIa
             submissaoId={id}
