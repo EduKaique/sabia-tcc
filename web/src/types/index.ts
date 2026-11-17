@@ -152,6 +152,36 @@ export interface SubmissaoProfessorDetalhe {
   estadoJson: string | null
   correcao: Correcao | null
   relatorioIaPreGeradoJson?: string | null
+  /** Resultado validado no servidor na entrega; nulo em entregas antigas. */
+  validacao?: ResultadoValidacao | null
+}
+
+/** Status da validação da prática no servidor: os do simulador do robô mais os de blocos livres. */
+export type StatusPratica =
+  | 'CHEGOU'
+  | 'NAO_CHEGOU'
+  | 'COLIDIU'
+  | 'SAIU_DO_GRID'
+  | 'SEM_BLOCOS'
+  | 'LIMITE_EXCEDIDO'
+  | 'BLOCOS_LIVRES_OK'
+  | 'BLOCOS_LIVRES_VAZIO'
+
+/** ResultadoValidacao do pedagogico-service (fixtures/blocos-livres/README.md). */
+export interface ResultadoValidacao {
+  versaoValidador: number
+  modo: ModoAtividade
+  concluida: boolean
+  status: StatusPratica
+  blocosUsados: number
+  totalBlocosWorkspace: number
+  maxBlocos: number | null
+  excedeuLimiteBlocos: boolean
+  usouBlocoNaoPermitido: boolean
+  passosExecutados: number
+  blocosSoltos: number
+  posicaoFinal: PosicaoRobo | null
+  motivo: string | null
 }
 
 export interface ErroApi {
