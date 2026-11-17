@@ -1,0 +1,66 @@
+{
+  "nome": "Direção com nome do protótipo (toString, constructor) é inválida e ignorada (R5)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m615",
+          "fields": {
+            "DIRECAO": "toString",
+            "CASAS": 2
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m614",
+              "fields": {
+                "DIRECAO": "constructor",
+                "CASAS": 2
+              },
+              "next": {
+                "block": {
+                  "type": "robo_mover",
+                  "id": "m613",
+                  "fields": {
+                    "DIRECAO": "CIMA",
+                    "CASAS": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 3,
+    "passosExecutados": 1,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 3,
+      "coluna": 0
+    }
+  }
+}

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { LIMITE_PASSOS, simular } from '@/lib/simuladorRobo'
+import { LIMITE_PASSOS, MAX_BLOCOS_WORKSPACE, simular } from '@/lib/simuladorRobo'
 import { CENARIO_LIVRE_5X5, CENARIO_OBSTACULOS_5X5 } from '@/lib/cenariosRobo'
 
 type Bloco = {
   type: string
   id?: string
   fields?: Record<string, unknown>
-  inputs?: Record<string, { block?: Bloco }>
+  inputs?: Record<string, { block?: Bloco; shadow?: Bloco }>
   next?: { block?: Bloco }
 }
 
@@ -85,5 +85,34 @@ describe('simular', () => {
 
     expect(resultado.status).toBe('CHEGOU')
     expect(resultado.blocosSoltos).toBe(1)
+  })
+
+  it('totalBlocosWorkspace conta todas as pilhas, aninhados e next, sem sombras', () => {
+    const comSombra = {
+      type: 'text_print',
+      inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'oi' } } } },
+    }
+    const principal = { ...repetir(2, mover('CIMA', 1, mover('DIREITA', 1))), x: 0, y: 0 }
+    const solto = { ...comSombra, x: 0, y: 300, next: { block: mover('BAIXO', 1) } }
+    const { resultado } = simular(CENARIO_LIVRE_5X5, workspace(principal, solto))
+
+    // repetir + 2 mover na principal; text_print + mover no solto; a sombra não conta.
+    expect(resultado.totalBlocosWorkspace).toBe(5)
+    expect(resultado.blocosUsados).toBe(3)
+  })
+
+  it('aninhamento e cadeia extremos não estouram a pilha', () => {
+    let fundo: Bloco = mover('CIMA', 1)
+    for (let i = 0; i < 20000; i++) fundo = repetir(1, fundo)
+    let longo: Bloco = mover('CIMA', 1)
+    for (let i = 0; i < 20000; i++) longo = mover('CIMA', 1, longo)
+
+    const porProfundidade = simular(CENARIO_LIVRE_5X5, workspace(fundo)).resultado
+    const porCadeia = simular(CENARIO_LIVRE_5X5, workspace(longo)).resultado
+
+    expect(porProfundidade.status).toBe('LIMITE_EXCEDIDO')
+    expect(porProfundidade.passosExecutados).toBe(0)
+    expect(porCadeia.status).toBe('LIMITE_EXCEDIDO')
+    expect(porCadeia.totalBlocosWorkspace).toBeGreaterThan(MAX_BLOCOS_WORKSPACE)
   })
 })
