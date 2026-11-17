@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, KeyRound, LogOut, UserRound, Users } from 'lucide-react'
+import { BarChart3, BookOpen, KeyRound, LogOut, MapIcon, UserRound, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { encerrarSessao } from '@/lib/auth-helpers'
 
 const navItems = [
   { href: '/professor/atividades', label: 'Atividades', icon: BookOpen },
   { href: '/professor/turmas', label: 'Turmas', icon: Users },
+  { href: '/professor/cenarios', label: 'Cenários do robô', icon: MapIcon },
   { href: '/professor/relatorios', label: 'Relatórios', icon: BarChart3 },
 ]
 
