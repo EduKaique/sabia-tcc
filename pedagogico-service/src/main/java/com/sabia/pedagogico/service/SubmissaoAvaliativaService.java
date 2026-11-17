@@ -86,7 +86,11 @@ public class SubmissaoAvaliativaService {
                 .build();
         submissao = submissaoRepository.save(submissao);
 
-        eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
+        // O único consumidor de submissao.enviada é a revisão genérica do ia-service, que não conhece o
+        // robô: entregas do robô não publicam o evento (o item 3.5 pode reabrir isso com contextoRobo).
+        if (atividade.getModo() != ModoAtividade.JOGO_ROBO) {
+            eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
+        }
         log.info("Submissão id={} criada pelo aluno id={} (prática {})", submissao.getId(), alunoId, validacao.status());
         return toResponse(submissao, null);
     }
