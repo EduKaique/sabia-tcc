@@ -6,8 +6,10 @@ from app.clients.gemini import GeminiClient
 from app.core.config import settings
 from app.messaging.broker import Broker
 from app.routes.atividade import create_atividade_router
+from app.routes.atividade_robo import create_atividade_robo_router
 from app.routes.revisao import create_revisao_router
 from app.services.atividade import AtividadeService
+from app.services.atividade_robo import AtividadeRoboService
 from app.services.revisao import RevisaoService
 
 gemini_client = GeminiClient(
@@ -35,6 +37,7 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.docs_enabled else None,
 )
 app.include_router(create_atividade_router(AtividadeService(gemini_client)))
+app.include_router(create_atividade_robo_router(AtividadeRoboService(gemini_client)))
 app.include_router(create_revisao_router(revisao_service))
 
 

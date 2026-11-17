@@ -1,5 +1,5 @@
 import api from '@/lib/api'
-import type { RelatorioIa, TipoAtividade } from '@/types'
+import type { CenarioRobo, RelatorioIa, TipoAtividade } from '@/types'
 
 export interface GerarAtividadeIaPayload {
   idTurma: number
@@ -38,6 +38,41 @@ export async function revisarSubmissaoComIa(
 ): Promise<RevisarSubmissaoIaResponse> {
   const { data } = await api.post<RevisarSubmissaoIaResponse>(
     '/api/ia/submissao/revisar',
+    payload,
+  )
+  return data
+}
+
+export type DificuldadeCenario = 'FACIL' | 'MEDIO' | 'DIFICIL'
+
+export interface ParametrosCenarioIa {
+  linhas: number
+  colunas: number
+  dificuldade: DificuldadeCenario
+  usarRepetir: boolean
+}
+
+export interface GerarAtividadeRoboPayload {
+  idTurma?: number
+  descricaoObjetivo: string
+  /** Obrigatório quando sugerirCenario for falso. */
+  cenario?: CenarioRobo
+  sugerirCenario: boolean
+  parametrosCenario?: ParametrosCenarioIa
+}
+
+export interface GerarAtividadeRoboResposta {
+  titulo: string
+  descricao: string
+  /** Só vem quando sugerirCenario for verdadeiro. */
+  cenario?: CenarioRobo
+}
+
+export async function gerarAtividadeRoboComIa(
+  payload: GerarAtividadeRoboPayload,
+): Promise<GerarAtividadeRoboResposta> {
+  const { data } = await api.post<GerarAtividadeRoboResposta>(
+    '/api/ia/atividade/gerar-robo',
     payload,
   )
   return data

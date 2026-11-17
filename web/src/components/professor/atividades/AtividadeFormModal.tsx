@@ -17,9 +17,11 @@ import {
   usePublicarAtividade,
 } from "@/hooks/useAtividades";
 import { useTurmas } from "@/hooks/useTurmas";
-import { useCenarios } from "@/hooks/useCenarios";
+import { mensagemErroCenario, useCenarios, useCriarCenario } from "@/hooks/useCenarios";
 import { RichTextEditor } from "./RichTextEditor";
-import { GerarAtividadeIaPanel } from "./GerarAtividadeIaPanel";
+import { GerarAtividadeIaPanel, type SugestaoAtividadeIa } from "./GerarAtividadeIaPanel";
+import { EditorCenario } from "@/components/professor/cenarios/EditorCenario";
+import { valorInicialEditor } from "@/lib/assistenteRoboIa";
 import BlocklyEditor from "@/components/BlocklyEditor";
 import { PalcoRobo } from "@/components/aluno/editor/PalcoRobo";
 import {
@@ -37,10 +39,17 @@ import type {
   StatusAtividade,
   TipoAtividade,
 } from "@/types";
-import type { GerarAtividadeIaRequest } from "@/services/ia";
+import type { CenarioSalvoPayload } from "@/types/cenario";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -80,6 +89,10 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
   const [painelIaAberto, setPainelIaAberto] = useState(false);
   const [gabaritoIa, setGabaritoIa] = useState<string | null>(null);
   const [erroServidor, setErroServidor] = useState<string | null>(null);
+  // Cenário sugerido pela IA, aberto no editor até o professor salvar ou cancelar.
+  const [cenarioSugerido, setCenarioSugerido] = useState<{ nome: string; cenario: CenarioRobo } | null>(null);
+  const [avisoIa, setAvisoIa] = useState<string | null>(null);
+  const criarCenario = useCriarCenario();
   const cenarioSalvo = lerCenarioSalvo(atividade?.cenarioJson);
   const { data: cenariosDoProfessor = [] } = useCenarios();
 
@@ -130,6 +143,18 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
     return PRESETS_CENARIO.find((p) => p.id === opcao)?.cenario ?? null;
   }
   const cenarioEscolhido = resolverCenario(presetCenario);
+
+  // Para o assistente de IA: o cenário escolhido com o limite de blocos do formulário.
+  const maxBlocosForm = Number(useWatch({ control, name: "maxBlocos" }));
+  const cenarioParaIa: CenarioRobo | null = cenarioEscolhido
+    ? Number.isInteger(maxBlocosForm) && maxBlocosForm >= 1
+      ? { ...cenarioSemLimite(cenarioEscolhido), maxBlocos: maxBlocosForm }
+      : cenarioSemLimite(cenarioEscolhido)
+    : null;
+  const tituloForm = useWatch({ control, name: "titulo" }) ?? "";
+  const descricaoForm = useWatch({ control, name: "descricao" }) ?? "";
+  const camposPreenchidos =
+    tituloForm.trim().length > 0 || descricaoForm.replace(/<[^>]*>/g, "").trim().length > 0;
   // O snapshot só aparece como "personalizado" quando não bate com nenhuma opção da lista.
   const mostrarPersonalizado =
     !!cenarioSalvo &&
@@ -209,14 +234,43 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
     setPainelIaAberto(true);
   }
 
-  function handleAceitarSugestao(sugestao: GerarAtividadeIaRequest, turmaId: number) {
+  function handleAceitarSugestao(sugestao: SugestaoAtividadeIa, turmaId: number) {
     setValue("titulo", sugestao.titulo, { shouldDirty: true, shouldValidate: true });
     setValue("descricao", sugestao.descricao, { shouldDirty: true, shouldValidate: true });
     setValue("turmaId", turmaId, { shouldDirty: true, shouldValidate: true });
     if (sugestao.gabaritoEstadoJson) {
       setGabaritoIa(sugestao.gabaritoEstadoJson);
     }
+    setAvisoIa(null);
+    if (modoJogo && sugestao.cenario !== undefined) {
+      // O cenário sugerido só vira real quando o professor o salva no editor.
+      const valor = valorInicialEditor(sugestao);
+      if (valor) {
+        criarCenario.reset();
+        setCenarioSugerido(valor);
+      } else {
+        setAvisoIa(
+          "O cenário sugerido pela IA veio inválido. O título e a descrição foram preenchidos; escolha ou crie um cenário."
+        );
+      }
+    }
     setPainelIaAberto(false);
+  }
+
+  /** Salva o cenário sugerido na biblioteca (o servidor valida forma e caminho) e o seleciona. */
+  function salvarCenarioSugerido(payload: CenarioSalvoPayload) {
+    criarCenario.mutate(payload, {
+      onSuccess: (criado) => {
+        setValue("presetCenario", `${PREFIXO_CENARIO_SALVO}${criado.id}`, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        // Igual à troca manual no seletor: o limite do cenário preenche o campo.
+        const limite = lerCenario(criado.cenarioJson)?.maxBlocos;
+        if (limite) setValue("maxBlocos", limite);
+        setCenarioSugerido(null);
+      },
+    });
   }
 
   const pending = isSubmitting || criar.isPending || atualizar.isPending || publicar.isPending;
@@ -238,20 +292,14 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
                   Descreva o objetivo pedagogico e receba uma sugestao de titulo e descricao.
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAbrirPainelIa}
-                disabled={modoJogo}
-                aria-describedby={modoJogo ? "ia-indisponivel-jogo" : undefined}
-              >
+              <Button type="button" variant="outline" onClick={handleAbrirPainelIa}>
                 <Sparkles size={16} />
                 Assistente de IA
               </Button>
             </div>
-            {modoJogo && (
-              <p id="ia-indisponivel-jogo" className="mt-2 text-sm text-muted-foreground">
-                O assistente de IA ainda não está disponível para o Jogo do Robô.
+            {avisoIa && (
+              <p role="alert" className="mt-2 text-sm text-destructive">
+                {avisoIa}
               </p>
             )}
           </div>
@@ -519,10 +567,39 @@ export function AtividadeForm({ atividade, tipoAtividade }: Props) {
           open={painelIaAberto}
           tipoAtividade={tipoAtividade}
           tipoAtividadeLabel={tipoAtividadeLabels[tipoAtividade]}
+          modoJogo={modoJogo}
+          cenarioAtual={cenarioParaIa}
+          camposPreenchidos={camposPreenchidos}
           onAccept={handleAceitarSugestao}
           onClose={() => setPainelIaAberto(false)}
         />
       )}
+
+      <Dialog
+        open={!!cenarioSugerido}
+        onOpenChange={(aberto) => {
+          if (!aberto) setCenarioSugerido(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Cenário sugerido pela IA</DialogTitle>
+            <DialogDescription>
+              Revise o cenário e salve para usá-lo nesta atividade. Ele também fica em Meus
+              cenários.
+            </DialogDescription>
+          </DialogHeader>
+          {cenarioSugerido && (
+            <EditorCenario
+              valorInicial={cenarioSugerido}
+              onSalvar={salvarCenarioSugerido}
+              onCancelar={() => setCenarioSugerido(null)}
+              salvando={criarCenario.isPending}
+              erro={criarCenario.isError ? mensagemErroCenario(criarCenario.error) : null}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

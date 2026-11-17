@@ -4,6 +4,7 @@ import type { RelatorioIa } from '@/types'
 import { useRevisarSubmissaoIa } from '@/hooks/useRevisarSubmissaoIa'
 import { useRemoverRelatorioIa, useSalvarRelatorioIa } from '@/hooks/useRelatorioIaSubmissao'
 import type { RevisarSubmissaoIaPayload } from '@/services/ia'
+import { mensagemErroIa } from '@/lib/mensagemErroIa'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -76,7 +77,7 @@ export function PainelRelatorioIa({ submissaoId, relatorioIaJson, payload }: Pro
             </Button>
             {revisar.isError && (
               <p className="text-sm text-destructive">
-                Não foi possível gerar o relatório. Tente novamente.
+                {mensagemErroIa(revisar.error, 'Não foi possível gerar o relatório. Tente novamente.')}
               </p>
             )}
           </div>
