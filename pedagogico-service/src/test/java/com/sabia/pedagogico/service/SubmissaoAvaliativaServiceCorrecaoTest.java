@@ -14,7 +14,9 @@ import com.sabia.pedagogico.repository.CorrecaoRepository;
 import com.sabia.pedagogico.repository.ProjetoAvaliativoRepository;
 import com.sabia.pedagogico.repository.SubmissaoAvaliativaRepository;
 import com.sabia.pedagogico.repository.TurmaAlunoRepository;
+import com.sabia.pedagogico.service.pratica.ValidadorPratica;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
@@ -35,7 +37,8 @@ class SubmissaoAvaliativaServiceCorrecaoTest {
     private final SubmissaoAvaliativaService service = new SubmissaoAvaliativaService(
             submissaoRepo, correcaoRepo, mock(AtividadeAvaliativaRepository.class),
             mock(ProjetoAvaliativoRepository.class), mock(TurmaAlunoRepository.class),
-            mock(CorrecaoMapper.class), mock(ApplicationEventPublisher.class));
+            mock(CorrecaoMapper.class), mock(ApplicationEventPublisher.class), mock(ValidadorPratica.class),
+            JsonMapper.builder().build());
     private final SubmissaoAvaliativa submissao = new SubmissaoAvaliativa();
 
     SubmissaoAvaliativaServiceCorrecaoTest() {
