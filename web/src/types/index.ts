@@ -154,6 +154,30 @@ export interface SubmissaoProfessorDetalhe {
   relatorioIaPreGeradoJson?: string | null
   /** Resultado validado no servidor na entrega; nulo em entregas antigas. */
   validacao?: ResultadoValidacao | null
+  /** Métricas e pseudocódigo do programa (Jogo do Robô), calculados pelo servidor; nulo nos demais casos. */
+  analiseRobo?: AnaliseRobo | null
+}
+
+/** AnaliseRobo do pedagogico-service (fixtures/robo/README.md, "Análise para o relatório"). */
+export interface AnaliseRobo {
+  status: StatusPratica
+  concluida: boolean
+  blocosUsados: number
+  totalBlocosWorkspace: number
+  maxBlocos: number | null
+  blocosSoltos: number
+  excedeuLimiteBlocos: boolean
+  usouBlocoNaoPermitido: boolean
+  passosExecutados: number
+  passosMinimos: number | null
+  eficiencia: number | null
+  quantidadeRepetir: number
+  profundidadeMaxima: number
+  maiorSequenciaIgual: number
+  sequenciaRepetivel: boolean
+  distanciaAoDestino: number | null
+  pseudocodigo: string
+  pseudocodigoTruncado: boolean
 }
 
 /** Status da validação da prática no servidor: os do simulador do robô mais os de blocos livres. */
