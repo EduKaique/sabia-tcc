@@ -34,27 +34,63 @@ const aplicar = (...acoes: AcaoEditor[]): EstadoEditor =>
   acoes.reduce(editorReducer, editorReducer(estadoInicialEditor(), { tipo: 'carregar', detalhe: DETALHE }))
 
 describe('montarPayload', () => {
-  it('reenvia vídeo, questionário e upload intactos (mesmo objeto, com o gabarito)', () => {
+  it('reenvia o upload intacto (mesmo objeto) e vídeo e questionário normalizados com o gabarito', () => {
     const p = montarPayload(aplicar())
     expect(p.paginas[1]).toEqual({ id: 2, tipo: 'VIDEO_YOUTUBE', titulo: 'Vídeo', conteudo: VIDEO })
-    expect(p.paginas[1].conteudo).toBe(VIDEO)
     expect(p.paginas[2]).toEqual({ id: 3, tipo: 'QUESTIONARIO', titulo: null, conteudo: QUESTIONARIO })
-    expect(p.paginas[2].conteudo).toBe(QUESTIONARIO)
     expect((p.paginas[2].conteudo as typeof QUESTIONARIO).perguntas[0].correta).toBe(2)
     expect(p.paginas[3]).toEqual({ id: 4, tipo: 'VIDEO_UPLOAD', titulo: 'Upload', conteudo: UPLOAD })
+    expect(p.paginas[3].conteudo).toBe(UPLOAD)
   })
 
-  it('mantém as páginas não editáveis intactas depois de mover e de editar as outras', () => {
+  it('mantém o upload intacto e a ordem depois de mover e de editar as outras', () => {
     const p = montarPayload(
       aplicar(
-        { tipo: 'moverPagina', chave: 's-3', direcao: -1 },
-        { tipo: 'moverPagina', chave: 's-3', direcao: -1 },
-        { tipo: 'atualizarPagina', chave: 's-1', conteudo: { html: '<p>Novo</p>' } }
+        { tipo: 'moverPagina', chave: 's-4', direcao: -1 },
+        { tipo: 'moverPagina', chave: 's-4', direcao: -1 },
+        { tipo: 'moverPagina', chave: 's-3', direcao: 1 },
+        { tipo: 'atualizarPagina', chave: 's-1', conteudo: { html: '<p>Novo</p>' } },
+        { tipo: 'atualizarPagina', chave: 's-4', titulo: 'Mudou?' }
       )
     )
-    expect(p.paginas.map((x) => x.id)).toEqual([3, 1, 2, 4])
-    expect(p.paginas[0].conteudo).toBe(QUESTIONARIO)
-    expect(p.paginas[2].conteudo).toBe(VIDEO)
+    expect(p.paginas.map((x) => x.id)).toEqual([1, 4, 2, 3])
+    expect(p.paginas[1].conteudo).toBe(UPLOAD)
+    expect(p.paginas[1].titulo).toBe('Upload')
+    expect(p.paginas[3].conteudo).toEqual(QUESTIONARIO)
+  })
+
+  it('vídeo novo: texto digitado aparado em videoId, opcionais vazios omitidos e duração numérica', () => {
+    const estado = aplicar(
+      { tipo: 'adicionarPagina', tipoPagina: 'VIDEO_YOUTUBE' },
+      {
+        tipo: 'atualizarPagina',
+        chave: 'n-1',
+        conteudo: { videoId: '  https://youtu.be/dQw4w9WgXcQ?t=4 ', titulo: '  Aula 1 ', canal: '   ', duracaoSegundos: ' 212 ' },
+      },
+      { tipo: 'adicionarPagina', tipoPagina: 'VIDEO_YOUTUBE' },
+      { tipo: 'atualizarPagina', chave: 'n-2', conteudo: { videoId: 'dQw4w9WgXcQ', duracaoSegundos: '' } }
+    )
+    const p = montarPayload(estado)
+    expect(p.paginas[4].conteudo).toEqual({ videoId: 'https://youtu.be/dQw4w9WgXcQ?t=4', titulo: 'Aula 1', duracaoSegundos: 212 })
+    expect(p.paginas[5].conteudo).toEqual({ videoId: 'dQw4w9WgXcQ' })
+  })
+
+  it('questionário novo: textos aparados e correta numérica', () => {
+    const estado = aplicar(
+      { tipo: 'adicionarPagina', tipoPagina: 'QUESTIONARIO' },
+      {
+        tipo: 'atualizarPagina',
+        chave: 'n-1',
+        conteudo: {
+          percentualMinimo: 60,
+          perguntas: [{ enunciado: '  Quanto é 2+2? ', alternativas: [' 3 ', ' 4'], correta: 1 }],
+        },
+      }
+    )
+    expect(montarPayload(estado).paginas[4].conteudo).toEqual({
+      percentualMinimo: 60,
+      perguntas: [{ enunciado: 'Quanto é 2+2?', alternativas: ['3', '4'], correta: 1 }],
+    })
   })
 
   it('páginas novas vão sem id, existentes com id, na ordem da lista', () => {

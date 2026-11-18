@@ -28,6 +28,33 @@ describe('errosLicao', () => {
     expect(s.gerais).toEqual(['O conteúdo das páginas passa do limite de 256 KB.', 'Página que não existe mais.'])
   })
 
+  it('preserva o subcaminho do vídeo e do questionário para o campo da página i', () => {
+    const lista: PaginaEditor[] = [
+      { chave: 's-7', id: 7, tipo: 'VIDEO_YOUTUBE', titulo: '', conteudo: { videoId: '' } },
+      { chave: 'n-2', tipo: 'QUESTIONARIO', titulo: '', conteudo: {} },
+    ]
+    const s = separarErros(
+      {
+        'paginas[0].videoId': 'Informe um link do YouTube válido (https) ou o id do vídeo.',
+        'paginas[0].duracaoSegundos': 'A duração deve ficar entre 10 e 10800 segundos.',
+        'paginas[1].percentualMinimo': 'O percentual mínimo deve ficar entre 0 e 100.',
+        'paginas[1].perguntas[2].alternativas[1]': 'A alternativa não pode ficar vazia.',
+        'paginas[1].perguntas[0].correta': 'Indique a alternativa correta.',
+      },
+      lista
+    )
+    expect(s.paginas['s-7']).toEqual({
+      videoId: 'Informe um link do YouTube válido (https) ou o id do vídeo.',
+      duracaoSegundos: 'A duração deve ficar entre 10 e 10800 segundos.',
+    })
+    expect(s.paginas['n-2']).toEqual({
+      percentualMinimo: 'O percentual mínimo deve ficar entre 0 e 100.',
+      'perguntas[2].alternativas[1]': 'A alternativa não pode ficar vazia.',
+      'perguntas[0].correta': 'Indique a alternativa correta.',
+    })
+    expect(s.gerais).toEqual([])
+  })
+
   it('extrai status, mensagem e campos do ErroResponse', () => {
     expect(extrairErro(axiosErro(422, { status: 422, erro: 'Lição arquivada.' }))).toEqual({
       status: 422,

@@ -19,7 +19,7 @@ const DETALHE: LicaoProfessorDetalhe = {
   cenarioJson: null,
   turmaIds: [10],
   paginas: [
-    { id: 2, ordem: 1, tipo: 'VIDEO_YOUTUBE', titulo: 'Vídeo', conteudo: { videoId: 'dQw4w9WgXcQ', duracaoSegundos: 212 } },
+    { id: 2, ordem: 1, tipo: 'VIDEO_UPLOAD', titulo: 'Vídeo', conteudo: { arquivo: 'aula.mp4' } },
     { id: 1, ordem: 0, tipo: 'TEXTO', titulo: null, conteudo: { html: '<p>Oi</p>' } },
   ],
   publicadaEm: null,
@@ -75,7 +75,7 @@ describe('editorReducer', () => {
     expect(e.paginas[0]).toMatchObject({ titulo: 'Intro', conteudo: { html: '<p>Novo</p>' } })
   })
 
-  it('atualizar não mexe em páginas de tipos ainda não editáveis', () => {
+  it('atualizar não mexe em páginas de tipos não editáveis (vídeo enviado)', () => {
     const e = carregado()
     const depois = aplicar(e, { tipo: 'atualizarPagina', chave: 's-2', titulo: 'Outro', conteudo: { html: 'x' } })
     expect(depois).toBe(e)
@@ -108,5 +108,54 @@ describe('editorReducer', () => {
     const robo = aplicar(carregado(), { tipo: 'trocarModo', modo: 'JOGO_ROBO' })
     expect(prontidaoPublicacao(robo).map((i) => i.ok)).toEqual([true, false])
     expect(prontidaoPublicacao(aplicar(robo, { tipo: 'trocarCenario', cenarioJson: '{}' })).every((i) => i.ok)).toBe(true)
+  })
+
+  it('adicionar vídeo e questionário com os conteúdos padrão', () => {
+    const e = aplicar(
+      estadoInicialEditor(),
+      { tipo: 'adicionarPagina', tipoPagina: 'VIDEO_YOUTUBE' },
+      { tipo: 'adicionarPagina', tipoPagina: 'QUESTIONARIO' }
+    )
+    expect(e.paginas[0]).toMatchObject({ chave: 'n-1', tipo: 'VIDEO_YOUTUBE', conteudo: { videoId: '' } })
+    expect(e.paginas[1]).toMatchObject({ chave: 'n-2', tipo: 'QUESTIONARIO' })
+    expect(e.paginas[1].conteudo).toEqual({
+      percentualMinimo: 70,
+      perguntas: [{ enunciado: '', alternativas: ['', ''], correta: null }],
+    })
+  })
+
+  it('atualizar vídeo e questionário troca só os campos enviados', () => {
+    const e = aplicar(
+      estadoInicialEditor(),
+      { tipo: 'adicionarPagina', tipoPagina: 'VIDEO_YOUTUBE' },
+      { tipo: 'adicionarPagina', tipoPagina: 'QUESTIONARIO' },
+      { tipo: 'atualizarPagina', chave: 'n-1', conteudo: { videoId: 'dQw4w9WgXcQ' } },
+      { tipo: 'atualizarPagina', chave: 'n-1', conteudo: { duracaoSegundos: 212 } },
+      { tipo: 'atualizarPagina', chave: 'n-2', conteudo: { percentualMinimo: 50 } }
+    )
+    expect(e.paginas[0].conteudo).toEqual({ videoId: 'dQw4w9WgXcQ', duracaoSegundos: 212 })
+    expect(e.paginas[1].conteudo).toMatchObject({ percentualMinimo: 50 })
+    expect((e.paginas[1].conteudo as { perguntas: unknown[] }).perguntas).toHaveLength(1)
+  })
+
+  it('prontidão: vídeo sem duração e pergunta sem resposta certa aparecem como pendência', () => {
+    const e = aplicar(
+      estadoInicialEditor(),
+      { tipo: 'adicionarPagina', tipoPagina: 'VIDEO_YOUTUBE' },
+      { tipo: 'adicionarPagina', tipoPagina: 'QUESTIONARIO' }
+    )
+    const itens = prontidaoPublicacao(e)
+    expect(itens).toContainEqual({ ok: false, texto: 'Duração informada em todos os vídeos' })
+    expect(itens).toContainEqual({ ok: false, texto: 'Resposta certa marcada em todas as perguntas' })
+
+    const pronto = aplicar(
+      e,
+      { tipo: 'atualizarPagina', chave: 'n-1', conteudo: { duracaoSegundos: '212' } },
+      { tipo: 'atualizarPagina', chave: 'n-2', conteudo: { perguntas: [{ enunciado: 'e', alternativas: ['a', 'b'], correta: 0 }] } }
+    )
+    expect(prontidaoPublicacao(pronto).every((i) => i.ok)).toBe(true)
+    // Duração fora dos limites não conta como informada.
+    const invalida = aplicar(pronto, { tipo: 'atualizarPagina', chave: 'n-1', conteudo: { duracaoSegundos: '9' } })
+    expect(prontidaoPublicacao(invalida)).toContainEqual({ ok: false, texto: 'Duração informada em todos os vídeos' })
   })
 })

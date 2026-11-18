@@ -1,14 +1,28 @@
 'use client'
 
 import { useState, type Dispatch } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, FileText, Image as ImageIcon, Plus, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Image as ImageIcon,
+  ListChecks,
+  Plus,
+  Trash2,
+  Video,
+} from 'lucide-react'
 import {
   MAX_PAGINAS,
   ROTULO_TIPO,
   paginaEditavel,
   type AcaoEditor,
   type PaginaEditor,
+  type TipoEditavel,
 } from '@/lib/licoes/editorLicao'
+import type { ConteudoQuestionarioEditor } from '@/lib/licoes/questionario'
+import type { ConteudoVideoEditor } from '@/lib/licoes/youtube'
 import type { ConteudoImagemTexto, ConteudoTexto } from '@/types/licaoProfessor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,7 +38,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { FormPaginaImagem } from './FormPaginaImagem'
+import { FormPaginaQuestionario } from './FormPaginaQuestionario'
 import { FormPaginaTexto } from './FormPaginaTexto'
+import { FormPaginaVideo } from './FormPaginaVideo'
 import { ResumoPaginaSomenteLeitura } from './ResumoPaginaSomenteLeitura'
 
 interface Props {
@@ -35,7 +51,14 @@ interface Props {
   desabilitado?: boolean
 }
 
-/** Lista ordenada de páginas: adicionar, recolher, mover, remover e editar texto e imagem. */
+const BOTOES_ADICIONAR: { tipo: TipoEditavel; rotulo: string; Icone: typeof FileText }[] = [
+  { tipo: 'TEXTO', rotulo: 'Texto', Icone: FileText },
+  { tipo: 'IMAGEM_TEXTO', rotulo: 'Imagem e texto', Icone: ImageIcon },
+  { tipo: 'VIDEO_YOUTUBE', rotulo: 'Vídeo (YouTube)', Icone: Video },
+  { tipo: 'QUESTIONARIO', rotulo: 'Questionário', Icone: ListChecks },
+]
+
+/** Lista ordenada de páginas: adicionar, recolher, mover, remover e editar texto, imagem, vídeo e questionário. */
 export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = false }: Props) {
   // Páginas do servidor começam recolhidas; as novas e as com erro, abertas. O conjunto guarda as que o
   // professor inverteu em relação a esse padrão.
@@ -51,7 +74,7 @@ export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = fal
       return novo
     })
 
-  const adicionar = (tipoPagina: 'TEXTO' | 'IMAGEM_TEXTO') => dispatch({ tipo: 'adicionarPagina', tipoPagina })
+  const adicionar = (tipoPagina: TipoEditavel) => dispatch({ tipo: 'adicionarPagina', tipoPagina })
 
   return (
     <div className="space-y-3">
@@ -132,7 +155,7 @@ export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = fal
 
               {!editavel && (
                 <div className="border-t border-border px-4 py-3">
-                  <ResumoPaginaSomenteLeitura tipo={p.tipo} conteudo={p.conteudo} />
+                  <ResumoPaginaSomenteLeitura tipo={p.tipo} />
                 </div>
               )}
 
@@ -149,17 +172,34 @@ export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = fal
                     />
                     {errosPagina.titulo && <p className="text-xs text-destructive">{errosPagina.titulo}</p>}
                   </div>
-                  {p.tipo === 'TEXTO' ? (
+                  {p.tipo === 'TEXTO' && (
                     <FormPaginaTexto
                       idBase={idBase}
                       html={(p.conteudo as ConteudoTexto).html ?? ''}
                       onChange={(html) => dispatch({ tipo: 'atualizarPagina', chave: p.chave, conteudo: { html } })}
                       erro={errosPagina.html}
                     />
-                  ) : (
+                  )}
+                  {p.tipo === 'IMAGEM_TEXTO' && (
                     <FormPaginaImagem
                       idBase={idBase}
                       conteudo={p.conteudo as ConteudoImagemTexto}
+                      onChange={(conteudo) => dispatch({ tipo: 'atualizarPagina', chave: p.chave, conteudo })}
+                      erros={errosPagina}
+                    />
+                  )}
+                  {p.tipo === 'VIDEO_YOUTUBE' && (
+                    <FormPaginaVideo
+                      idBase={idBase}
+                      conteudo={p.conteudo as ConteudoVideoEditor}
+                      onChange={(conteudo) => dispatch({ tipo: 'atualizarPagina', chave: p.chave, conteudo })}
+                      erros={errosPagina}
+                    />
+                  )}
+                  {p.tipo === 'QUESTIONARIO' && (
+                    <FormPaginaQuestionario
+                      idBase={idBase}
+                      conteudo={p.conteudo as ConteudoQuestionarioEditor}
                       onChange={(conteudo) => dispatch({ tipo: 'atualizarPagina', chave: p.chave, conteudo })}
                       erros={errosPagina}
                     />
@@ -181,19 +221,18 @@ export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = fal
           <Plus size={14} className="mr-1 inline" aria-hidden />
           Adicionar página:
         </span>
-        <Button type="button" variant="outline" onClick={() => adicionar('TEXTO')} disabled={desabilitado || noLimite}>
-          <FileText size={16} />
-          Texto
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => adicionar('IMAGEM_TEXTO')}
-          disabled={desabilitado || noLimite}
-        >
-          <ImageIcon size={16} />
-          Imagem e texto
-        </Button>
+        {BOTOES_ADICIONAR.map(({ tipo, rotulo, Icone }) => (
+          <Button
+            key={tipo}
+            type="button"
+            variant="outline"
+            onClick={() => adicionar(tipo)}
+            disabled={desabilitado || noLimite}
+          >
+            <Icone size={16} />
+            {rotulo}
+          </Button>
+        ))}
         {noLimite && (
           <span className="text-xs text-muted-foreground">Limite de {MAX_PAGINAS} páginas atingido.</span>
         )}

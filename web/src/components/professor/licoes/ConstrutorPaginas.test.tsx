@@ -19,7 +19,7 @@ function Construtor({ inicial = estadoInicialEditor() }: { inicial?: EstadoEdito
   return <ConstrutorPaginas paginas={estado.paginas} dispatch={dispatch} erros={{}} />
 }
 
-const paginas = () => screen.getAllByRole('listitem')
+const paginas = () => screen.getAllByRole('listitem', { name: /^Página \d+$/ })
 const titulos = () => screen.getAllByLabelText('Título da página (opcional)') as HTMLInputElement[]
 
 describe('ConstrutorPaginas', () => {
@@ -61,23 +61,33 @@ describe('ConstrutorPaginas', () => {
 
     expect((screen.getByRole('button', { name: 'Texto' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByRole('button', { name: 'Imagem e texto' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: 'Vídeo (YouTube)' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: 'Questionário' }) as HTMLButtonElement).disabled).toBe(true)
     expect(screen.getByText(`Limite de ${MAX_PAGINAS} páginas atingido.`)).toBeTruthy()
   })
 
-  it('mostra vídeo e questionário como resumo, sem formulário', () => {
+  it('tem os 4 botões de adicionar e abre os formulários de vídeo e questionário', () => {
+    render(<Construtor />)
+    fireEvent.click(screen.getByRole('button', { name: 'Vídeo (YouTube)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Questionário' }))
+    expect(paginas()).toHaveLength(2)
+    expect(screen.getByLabelText(/Link ou código do vídeo/)).toBeTruthy()
+    expect(screen.getByLabelText(/Percentual mínimo de acertos/)).toBeTruthy()
+    expect(screen.getAllByLabelText('Marcar como resposta certa')).toHaveLength(2)
+  })
+
+  it('mostra o vídeo enviado como resumo, sem formulário', () => {
     const inicial = editorReducer(estadoInicialEditor(), {
       tipo: 'carregar',
       detalhe: {
         id: 1, estado: 'RASCUNHO', titulo: 'L', conceito: 'C', resumo: null, modo: 'BLOCOS', cenarioJson: null,
         turmaIds: [], publicadaEm: null, criadaEm: null, atualizadaEm: null,
-        paginas: [
-          { id: 5, ordem: 0, tipo: 'QUESTIONARIO', titulo: 'Quiz', conteudo: { percentualMinimo: 70, perguntas: [{ enunciado: 'e', alternativas: ['a', 'b'], correta: 1 }] } },
-        ],
+        paginas: [{ id: 5, ordem: 0, tipo: 'VIDEO_UPLOAD', titulo: 'Upload', conteudo: { arquivo: 'x' } }],
       },
     })
     render(<Construtor inicial={inicial} />)
 
-    expect(screen.getByText(/1 pergunta · mínimo para aprovar: 70%/)).toBeTruthy()
+    expect(screen.getByText('Upload de vídeo ainda não está disponível.')).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Abrir página 1/ })).toBeNull()
     expect(screen.getByRole('button', { name: 'Remover página 1' })).toBeTruthy()
   })
