@@ -3,15 +3,17 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Code } from 'lucide-react'
+import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, Code, Heading2, Heading3 } from 'lucide-react'
 import { useEffect } from 'react'
 
 interface Props {
   value: string
   onChange: (value: string) => void
+  /** Mostra os botões de título (H2 e H3). Desligado por padrão (descrição da atividade). */
+  titulos?: boolean
 }
 
-export function RichTextEditor({ value, onChange }: Props) {
+export function RichTextEditor({ value, onChange, titulos = false }: Props) {
   const editor = useEditor({
     extensions: [StarterKit, Underline],
     content: value,
@@ -37,7 +39,25 @@ export function RichTextEditor({ value, onChange }: Props) {
 
   if (!editor) return null
 
+  const botoesTitulo = titulos
+    ? [
+        {
+          icon: Heading2,
+          action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+          active: editor.isActive('heading', { level: 2 }),
+          title: 'Título',
+        },
+        {
+          icon: Heading3,
+          action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+          active: editor.isActive('heading', { level: 3 }),
+          title: 'Subtítulo',
+        },
+      ]
+    : []
+
   const toolbarButtons = [
+    ...botoesTitulo,
     {
       icon: Bold,
       action: () => editor.chain().focus().toggleBold().run(),

@@ -31,3 +31,29 @@ export function sanitizarDescricao(html: string | null | undefined): string {
   wrapper.appendChild(fragmento)
   return wrapper.innerHTML
 }
+
+const TAGS_CONTEUDO_LICAO = [
+  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'a', 'h2', 'h3', 'hr', 'code', 'blockquote',
+]
+
+/**
+ * Versão restrita para o conteúdo das páginas de lição (texto escrito pelo professor e exibido ao aluno).
+ * Sem imagens, estilos, formulários nem iframes; links só http(s) ou mailto, sempre em nova aba com
+ * rel="noopener noreferrer".
+ */
+export function sanitizarConteudoLicao(html: string | null | undefined): string {
+  if (!html || typeof window === 'undefined') return ''
+  const fragmento = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: TAGS_CONTEUDO_LICAO,
+    ALLOWED_ATTR: ['href'],
+    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:)/i,
+    RETURN_DOM_FRAGMENT: true,
+  })
+  fragmento.querySelectorAll('a').forEach((link) => {
+    link.setAttribute('target', '_blank')
+    link.setAttribute('rel', 'noopener noreferrer')
+  })
+  const wrapper = document.createElement('div')
+  wrapper.appendChild(fragmento)
+  return wrapper.innerHTML
+}
