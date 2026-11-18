@@ -22,12 +22,14 @@ interface Props {
   conteudo: ConteudoVideoEditor
   onChange: (parcial: Partial<ConteudoVideoEditor>) => void
   erros: Record<string, string>
+  /** Sugerir título e canal lidos do player? Só em página nova: abrir um vídeo salvo não muda nada. */
+  sugerirDados?: boolean
 }
 
 const vazio = (v: unknown) => v == null || String(v).trim() === ''
 
 /** Página VIDEO_YOUTUBE: link ou código, pré-visualização com leitura da duração, título e canal opcionais. */
-export function FormPaginaVideo({ idBase, conteudo, onChange, erros }: Props) {
+export function FormPaginaVideo({ idBase, conteudo, onChange, erros, sugerirDados = false }: Props) {
   const entrada = conteudo.videoId ?? ''
   const videoId = extrairIdYoutube(entrada)
   const erroVideo = erros.videoId ?? (entrada.trim() !== '' && !videoId ? MENSAGEM_VIDEO_INVALIDO : undefined)
@@ -39,6 +41,7 @@ export function FormPaginaVideo({ idBase, conteudo, onChange, erros }: Props) {
     if (origem === 'manual' || vazio(conteudo.duracaoSegundos)) onChange({ duracaoSegundos: segundos })
   }
   const aoLerDados = ({ titulo, canal }: { titulo?: string; canal?: string }) => {
+    if (!sugerirDados) return
     const sugestao: Partial<ConteudoVideoEditor> = {}
     if (titulo && vazio(conteudo.titulo)) sugestao.titulo = titulo.slice(0, MAX_TITULO_VIDEO)
     if (canal && vazio(conteudo.canal)) sugestao.canal = canal.slice(0, MAX_TITULO_VIDEO)

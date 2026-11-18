@@ -192,6 +192,7 @@ export function ConstrutorPaginas({ paginas, dispatch, erros, desabilitado = fal
                     <FormPaginaVideo
                       idBase={idBase}
                       conteudo={p.conteudo as ConteudoVideoEditor}
+                      sugerirDados={p.id == null}
                       onChange={(conteudo) => dispatch({ tipo: 'atualizarPagina', chave: p.chave, conteudo })}
                       erros={errosPagina}
                     />

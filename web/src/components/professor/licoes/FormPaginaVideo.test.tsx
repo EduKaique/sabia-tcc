@@ -32,9 +32,28 @@ class PlayerFalso {
   }
 }
 
-function Video({ inicial = { videoId: '' } }: { inicial?: ConteudoVideoEditor }) {
+function Video({
+  inicial = { videoId: '' },
+  sugerirDados = true,
+  aoMudar,
+}: {
+  inicial?: ConteudoVideoEditor
+  sugerirDados?: boolean
+  aoMudar?: (p: Partial<ConteudoVideoEditor>) => void
+}) {
   const [c, setC] = useState<ConteudoVideoEditor>(inicial)
-  return <FormPaginaVideo idBase="v" conteudo={c} onChange={(p) => setC((a) => ({ ...a, ...p }))} erros={{}} />
+  return (
+    <FormPaginaVideo
+      idBase="v"
+      conteudo={c}
+      onChange={(p) => {
+        aoMudar?.(p)
+        setC((a) => ({ ...a, ...p }))
+      }}
+      erros={{}}
+      sugerirDados={sugerirDados}
+    />
+  )
 }
 
 const campoLink = () => screen.getByLabelText(/Link ou código do vídeo/) as HTMLInputElement
@@ -151,5 +170,18 @@ describe('FormPaginaVideo', () => {
 
     unmount()
     expect(players[1].destroy).toHaveBeenCalledOnce()
+  })
+
+  it('página já salva (sugerirDados falso): abrir não sugere título nem canal e não chama onChange', async () => {
+    const aoMudar = vi.fn()
+    render(<Video inicial={{ videoId: 'dQw4w9WgXcQ', duracaoSegundos: 212 }} sugerirDados={false} aoMudar={aoMudar} />)
+    await esperarApi()
+    const p = players[0]
+    p.getDuration.mockReturnValue(212)
+    p.pronto()
+    act(() => vi.advanceTimersByTime(1000))
+    expect((screen.getByLabelText('Título do vídeo (opcional)') as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText('Canal (opcional)') as HTMLInputElement).value).toBe('')
+    expect(aoMudar).not.toHaveBeenCalled()
   })
 })
