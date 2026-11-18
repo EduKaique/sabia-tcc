@@ -1,14 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Star, ArrowLeft } from 'lucide-react'
+import { Calendar, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatarPontos } from '@/lib/formatarNota'
 import { HtmlContent } from '@/components/HtmlContent'
 import { fredoka } from '@/lib/fontesHome'
-import { botaoPrincipal, cartao, linkDiscreto } from '@/lib/estilos'
+import { botaoPrincipal, botaoSecundario, cartao, linkDiscreto } from '@/lib/estilos'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
 import { StatusBadge } from './StatusBadge'
 import { getInfoUrgencia } from './IndicadorUrgencia'
+import { ResultadoCorrecao } from './ResultadoCorrecao'
 
 interface Props {
   atividade: AtividadeAlunoDTO
@@ -37,9 +39,8 @@ export function PainelDetalhe({ atividade }: Props) {
           <Calendar size={16} aria-hidden="true" />
           {dateText}
         </span>
-        <span className="flex items-center gap-1 rounded-full bg-sabia-amarelo/30 px-3 py-1 font-bold text-tinta">
-          <Star size={14} className="fill-sabia-amarelo text-sabia-amarelo" aria-hidden="true" />
-          {atividade.pontuacaoMaxima} XP
+        <span className="rounded-full border-2 border-tinta/15 bg-white px-3 py-1 font-bold text-tinta">
+          {formatarPontos(atividade.pontuacaoMaxima)}
         </span>
       </div>
 
@@ -57,16 +58,21 @@ export function PainelDetalhe({ atividade }: Props) {
         </Link>
       )}
 
-      {atividade.status === 'CORRIGIDA' && (
-        <div className={cn(aviso, 'border-sabia-verde bg-sabia-verde/15')}>
-          Atividade corrigida. Acesse sua submissão para ver nota e feedback.
+      <ResultadoCorrecao atividade={atividade} />
+
+      {atividade.status === 'ENTREGUE' && (
+        <div className={cn(aviso, 'mb-6 border-sabia-laranja bg-sabia-laranja/10')}>
+          Sua atividade foi entregue e aguarda avaliação do professor.
         </div>
       )}
 
-      {atividade.status === 'ENTREGUE' && (
-        <div className={cn(aviso, 'border-sabia-laranja bg-sabia-laranja/10')}>
-          Sua atividade foi entregue e aguarda avaliação do professor.
-        </div>
+      {(atividade.status === 'ENTREGUE' || atividade.status === 'CORRIGIDA') && (
+        <Link
+          href={`/aluno/atividades/${atividade.id}/projeto`}
+          className={cn(botaoSecundario, fredoka.className, 'w-full sm:w-auto')}
+        >
+          Visualizar projeto
+        </Link>
       )}
     </div>
   )

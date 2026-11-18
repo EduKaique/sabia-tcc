@@ -1,0 +1,66 @@
+{
+  "nome": "Passar pelo destino e seguir resulta em NAO_CHEGOU (R9)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_mover",
+          "id": "m32",
+          "fields": {
+            "DIRECAO": "CIMA",
+            "CASAS": 4
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m31",
+              "fields": {
+                "DIRECAO": "DIREITA",
+                "CASAS": 4
+              },
+              "next": {
+                "block": {
+                  "type": "robo_mover",
+                  "id": "m30",
+                  "fields": {
+                    "DIRECAO": "BAIXO",
+                    "CASAS": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 3,
+    "passosExecutados": 9,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 1,
+      "coluna": 4
+    }
+  }
+}

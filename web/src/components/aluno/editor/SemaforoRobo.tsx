@@ -12,7 +12,7 @@ export const TEXTO_FASE: Record<FaseJogo, string> = {
   COLIDIU: 'Bateu num obstáculo',
   SAIU_DO_GRID: 'Saiu da grade',
   NAO_CHEGOU: 'Não chegou ao destino',
-  LIMITE_EXCEDIDO: 'Passos demais',
+  LIMITE_EXCEDIDO: 'Limite de execução',
   SEM_BLOCOS: 'Adicione blocos',
 }
 

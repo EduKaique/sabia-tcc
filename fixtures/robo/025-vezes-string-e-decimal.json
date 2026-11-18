@@ -1,0 +1,78 @@
+{
+  "nome": "VEZES como string e decimal (R6)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r52",
+          "fields": {
+            "VEZES": "2"
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_mover",
+                "id": "m49",
+                "fields": {
+                  "DIRECAO": "CIMA",
+                  "CASAS": 1
+                }
+              }
+            }
+          },
+          "next": {
+            "block": {
+              "type": "robo_repetir",
+              "id": "r51",
+              "fields": {
+                "VEZES": 2.8
+              },
+              "inputs": {
+                "FAZER": {
+                  "block": {
+                    "type": "robo_mover",
+                    "id": "m50",
+                    "fields": {
+                      "DIRECAO": "DIREITA",
+                      "CASAS": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 4,
+    "passosExecutados": 4,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 2,
+      "coluna": 2
+    }
+  }
+}

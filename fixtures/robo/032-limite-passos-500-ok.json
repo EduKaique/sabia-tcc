@@ -1,0 +1,89 @@
+{
+  "nome": "Exatamente 500 passos terminam normalmente (R7)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r77",
+          "fields": {
+            "VEZES": 10
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r76",
+                "fields": {
+                  "VEZES": 5
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r75",
+                      "fields": {
+                        "VEZES": 5
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_mover",
+                            "id": "m74",
+                            "fields": {
+                              "DIRECAO": "DIREITA",
+                              "CASAS": 1
+                            },
+                            "next": {
+                              "block": {
+                                "type": "robo_mover",
+                                "id": "m73",
+                                "fields": {
+                                  "DIRECAO": "ESQUERDA",
+                                  "CASAS": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "NAO_CHEGOU",
+    "blocosUsados": 5,
+    "passosExecutados": 500,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

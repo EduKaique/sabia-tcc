@@ -54,6 +54,7 @@ export interface AtividadeAvaliativa {
   criadaEm: string
   modo: ModoAtividade
   cenarioJson: string | null
+  possuiNotas: boolean
 }
 
 export type EtapaEnsino = 'ANOS_INICIAIS' | 'ANOS_FINAIS' | 'MEDIO' | 'TECNICO'
@@ -151,6 +152,60 @@ export interface SubmissaoProfessorDetalhe {
   estadoJson: string | null
   correcao: Correcao | null
   relatorioIaPreGeradoJson?: string | null
+  /** Resultado validado no servidor na entrega; nulo em entregas antigas. */
+  validacao?: ResultadoValidacao | null
+  /** Métricas e pseudocódigo do programa (Jogo do Robô), calculados pelo servidor; nulo nos demais casos. */
+  analiseRobo?: AnaliseRobo | null
+}
+
+/** AnaliseRobo do pedagogico-service (fixtures/robo/README.md, "Análise para o relatório"). */
+export interface AnaliseRobo {
+  status: StatusPratica
+  concluida: boolean
+  blocosUsados: number
+  totalBlocosWorkspace: number
+  maxBlocos: number | null
+  blocosSoltos: number
+  excedeuLimiteBlocos: boolean
+  usouBlocoNaoPermitido: boolean
+  passosExecutados: number
+  passosMinimos: number | null
+  eficiencia: number | null
+  quantidadeRepetir: number
+  profundidadeMaxima: number
+  maiorSequenciaIgual: number
+  sequenciaRepetivel: boolean
+  distanciaAoDestino: number | null
+  pseudocodigo: string
+  pseudocodigoTruncado: boolean
+}
+
+/** Status da validação da prática no servidor: os do simulador do robô mais os de blocos livres. */
+export type StatusPratica =
+  | 'CHEGOU'
+  | 'NAO_CHEGOU'
+  | 'COLIDIU'
+  | 'SAIU_DO_GRID'
+  | 'SEM_BLOCOS'
+  | 'LIMITE_EXCEDIDO'
+  | 'BLOCOS_LIVRES_OK'
+  | 'BLOCOS_LIVRES_VAZIO'
+
+/** ResultadoValidacao do pedagogico-service (fixtures/blocos-livres/README.md). */
+export interface ResultadoValidacao {
+  versaoValidador: number
+  modo: ModoAtividade
+  concluida: boolean
+  status: StatusPratica
+  blocosUsados: number
+  totalBlocosWorkspace: number
+  maxBlocos: number | null
+  excedeuLimiteBlocos: boolean
+  usouBlocoNaoPermitido: boolean
+  passosExecutados: number
+  blocosSoltos: number
+  posicaoFinal: PosicaoRobo | null
+  motivo: string | null
 }
 
 export interface ErroApi {

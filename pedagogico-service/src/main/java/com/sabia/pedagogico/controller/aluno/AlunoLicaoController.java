@@ -1,6 +1,8 @@
 package com.sabia.pedagogico.controller.aluno;
 
+import com.sabia.pedagogico.dto.request.ConcluirAtividadeRequest;
 import com.sabia.pedagogico.dto.request.EstadoLicaoRequest;
+import com.sabia.pedagogico.dto.response.ConclusaoAtividadeResponse;
 import com.sabia.pedagogico.dto.response.LicaoDetalheResponse;
 import com.sabia.pedagogico.dto.response.LicaoResumoResponse;
 import com.sabia.pedagogico.dto.response.ProgressoLicaoResponse;
@@ -54,11 +56,11 @@ public class AlunoLicaoController {
     }
 
     @PostMapping("/{id}/concluir-atividade")
-    @Operation(summary = "Marca a prática da lição como concluída")
-    public ResponseEntity<ProgressoLicaoResponse> concluirAtividade(
+    @Operation(summary = "Valida o projeto no servidor e conclui a prática da lição se estiver correto")
+    public ResponseEntity<ConclusaoAtividadeResponse> concluirAtividade(
             Authentication auth,
             @PathVariable Long id,
-            @Valid @RequestBody EstadoLicaoRequest request) {
+            @Valid @RequestBody ConcluirAtividadeRequest request) {
         return ResponseEntity.ok(licaoService.concluirAtividade(alunoId(auth), id, request.estadoJson()));
     }
 

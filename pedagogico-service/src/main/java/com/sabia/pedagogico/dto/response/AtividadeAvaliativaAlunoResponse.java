@@ -1,5 +1,6 @@
 package com.sabia.pedagogico.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
@@ -16,5 +17,9 @@ public record AtividadeAvaliativaAlunoResponse(
         StatusAtividadeAluno status,
         LocalDateTime criadaEm,
         ModoAtividade modo,
-        String cenarioJson
+        String cenarioJson,
+        /** Nota, comentário e data da correção: só preenchidos quando a atividade está CORRIGIDA. */
+        BigDecimal nota,
+        String feedbackProfessor,
+        LocalDateTime avaliadaEm
 ) {}

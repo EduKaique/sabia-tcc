@@ -8,6 +8,7 @@ from app.clients.gemini import (
     GeminiNotConfiguredError,
 )
 from app.schemas.revisao import RevisarSubmissaoRequest, RevisarSubmissaoResponse
+from app.services.atividade_robo import RespostaIaInvalidaError
 from app.services.revisao import RevisaoService
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,15 @@ def create_revisao_router(service: RevisaoService) -> APIRouter:
                 detail={
                     "codigo": "COTA_IA_ESGOTADA",
                     "mensagem": "A IA atingiu o limite de uso no momento. Tente novamente mais tarde.",
+                },
+            ) from exc
+        except RespostaIaInvalidaError as exc:
+            logger.warning("Relatório do robô: IA_RESPOSTA_INVALIDA.")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail={
+                    "codigo": "IA_RESPOSTA_INVALIDA",
+                    "mensagem": "A IA não devolveu um relatório válido. Tente novamente.",
                 },
             ) from exc
         except (GeminiClientError, ValueError, TypeError, KeyError, IndexError) as exc:

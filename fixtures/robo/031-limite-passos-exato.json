@@ -1,0 +1,99 @@
+{
+  "nome": "O 501º passo estoura o limite (R7)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r72",
+          "fields": {
+            "VEZES": 10
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r70",
+                "fields": {
+                  "VEZES": 5
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r69",
+                      "fields": {
+                        "VEZES": 5
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_mover",
+                            "id": "m68",
+                            "fields": {
+                              "DIRECAO": "DIREITA",
+                              "CASAS": 1
+                            },
+                            "next": {
+                              "block": {
+                                "type": "robo_mover",
+                                "id": "m67",
+                                "fields": {
+                                  "DIRECAO": "ESQUERDA",
+                                  "CASAS": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "next": {
+            "block": {
+              "type": "robo_mover",
+              "id": "m71",
+              "fields": {
+                "DIRECAO": "DIREITA",
+                "CASAS": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "LIMITE_EXCEDIDO",
+    "blocosUsados": 6,
+    "passosExecutados": 500,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

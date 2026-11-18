@@ -1,5 +1,6 @@
 package com.sabia.pedagogico.service;
 
+import com.sabia.pedagogico.dto.response.ConclusaoAtividadeResponse;
 import com.sabia.pedagogico.dto.response.LicaoDetalheResponse;
 import com.sabia.pedagogico.dto.response.LicaoResumoResponse;
 import com.sabia.pedagogico.dto.response.ProgressoLicaoResponse;
@@ -10,6 +11,8 @@ import com.sabia.pedagogico.model.licao.ProgressoLicao;
 import com.sabia.pedagogico.model.licao.StatusLicao;
 import com.sabia.pedagogico.repository.LicaoRepository;
 import com.sabia.pedagogico.repository.ProgressoLicaoRepository;
+import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
+import com.sabia.pedagogico.service.pratica.ValidadorPratica;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ public class LicaoService {
 
     private final LicaoRepository licaoRepository;
     private final ProgressoLicaoRepository progressoRepository;
+    private final ValidadorPratica validadorPratica;
 
     // --------- ALUNO ---------
 
@@ -75,14 +79,24 @@ public class LicaoService {
         return toProgressoResponse(licao, progressoRepository.save(progresso));
     }
 
+    /**
+     * O servidor decide a conclusão da prática (ValidadorPratica). Não concluir não é erro: devolve o
+     * resultado com atividadeConcluida=false. Uma prática já concluída nunca volta a false.
+     */
     @Transactional
-    public ProgressoLicaoResponse concluirAtividade(Long alunoId, Long licaoId, String estadoJson) {
+    public ConclusaoAtividadeResponse concluirAtividade(Long alunoId, Long licaoId, String estadoJson) {
         var licao = buscarAtiva(licaoId);
+        // Valida antes de gravar: entrada ilegível vira 400 e lição do robô sem cenário vira 422.
+        ResultadoValidacao validacao = validadorPratica.validar(licao.getModo(), licao.getCenarioJson(), estadoJson);
         var progresso = progressoDe(alunoId, licao);
         progresso.setEstadoJson(estadoJson);
-        progresso.setAtividadeConcluida(true);
+        if (validacao.concluida()) {
+            progresso.setAtividadeConcluida(true);
+        }
         atualizarConclusao(progresso);
-        return toProgressoResponse(licao, progressoRepository.save(progresso));
+        var p = toProgressoResponse(licao, progressoRepository.save(progresso));
+        return new ConclusaoAtividadeResponse(p.videoVisto(), p.atividadeConcluida(), p.concluida(), p.concluidaEm(),
+                validacao);
     }
 
     // --------- helpers ---------

@@ -21,7 +21,9 @@ import {
 } from '@/components/professor/submissoes/PainelResultadoSimulacao'
 import { PainelJogo } from '@/components/aluno/editor/PainelJogo'
 import { simular } from '@/lib/simuladorRobo'
-import type { CenarioRobo } from '@/types'
+import { lerCenario } from '@/lib/cenariosRobo'
+import { resultadoPraticaRobo } from '@/lib/resultadoPratica'
+import { montarPedidoRelatorioRobo } from '@/lib/relatorioIaRobo'
 
 function Voltar({ href, texto }: { href: string; texto: string }) {
   return (
@@ -33,26 +35,6 @@ function Voltar({ href, texto }: { href: string; texto: string }) {
       {texto}
     </Link>
   )
-}
-
-/** Lê o cenarioJson do modo Jogo do Robô; devolve null se estiver ausente ou com formato inesperado. */
-function lerCenario(cenarioJson: string | null | undefined): CenarioRobo | null {
-  if (!cenarioJson) return null
-  try {
-    const c = JSON.parse(cenarioJson)
-    const posicaoValida = (p: unknown) =>
-      typeof p === 'object' && p !== null &&
-      Number.isInteger((p as CenarioRobo['inicio']).linha) &&
-      Number.isInteger((p as CenarioRobo['inicio']).coluna)
-    const valido =
-      Number.isInteger(c?.linhas) && Number.isInteger(c?.colunas) &&
-      posicaoValida(c.inicio) && posicaoValida(c.destino) &&
-      Array.isArray(c.obstaculos) && c.obstaculos.every(posicaoValida) &&
-      Array.isArray(c.blocosPermitidos)
-    return valido ? (c as CenarioRobo) : null
-  } catch {
-    return null
-  }
 }
 
 const MENSAGEM_CENARIO_INVALIDO =
@@ -68,7 +50,8 @@ export default function CorrigirSubmissaoPage({
   const { data: submissao, isLoading, error, refetch } = useSubmissaoProfessor(id)
   const { data: atividade } = useAtividade(submissao ? String(submissao.atividadeId) : '')
 
-  // Jogo do Robô: replay e nota sugerida pela mesma simulação que o aluno viu.
+  // Jogo do Robô: o replay vem do simulador do navegador; o resultado e a nota sugerida vêm do
+  // servidor quando a entrega foi validada nele (entregas antigas usam a simulação local).
   const workspaceRef = useRef<WorkspaceSvg | null>(null)
   const modoJogo = atividade?.modo === 'JOGO_ROBO'
   const cenario = useMemo(
@@ -79,6 +62,10 @@ export default function CorrigirSubmissaoPage({
   const simulacao = useMemo(
     () => (cenario && estadoJson ? simular(cenario, estadoJson) : null),
     [cenario, estadoJson],
+  )
+  const resultado = useMemo(
+    () => (modoJogo ? resultadoPraticaRobo(submissao?.validacao, simulacao, cenario) : null),
+    [modoJogo, submissao?.validacao, simulacao, cenario],
   )
 
   if (isLoading) {
@@ -114,6 +101,9 @@ export default function CorrigirSubmissaoPage({
       </div>
     )
   }
+
+  // Robô: o relatório de IA usa as métricas e o pseudocódigo calculados pelo servidor.
+  const pedidoRobo = modoJogo && atividade ? montarPedidoRelatorioRobo(atividade, submissao) : null
 
   return (
     <div className="px-8 py-6 space-y-6">
@@ -175,8 +165,8 @@ export default function CorrigirSubmissaoPage({
               submissaoId={id}
               atividadeId={submissao.atividadeId}
               notaSugerida={
-                simulacao && atividade
-                  ? notaSugeridaRobo(simulacao, atividade.pontuacaoMaxima)
+                resultado && atividade
+                  ? notaSugeridaRobo(resultado, atividade.pontuacaoMaxima)
                   : undefined
               }
             />
@@ -184,24 +174,29 @@ export default function CorrigirSubmissaoPage({
         </div>
 
         {modoJogo ? (
-          simulacao && cenario && atividade ? (
-            <PainelResultadoSimulacao
-              simulacao={simulacao}
-              cenario={cenario}
-              pontuacaoMaxima={atividade.pontuacaoMaxima}
+          <div className="space-y-6">
+            {resultado && atividade ? (
+              <PainelResultadoSimulacao resultado={resultado} pontuacaoMaxima={atividade.pontuacaoMaxima} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resultado da simulação</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {cenario ? 'Não há projeto do aluno para simular.' : MENSAGEM_CENARIO_INVALIDO}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            <PainelRelatorioIa
+              submissaoId={id}
+              relatorioIaJson={submissao.relatorioIaPreGeradoJson ?? submissao.correcao?.relatorioIaJson}
+              payload={pedidoRobo && 'payload' in pedidoRobo ? pedidoRobo.payload : null}
+              indisponivel={pedidoRobo && 'indisponivel' in pedidoRobo ? pedidoRobo.indisponivel : null}
+              modoRobo
             />
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Resultado da simulação</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {cenario ? 'Não há projeto do aluno para simular.' : MENSAGEM_CENARIO_INVALIDO}
-                </p>
-              </CardContent>
-            </Card>
-          )
+          </div>
         ) : (
           <PainelRelatorioIa
             submissaoId={id}

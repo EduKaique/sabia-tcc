@@ -5,6 +5,7 @@ import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fredoka } from '@/lib/fontesHome'
 import { cartao } from '@/lib/estilos'
+import { formatarNota } from '@/lib/formatarNota'
 import type { AtividadeAlunoDTO } from '@/types/atividade'
 import { StatusBadge } from './StatusBadge'
 
@@ -21,7 +22,8 @@ function formatDate(iso: string) {
 }
 
 export function AtividadeEntregueCard({ atividade }: Props) {
-  const isCorrigida = atividade.status === 'CORRIGIDA'
+  const nota =
+    atividade.status === 'CORRIGIDA' ? formatarNota(atividade.nota, atividade.pontuacaoMaxima) : null
 
   return (
     <Link
@@ -43,12 +45,10 @@ export function AtividadeEntregueCard({ atividade }: Props) {
         Data limite: {formatDate(atividade.dataEntrega)}
       </span>
 
-      {isCorrigida && (
-        <div
-          aria-hidden="true"
-          className="absolute right-0 bottom-0 h-10 w-10 bg-sabia-verde opacity-50"
-          style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)' }}
-        />
+      {nota && (
+        <p className="mt-3 text-base font-bold text-tinta">
+          Nota <span className={cn(fredoka.className, 'text-xl')}>{nota}</span>
+        </p>
       )}
     </Link>
   )

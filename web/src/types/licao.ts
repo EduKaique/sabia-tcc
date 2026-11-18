@@ -1,4 +1,4 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoAtividade, ResultadoValidacao } from '@/types'
 
 /** Espelha ProgressoLicaoResponse (pedagogico-service). `concluidaEm` vem em UTC, sem fuso. */
 export interface ProgressoLicao {
@@ -6,6 +6,11 @@ export interface ProgressoLicao {
   atividadeConcluida: boolean
   concluida: boolean
   concluidaEm: string | null
+}
+
+/** Espelha ConclusaoAtividadeResponse (POST /api/aluno/licoes/{id}/concluir-atividade): o veredito do servidor. */
+export interface ConclusaoAtividade extends ProgressoLicao {
+  validacao: ResultadoValidacao | null
 }
 
 /** Espelha LicaoResumoResponse (item de GET /api/aluno/licoes). */

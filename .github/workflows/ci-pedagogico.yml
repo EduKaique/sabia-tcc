@@ -5,11 +5,13 @@ on:
     branches: [main, develop]
     paths:
       - "pedagogico-service/**"
+      - "fixtures/**"
       - ".github/workflows/ci-pedagogico.yml"
   pull_request:
     branches: [main, develop]
     paths:
       - "pedagogico-service/**"
+      - "fixtures/**"
 
 defaults:
   run:

@@ -52,10 +52,21 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(400, ex.getMessage()));
     }
 
+    @ExceptionHandler(EstadoPraticaInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleEstadoPraticaInvalido(EstadoPraticaInvalidoException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErroResponse.of(400, ex.getMessage()));
+    }
+
     @ExceptionHandler(ConflitoException.class)
     public ResponseEntity<ErroResponse> handleConflito(ConflitoException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErroResponse.of(409, ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotaInvalidaException.class)
+    public ResponseEntity<ErroResponse> handleNotaInvalida(NotaInvalidaException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.ofValidation(Map.of("nota", ex.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

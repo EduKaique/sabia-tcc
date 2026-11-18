@@ -4,13 +4,16 @@ import com.sabia.pedagogico.dto.request.CriarAtividadeAvaliativaRequest;
 import com.sabia.pedagogico.dto.request.EditarAtividadeRequest;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaAlunoResponse;
 import com.sabia.pedagogico.dto.response.AtividadeAvaliativaProfessorResponse;
+import com.sabia.pedagogico.dto.response.ProjetoEntregueResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
 import com.sabia.pedagogico.exception.CenarioInvalidoException;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
+import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
+import com.sabia.pedagogico.model.atividade.Correcao;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
@@ -25,9 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,7 +61,13 @@ public class AtividadeAvaliativaService {
         } else {
             resultado = atividadeRepository.findByTurma_ProfessorId(professorId);
         }
-        return atividadeAvaliativaMapper.toProfessorResponseList(resultado);
+        Set<Long> comNotas = resultado.isEmpty()
+                ? Set.of()
+                : new HashSet<>(submissaoAvaliativaRepository.findAtividadeIdsComCorrecao(
+                        resultado.stream().map(AtividadeAvaliativa::getId).toList()));
+        return resultado.stream()
+                .map(a -> atividadeAvaliativaMapper.toProfessorResponse(a, comNotas.contains(a.getId())))
+                .toList();
     }
 
     @Transactional
@@ -84,11 +95,11 @@ public class AtividadeAvaliativaService {
 
         atividade = atividadeRepository.save(atividade);
         log.info("Atividade criada id={} por professor id={}", atividade.getId(), professorId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividade);
+        return atividadeAvaliativaMapper.toProfessorResponse(atividade, false);
     }
 
     public AtividadeAvaliativaProfessorResponse buscarParaProfessor(Long professorId, Long atividadeId) {
-        return atividadeAvaliativaMapper.toProfessorResponse(validarProprietario(professorId, atividadeId));
+        return toProfessorResponse(validarProprietario(professorId, atividadeId));
     }
 
     @Transactional
@@ -97,7 +108,12 @@ public class AtividadeAvaliativaService {
 
         if (request.titulo() != null)         atividade.setTitulo(request.titulo());
         if (request.descricao() != null)      atividade.setDescricao(request.descricao());
-        if (request.pontuacaoMaxima() != null) atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
+        if (request.pontuacaoMaxima() != null && request.pontuacaoMaxima() != atividade.getPontuacaoMaxima()) {
+            if (submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividadeId)) {
+                throw new ConflitoException("Não é possível alterar a pontuação máxima: a atividade já tem notas publicadas.");
+            }
+            atividade.setPontuacaoMaxima(request.pontuacaoMaxima());
+        }
         if (request.dataEntrega() != null)    atividade.setDataEntrega(request.dataEntrega());
         if (request.gabaritoEstadoJson() != null)     atividade.setGabaritoEstadoJson(request.gabaritoEstadoJson());
 
@@ -113,7 +129,7 @@ public class AtividadeAvaliativaService {
             atividade.setCenarioJson(cenario);
         }
 
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
@@ -124,7 +140,7 @@ public class AtividadeAvaliativaService {
         }
         atividade.setStatus(StatusAtividade.PUBLICADA);
         log.info("Atividade id={} publicada", atividadeId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     @Transactional
@@ -135,7 +151,7 @@ public class AtividadeAvaliativaService {
         }
         atividade.setStatus(StatusAtividade.RASCUNHO);
         log.info("Atividade id={} despublicada", atividadeId);
-        return atividadeAvaliativaMapper.toProfessorResponse(atividadeRepository.save(atividade));
+        return toProfessorResponse(atividadeRepository.save(atividade));
     }
 
     // --------- ALUNO ---------
@@ -151,13 +167,31 @@ public class AtividadeAvaliativaService {
                 atividadeRepository.findByTurmaIdInAndStatus(turmaIds, StatusAtividade.PUBLICADA);
 
         Map<Long, SubmissaoAvaliativa> submissaoPorAtividade =
-                submissaoAvaliativaRepository.findByAlunoId(alunoId).stream()
+                submissaoAvaliativaRepository.findByAlunoIdComCorrecao(alunoId).stream()
                         .collect(Collectors.toMap(s -> s.getAtividade().getId(), s -> s));
 
         return atividades.stream().map(a -> toAlunoResponse(a, submissaoPorAtividade.get(a.getId()))).toList();
     }
 
     public AtividadeAvaliativaAlunoResponse buscarParaAluno(Long alunoId, Long atividadeId) {
+        var atividade = buscarDisponivelParaAluno(alunoId, atividadeId);
+
+        SubmissaoAvaliativa sub = submissaoAvaliativaRepository
+                .findByAlunoIdAndAtividadeId(alunoId, atividadeId).orElse(null);
+        return toAlunoResponse(atividade, sub);
+    }
+
+    /** Projeto entregue pelo próprio aluno (somente leitura); 404 se ele ainda não entregou. */
+    public ProjetoEntregueResponse buscarProjetoDoAluno(Long alunoId, Long atividadeId) {
+        buscarDisponivelParaAluno(alunoId, atividadeId);
+
+        var sub = submissaoAvaliativaRepository.findByAlunoIdAndAtividadeId(alunoId, atividadeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Você ainda não entregou esta atividade."));
+        var projeto = sub.getProjeto();
+        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getDataEnvio());
+    }
+
+    private AtividadeAvaliativa buscarDisponivelParaAluno(Long alunoId, Long atividadeId) {
         var atividade = atividadeRepository.findById(atividadeId)
                 .orElseThrow(() -> new AtividadeNaoEncontradaException(atividadeId));
 
@@ -167,10 +201,7 @@ public class AtividadeAvaliativaService {
         if (!turmaAlunoRepository.existsByTurmaIdAndAlunoId(atividade.getTurma().getId(), alunoId)) {
             throw new AcessoNegadoException("Você não está matriculado nesta turma.");
         }
-
-        SubmissaoAvaliativa sub = submissaoAvaliativaRepository
-                .findByAlunoIdAndAtividadeId(alunoId, atividadeId).orElse(null);
-        return toAlunoResponse(atividade, sub);
+        return atividade;
     }
 
     private AtividadeAvaliativaAlunoResponse toAlunoResponse(AtividadeAvaliativa a, SubmissaoAvaliativa sub) {
@@ -182,13 +213,17 @@ public class AtividadeAvaliativaService {
         } else {
             statusAluno = StatusAtividadeAluno.ENTREGUE;
         }
+        Correcao correcao = statusAluno == StatusAtividadeAluno.CORRIGIDA ? sub.getCorrecao() : null;
         return new AtividadeAvaliativaAlunoResponse(
                 a.getId(), a.getTitulo(), a.getDescricao(),
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
                 a.getDataEntrega(), a.isEGeradaIa(),
                 statusAluno, a.getCriadaEm(),
                 a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
-                a.getCenarioJson()
+                a.getCenarioJson(),
+                correcao != null ? correcao.getNota() : null,
+                correcao != null ? correcao.getFeedbackProfessor() : null,
+                correcao != null ? correcao.getAvaliadaEm() : null
         );
     }
 
@@ -199,6 +234,11 @@ public class AtividadeAvaliativaService {
     }
 
     // --------- helpers ---------
+
+    private AtividadeAvaliativaProfessorResponse toProfessorResponse(AtividadeAvaliativa atividade) {
+        return atividadeAvaliativaMapper.toProfessorResponse(
+                atividade, submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividade.getId()));
+    }
 
     private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
         if (modo != ModoAtividade.JOGO_ROBO) return null;

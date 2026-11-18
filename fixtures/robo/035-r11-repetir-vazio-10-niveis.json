@@ -1,0 +1,144 @@
+{
+  "nome": "R11: 10 repetir vazios aninhados (profundidade no limite) param no limite de operações",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r94",
+          "fields": {
+            "VEZES": 10
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r93",
+                "fields": {
+                  "VEZES": 10
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r92",
+                      "fields": {
+                        "VEZES": 10
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_repetir",
+                            "id": "r91",
+                            "fields": {
+                              "VEZES": 10
+                            },
+                            "inputs": {
+                              "FAZER": {
+                                "block": {
+                                  "type": "robo_repetir",
+                                  "id": "r90",
+                                  "fields": {
+                                    "VEZES": 10
+                                  },
+                                  "inputs": {
+                                    "FAZER": {
+                                      "block": {
+                                        "type": "robo_repetir",
+                                        "id": "r89",
+                                        "fields": {
+                                          "VEZES": 10
+                                        },
+                                        "inputs": {
+                                          "FAZER": {
+                                            "block": {
+                                              "type": "robo_repetir",
+                                              "id": "r88",
+                                              "fields": {
+                                                "VEZES": 10
+                                              },
+                                              "inputs": {
+                                                "FAZER": {
+                                                  "block": {
+                                                    "type": "robo_repetir",
+                                                    "id": "r87",
+                                                    "fields": {
+                                                      "VEZES": 10
+                                                    },
+                                                    "inputs": {
+                                                      "FAZER": {
+                                                        "block": {
+                                                          "type": "robo_repetir",
+                                                          "id": "r86",
+                                                          "fields": {
+                                                            "VEZES": 10
+                                                          },
+                                                          "inputs": {
+                                                            "FAZER": {
+                                                              "block": {
+                                                                "type": "robo_repetir",
+                                                                "id": "r85",
+                                                                "fields": {
+                                                                  "VEZES": 10
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "LIMITE_EXCEDIDO",
+    "blocosUsados": 10,
+    "passosExecutados": 0,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

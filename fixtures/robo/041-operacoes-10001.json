@@ -1,0 +1,485 @@
+{
+  "nome": "A operação 10001 estoura o limite",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "robo_repetir",
+          "id": "r568",
+          "fields": {
+            "VEZES": 10
+          },
+          "inputs": {
+            "FAZER": {
+              "block": {
+                "type": "robo_repetir",
+                "id": "r567",
+                "fields": {
+                  "VEZES": 10
+                },
+                "inputs": {
+                  "FAZER": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r566",
+                      "fields": {
+                        "VEZES": 10
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "next": {
+            "block": {
+              "type": "robo_repetir",
+              "id": "r571",
+              "fields": {
+                "VEZES": 10
+              },
+              "inputs": {
+                "FAZER": {
+                  "block": {
+                    "type": "robo_repetir",
+                    "id": "r570",
+                    "fields": {
+                      "VEZES": 10
+                    },
+                    "inputs": {
+                      "FAZER": {
+                        "block": {
+                          "type": "robo_repetir",
+                          "id": "r569",
+                          "fields": {
+                            "VEZES": 10
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "next": {
+                "block": {
+                  "type": "robo_repetir",
+                  "id": "r574",
+                  "fields": {
+                    "VEZES": 10
+                  },
+                  "inputs": {
+                    "FAZER": {
+                      "block": {
+                        "type": "robo_repetir",
+                        "id": "r573",
+                        "fields": {
+                          "VEZES": 10
+                        },
+                        "inputs": {
+                          "FAZER": {
+                            "block": {
+                              "type": "robo_repetir",
+                              "id": "r572",
+                              "fields": {
+                                "VEZES": 10
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "next": {
+                    "block": {
+                      "type": "robo_repetir",
+                      "id": "r577",
+                      "fields": {
+                        "VEZES": 10
+                      },
+                      "inputs": {
+                        "FAZER": {
+                          "block": {
+                            "type": "robo_repetir",
+                            "id": "r576",
+                            "fields": {
+                              "VEZES": 10
+                            },
+                            "inputs": {
+                              "FAZER": {
+                                "block": {
+                                  "type": "robo_repetir",
+                                  "id": "r575",
+                                  "fields": {
+                                    "VEZES": 10
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "next": {
+                        "block": {
+                          "type": "robo_repetir",
+                          "id": "r580",
+                          "fields": {
+                            "VEZES": 10
+                          },
+                          "inputs": {
+                            "FAZER": {
+                              "block": {
+                                "type": "robo_repetir",
+                                "id": "r579",
+                                "fields": {
+                                  "VEZES": 10
+                                },
+                                "inputs": {
+                                  "FAZER": {
+                                    "block": {
+                                      "type": "robo_repetir",
+                                      "id": "r578",
+                                      "fields": {
+                                        "VEZES": 10
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "next": {
+                            "block": {
+                              "type": "robo_repetir",
+                              "id": "r583",
+                              "fields": {
+                                "VEZES": 10
+                              },
+                              "inputs": {
+                                "FAZER": {
+                                  "block": {
+                                    "type": "robo_repetir",
+                                    "id": "r582",
+                                    "fields": {
+                                      "VEZES": 10
+                                    },
+                                    "inputs": {
+                                      "FAZER": {
+                                        "block": {
+                                          "type": "robo_repetir",
+                                          "id": "r581",
+                                          "fields": {
+                                            "VEZES": 10
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "robo_repetir",
+                                  "id": "r586",
+                                  "fields": {
+                                    "VEZES": 10
+                                  },
+                                  "inputs": {
+                                    "FAZER": {
+                                      "block": {
+                                        "type": "robo_repetir",
+                                        "id": "r585",
+                                        "fields": {
+                                          "VEZES": 10
+                                        },
+                                        "inputs": {
+                                          "FAZER": {
+                                            "block": {
+                                              "type": "robo_repetir",
+                                              "id": "r584",
+                                              "fields": {
+                                                "VEZES": 10
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "robo_repetir",
+                                      "id": "r589",
+                                      "fields": {
+                                        "VEZES": 10
+                                      },
+                                      "inputs": {
+                                        "FAZER": {
+                                          "block": {
+                                            "type": "robo_repetir",
+                                            "id": "r588",
+                                            "fields": {
+                                              "VEZES": 10
+                                            },
+                                            "inputs": {
+                                              "FAZER": {
+                                                "block": {
+                                                  "type": "robo_repetir",
+                                                  "id": "r587",
+                                                  "fields": {
+                                                    "VEZES": 10
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "robo_repetir",
+                                          "id": "r590",
+                                          "fields": {
+                                            "VEZES": 10
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "robo_repetir",
+                                              "id": "r591",
+                                              "fields": {
+                                                "VEZES": 10
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "robo_repetir",
+                                                  "id": "r592",
+                                                  "fields": {
+                                                    "VEZES": 10
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "robo_repetir",
+                                                      "id": "r593",
+                                                      "fields": {
+                                                        "VEZES": 10
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "robo_repetir",
+                                                          "id": "r594",
+                                                          "fields": {
+                                                            "VEZES": 10
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "robo_repetir",
+                                                              "id": "r595",
+                                                              "fields": {
+                                                                "VEZES": 10
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "robo_repetir",
+                                                                  "id": "r596",
+                                                                  "fields": {
+                                                                    "VEZES": 10
+                                                                  },
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "robo_repetir",
+                                                                      "id": "r597",
+                                                                      "fields": {
+                                                                        "VEZES": 10
+                                                                      },
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "robo_repetir",
+                                                                          "id": "r598",
+                                                                          "fields": {
+                                                                            "VEZES": 10
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "robo_repetir",
+                                                                              "id": "r599",
+                                                                              "fields": {
+                                                                                "VEZES": 10
+                                                                              },
+                                                                              "next": {
+                                                                                "block": {
+                                                                                  "type": "robo_repetir",
+                                                                                  "id": "r600",
+                                                                                  "fields": {
+                                                                                    "VEZES": 10
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "robo_repetir",
+                                                                                      "id": "r601",
+                                                                                      "fields": {
+                                                                                        "VEZES": 10
+                                                                                      },
+                                                                                      "next": {
+                                                                                        "block": {
+                                                                                          "type": "robo_repetir",
+                                                                                          "id": "r602",
+                                                                                          "fields": {
+                                                                                            "VEZES": 10
+                                                                                          },
+                                                                                          "next": {
+                                                                                            "block": {
+                                                                                              "type": "robo_repetir",
+                                                                                              "id": "r603",
+                                                                                              "fields": {
+                                                                                                "VEZES": 10
+                                                                                              },
+                                                                                              "next": {
+                                                                                                "block": {
+                                                                                                  "type": "robo_repetir",
+                                                                                                  "id": "r604",
+                                                                                                  "fields": {
+                                                                                                    "VEZES": 10
+                                                                                                  },
+                                                                                                  "next": {
+                                                                                                    "block": {
+                                                                                                      "type": "robo_repetir",
+                                                                                                      "id": "r605",
+                                                                                                      "fields": {
+                                                                                                        "VEZES": 10
+                                                                                                      },
+                                                                                                      "next": {
+                                                                                                        "block": {
+                                                                                                          "type": "robo_repetir",
+                                                                                                          "id": "r606",
+                                                                                                          "fields": {
+                                                                                                            "VEZES": 10
+                                                                                                          },
+                                                                                                          "next": {
+                                                                                                            "block": {
+                                                                                                              "type": "robo_repetir",
+                                                                                                              "id": "r607",
+                                                                                                              "fields": {
+                                                                                                                "VEZES": 10
+                                                                                                              },
+                                                                                                              "next": {
+                                                                                                                "block": {
+                                                                                                                  "type": "robo_repetir",
+                                                                                                                  "id": "r608",
+                                                                                                                  "fields": {
+                                                                                                                    "VEZES": 10
+                                                                                                                  },
+                                                                                                                  "next": {
+                                                                                                                    "block": {
+                                                                                                                      "type": "robo_repetir",
+                                                                                                                      "id": "r609",
+                                                                                                                      "fields": {
+                                                                                                                        "VEZES": 10
+                                                                                                                      },
+                                                                                                                      "next": {
+                                                                                                                        "block": {
+                                                                                                                          "type": "robo_repetir",
+                                                                                                                          "id": "r610",
+                                                                                                                          "fields": {
+                                                                                                                            "VEZES": 10
+                                                                                                                          },
+                                                                                                                          "next": {
+                                                                                                                            "block": {
+                                                                                                                              "type": "text_print",
+                                                                                                                              "id": "t611",
+                                                                                                                              "next": {
+                                                                                                                                "block": {
+                                                                                                                                  "type": "text_print",
+                                                                                                                                  "id": "t612"
+                                                                                                                                }
+                                                                                                                              }
+                                                                                                                            }
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            }
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "esperado": {
+    "status": "LIMITE_EXCEDIDO",
+    "blocosUsados": 45,
+    "passosExecutados": 0,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

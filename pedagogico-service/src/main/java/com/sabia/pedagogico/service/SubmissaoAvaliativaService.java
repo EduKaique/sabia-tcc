@@ -9,19 +9,27 @@ import com.sabia.pedagogico.dto.response.SubmissaoListagemResponse;
 import com.sabia.pedagogico.dto.response.SubmissaoProfessorDetalheResponse;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.AtividadeNaoEncontradaException;
+import com.sabia.pedagogico.exception.NotaInvalidaException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.SubmissaoNaoEncontradaException;
 import com.sabia.pedagogico.mapper.CorrecaoMapper;
 import com.sabia.pedagogico.messaging.SubmissaoEnviadaEvent;
 import com.sabia.pedagogico.model.atividade.*;
 import com.sabia.pedagogico.repository.*;
+import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
+import com.sabia.pedagogico.service.pratica.ValidadorPratica;
+import com.sabia.pedagogico.service.robo.AnaliseRobo;
+import com.sabia.pedagogico.service.robo.AnaliseRoboService;
 import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -37,6 +45,9 @@ public class SubmissaoAvaliativaService {
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final CorrecaoMapper correcaoMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final ValidadorPratica validadorPratica;
+    private final ObjectMapper objectMapper;
+    private final AnaliseRoboService analiseRoboService;
 
     // --------- ALUNO ---------
 
@@ -55,6 +66,10 @@ public class SubmissaoAvaliativaService {
             throw new OperacaoInvalidaException("Você já submeteu esta atividade.");
         }
 
+        // Valida antes de gravar: entrada ilegível vira 400 sem salvar nada; resultado negativo é registrado.
+        ResultadoValidacao validacao = validadorPratica.validar(atividade.getModo(), atividade.getCenarioJson(),
+                request.estadoJson());
+
         var projeto = ProjetoAvaliativo.builder()
                 .alunoId(alunoId)
                 .estadoJson(request.estadoJson())
@@ -67,11 +82,16 @@ public class SubmissaoAvaliativaService {
                 .alunoNome(alunoNome)
                 .projeto(projeto)
                 .status(StatusSubmissao.PENDENTE)
+                .validacaoJson(objectMapper.writeValueAsString(validacao))
                 .build();
         submissao = submissaoRepository.save(submissao);
 
-        eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
-        log.info("Submissão id={} criada pelo aluno id={}", submissao.getId(), alunoId);
+        // O único consumidor de submissao.enviada é a revisão genérica do ia-service, que não conhece o
+        // robô: entregas do robô não publicam o evento (o item 3.5 pode reabrir isso com contextoRobo).
+        if (atividade.getModo() != ModoAtividade.JOGO_ROBO) {
+            eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
+        }
+        log.info("Submissão id={} criada pelo aluno id={} (prática {})", submissao.getId(), alunoId, validacao.status());
         return toResponse(submissao, null);
     }
 
@@ -115,8 +135,38 @@ public class SubmissaoAvaliativaService {
                 submissao.getStatus(),
                 projeto != null ? projeto.getEstadoJson() : null,
                 correcao != null ? correcaoMapper.toResponse(correcao) : null,
-                submissao.getRelatorioIaPreGeradoJson()
+                submissao.getRelatorioIaPreGeradoJson(),
+                lerValidacao(submissao),
+                analisarRobo(submissao, projeto != null ? projeto.getEstadoJson() : null)
         );
+    }
+
+    /** Análise do programa do robô; nula fora do modo robô e se cenário ou estado não forem legíveis. */
+    private AnaliseRobo analisarRobo(SubmissaoAvaliativa submissao, String estadoJson) {
+        var atividade = submissao.getAtividade();
+        if (atividade.getModo() != ModoAtividade.JOGO_ROBO || estadoJson == null) {
+            return null;
+        }
+        try {
+            return analiseRoboService.analisar(atividade.getCenarioJson(), estadoJson);
+        } catch (RuntimeException e) {
+            log.warn("Análise do robô indisponível na submissão id={}", submissao.getId());
+            return null;
+        }
+    }
+
+    /** Resultado gravado na entrega; nulo para entregas antigas ou se o registro não for legível. */
+    private ResultadoValidacao lerValidacao(SubmissaoAvaliativa submissao) {
+        String json = submissao.getValidacaoJson();
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, ResultadoValidacao.class);
+        } catch (JacksonException e) {
+            log.warn("validacao_json ilegível na submissão id={}", submissao.getId());
+            return null;
+        }
     }
 
     @Transactional
@@ -126,6 +176,10 @@ public class SubmissaoAvaliativaService {
 
         if (submissao.getCorrecao() != null) {
             throw new OperacaoInvalidaException("Esta submissão já foi avaliada.");
+        }
+        int maxima = submissao.getAtividade().getPontuacaoMaxima();
+        if (request.nota().compareTo(BigDecimal.valueOf(maxima)) > 0) {
+            throw new NotaInvalidaException("A nota deve ficar entre 0 e " + maxima + ".");
         }
 
         var correcao = Correcao.builder()

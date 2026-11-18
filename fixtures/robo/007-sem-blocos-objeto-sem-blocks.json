@@ -1,0 +1,32 @@
+{
+  "nome": "SEM_BLOCOS: objeto sem blocks.blocks (R1)",
+  "cenario": {
+    "versao": 1,
+    "linhas": 5,
+    "colunas": 5,
+    "inicio": {
+      "linha": 4,
+      "coluna": 0
+    },
+    "destino": {
+      "linha": 0,
+      "coluna": 4
+    },
+    "obstaculos": [],
+    "blocosPermitidos": [
+      "robo_mover",
+      "robo_repetir"
+    ]
+  },
+  "estado": {},
+  "esperado": {
+    "status": "SEM_BLOCOS",
+    "blocosUsados": 0,
+    "passosExecutados": 0,
+    "blocosSoltos": 0,
+    "posicaoFinal": {
+      "linha": 4,
+      "coluna": 0
+    }
+  }
+}

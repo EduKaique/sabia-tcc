@@ -155,6 +155,34 @@ anote a tag atual (`cat deploy/.current_tag`). **Depois:** `deploy/dc.sh ps` com
 `smoke.sh` de outra máquina (seção 5). Se a subida falhar por configuração, corrija o `.env.prod` e rode
 `deploy/deploy.sh <tag>` de novo; se for a versão, `deploy/deploy.sh --rollback`.
 
+### Atualização para a v0.3.0
+
+**Antes:**
+- [ ] `cat deploy/.current_tag` anotado: é a tag do rollback.
+- [ ] `.env.prod`: nenhuma variável nova nesta versão. Confira só que `GEMINI_API_KEY` é uma chave
+  válida e com cota (o serviço sobe com qualquer valor não vazio; a chave inválida só aparece ao usar a IA).
+- [ ] Mesma tag para todas as imagens (o `deploy.sh` já faz): o front e o serviço pedagógico mudaram
+  juntos o contrato da conclusão da lição.
+
+**Depois:**
+- [ ] `deploy/dc.sh ps`: todos `healthy`.
+- [ ] `deploy/smoke.sh https://<IP>` de outra máquina.
+- [ ] Tabela e coluna novas criadas pelo `ddl-auto` (deve listar `cenario_robo` e `validacao_json`):
+  ```bash
+  deploy/dc.sh exec database psql -U sabia -d sabia -c "\dt pedagogico.cenario_robo" \
+    -c "\d pedagogico.submissao_avaliativa" | grep -E 'cenario_robo|validacao_json'
+  ```
+- [ ] Professor: "Cenários do robô" → salva um cenário; cercar o destino com obstáculos é recusado
+  ("O cenário não tem caminho do início ao destino.").
+- [ ] Professor: cria uma atividade do Jogo do Robô com esse cenário (grupo "Meus cenários") e publica.
+- [ ] Aluno: resolve e entrega. Professor: a correção mostra o resultado do servidor; uma nota acima
+  da pontuação máxima é recusada; o aluno vê a nota e o comentário e abre "Visualizar projeto".
+- [ ] Uma entrega do robô feita antes do deploy abre na correção com "Calculado no seu navegador".
+- [ ] Aluno: "Meu perfil" → troca o nome; o menu mostra o nome novo e, para o professor, a lista da
+  turma e as entregas também.
+- [ ] Professor: assistente de IA numa atividade do robô (título e descrição) e "Gerar relatório com
+  IA" na correção do robô. Erro de chave aparece nos logs do `ia-service`.
+
 **Limite de tentativas:** acima do limite, o gateway (por IP) ou o auth-service (por conta) respondem
 429 com `Retry-After`. Uma conta bloqueada por senhas erradas volta sozinha depois de
 `SABIA_LOGIN_BLOQUEIO_MINUTOS`. Para liberar um aluno antes, o professor redefine a senha dele na
@@ -225,7 +253,9 @@ Manual:
 - [ ] Professor abre a página da turma, vê a tabela de alunos e redefine a senha de um aluno com "exigir troca"; o aluno entra com a senha nova, cai em `/trocar-senha` e troca.
 - [ ] Aluno abre "Aprender", entra numa lição e navega pelas páginas de conteúdo (texto e vídeo).
 - [ ] O vídeo do YouTube carrega e toca dentro da página; "Já assisti" marca o vídeo.
-- [ ] "Ir para a atividade" abre a prática; o robô chega ao destino (ou o programa roda) e a lição aparece como concluída na lista.
+- [ ] "Ir para a atividade" abre a prática; o robô chega ao destino (ou o programa roda) e a lição aparece como concluída na lista. Se o servidor não aceitar a prática, aparece "Quase lá!" com o motivo.
+- [ ] Professor cria uma atividade do Jogo do Robô com um cenário de "Cenários do robô"; o aluno entrega e a correção mostra o resultado do servidor.
+- [ ] Aluno e professor trocam o nome em "Meu perfil"; o nome novo aparece no menu e nas entregas.
 - [ ] 5–10 abas de aluno simultâneas sem erro.
 
 **Operação**

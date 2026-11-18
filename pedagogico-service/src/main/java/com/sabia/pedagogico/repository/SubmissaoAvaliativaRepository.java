@@ -24,9 +24,27 @@ public interface SubmissaoAvaliativaRepository extends JpaRepository<SubmissaoAv
 
     boolean existsByAtividadeId(Long atividadeId);
 
+    @Query("""
+        SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
+        FROM SubmissaoAvaliativa s JOIN s.correcao c
+        WHERE s.atividade.id = :atividadeId
+        """)
+    boolean existeCorrecaoNaAtividade(@Param("atividadeId") Long atividadeId);
+
+    @Query("""
+        SELECT DISTINCT s.atividade.id
+        FROM SubmissaoAvaliativa s JOIN s.correcao c
+        WHERE s.atividade.id IN :atividadeIds
+        """)
+    List<Long> findAtividadeIdsComCorrecao(@Param("atividadeIds") Collection<Long> atividadeIds);
+
     Optional<SubmissaoAvaliativa> findByAlunoIdAndAtividadeId(Long alunoId, Long atividadeId);
 
     List<SubmissaoAvaliativa> findByAlunoId(Long alunoId);
+
+    /** Submissões do aluno com a correção já carregada (uma consulta para a lista de atividades). */
+    @Query("SELECT s FROM SubmissaoAvaliativa s LEFT JOIN FETCH s.correcao WHERE s.alunoId = :alunoId")
+    List<SubmissaoAvaliativa> findByAlunoIdComCorrecao(@Param("alunoId") Long alunoId);
 
     List<SubmissaoAvaliativa> findByAtividade_Turma_ProfessorId(Long professorId);
 

@@ -1,5 +1,6 @@
 package com.sabia.pedagogico.dto.request;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,8 @@ public record CriarAtividadeAvaliativaRequest(
         String descricao,
         StatusAtividade status,
         @NotNull Long turmaId,
-        @Min(1) int pontuacaoMaxima,
+        @Min(value = 1, message = "A pontuação máxima deve ficar entre 1 e 100.")
+        @Max(value = 100, message = "A pontuação máxima deve ficar entre 1 e 100.") int pontuacaoMaxima,
         LocalDateTime dataEntrega,
         String gabaritoEstadoJson,
         ModoAtividade modo,

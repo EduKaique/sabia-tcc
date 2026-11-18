@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAtividade } from '@/hooks/useAtividades'
 import { useCorrigirSubmissao, mensagemErroSubmissao } from '@/hooks/useSubmissaoProfessor'
-import { correcaoSchema, type CorrecaoFormData, type CorrecaoFormInput } from '@/lib/schemas/correcaoSchema'
+import { criarCorrecaoSchema, type CorrecaoFormData, type CorrecaoFormInput } from '@/lib/schemas/correcaoSchema'
 import type { ErroApi } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,6 +38,8 @@ export function FormCorrecao({ submissaoId, atividadeId, notaSugerida }: Props) 
   const { data: atividade } = useAtividade(String(atividadeId))
   const [dadosConfirmar, setDadosConfirmar] = useState<CorrecaoFormData | null>(null)
   const [erroServidor, setErroServidor] = useState<string | null>(null)
+  const maximo = atividade?.pontuacaoMaxima
+  const schema = useMemo(() => (maximo ? criarCorrecaoSchema(maximo) : null), [maximo])
 
   const {
     register,
@@ -46,7 +48,7 @@ export function FormCorrecao({ submissaoId, atividadeId, notaSugerida }: Props) 
     setValue,
     formState: { errors },
   } = useForm<CorrecaoFormInput, unknown, CorrecaoFormData>({
-    resolver: zodResolver(correcaoSchema),
+    resolver: schema ? zodResolver(schema) : undefined,
     defaultValues: { nota: '', feedbackProfessor: '' },
   })
 
@@ -81,15 +83,21 @@ export function FormCorrecao({ submissaoId, atividadeId, notaSugerida }: Props) 
         <CardTitle>Avaliação Final</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(setDadosConfirmar)} className="grid gap-5" noValidate>
+        <form
+          onSubmit={schema ? handleSubmit(setDadosConfirmar) : (e) => e.preventDefault()}
+          className="grid gap-5"
+          noValidate
+        >
           <div className="space-y-1.5">
-            <Label htmlFor="nota">Nota Definitiva (0 a 100)</Label>
+            <Label htmlFor="nota">
+              {maximo ? `Nota (0 a ${maximo.toLocaleString('pt-BR')})` : 'Nota'}
+            </Label>
             <Input
               id="nota"
               type="number"
               step="0.01"
               min={0}
-              max={100}
+              max={maximo}
               className="w-40"
               {...register('nota')}
             />
@@ -129,7 +137,7 @@ export function FormCorrecao({ submissaoId, atividadeId, notaSugerida }: Props) 
           {erroServidor && <p className="text-sm text-destructive">{erroServidor}</p>}
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={corrigir.isPending}>
+            <Button type="submit" disabled={!schema || corrigir.isPending}>
               Publicar Nota
             </Button>
           </div>

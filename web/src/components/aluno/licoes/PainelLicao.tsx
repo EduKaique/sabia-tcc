@@ -11,6 +11,8 @@ interface Props {
   /** Id da próxima lição por ordem; undefined na última. */
   proximaId?: number
   erro: string | null
+  /** Veredito do servidor quando a prática ainda não foi aceita (ex.: "Quase lá! O robô não chegou..."). */
+  aviso?: string | null
 }
 
 function ItemChecklist({ feito, children }: { feito: boolean; children: React.ReactNode }) {
@@ -28,7 +30,7 @@ function ItemChecklist({ feito, children }: { feito: boolean; children: React.Re
 }
 
 /** Painel lateral da etapa de atividade: o que fazer, o que falta e a conclusão. */
-export function PainelLicao({ licao, proximaId, erro }: Props) {
+export function PainelLicao({ licao, proximaId, erro, aviso }: Props) {
   const { progresso } = licao
   const modoRobo = licao.modo === 'JOGO_ROBO'
 
@@ -70,6 +72,12 @@ export function PainelLicao({ licao, proximaId, erro }: Props) {
         {progresso.atividadeConcluida && !progresso.concluida && (
           <p role="status" className="rounded-2xl border-2 border-sabia-amarelo bg-sabia-amarelo/20 px-4 py-3 text-sm font-bold text-tinta">
             Atividade concluída. Falta marcar o vídeo como assistido.
+          </p>
+        )}
+
+        {aviso && !progresso.atividadeConcluida && (
+          <p role="status" className="rounded-2xl border-2 border-sabia-amarelo bg-sabia-amarelo/20 px-4 py-3 text-sm font-bold text-tinta">
+            {aviso}
           </p>
         )}
 

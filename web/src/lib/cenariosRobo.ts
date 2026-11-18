@@ -73,3 +73,24 @@ export function presetDoCenario(cenario: CenarioRobo): string | null {
   const alvo = normalizar(cenarioSemLimite(cenario))
   return PRESETS_CENARIO.find((p) => normalizar(p.cenario) === alvo)?.id ?? null
 }
+
+/** Prefixo do valor de um cenário salvo do professor no seletor da atividade (ex.: "salvo:12"). */
+export const PREFIXO_CENARIO_SALVO = 'salvo:'
+
+/**
+ * Opção do seletor com o mesmo conteúdo do cenário (o maxBlocos é ignorado): o id do preset ou
+ * "salvo:<id>" de um cenário do professor; null se não bater com nenhuma.
+ */
+export function opcaoDoCenario(
+  cenario: CenarioRobo,
+  salvos: { id: number; cenarioJson: string }[]
+): string | null {
+  const preset = presetDoCenario(cenario)
+  if (preset) return preset
+  const alvo = normalizar(cenarioSemLimite(cenario))
+  const salvo = salvos.find((s) => {
+    const c = lerCenario(s.cenarioJson)
+    return c !== null && normalizar(cenarioSemLimite(c)) === alvo
+  })
+  return salvo ? `${PREFIXO_CENARIO_SALVO}${salvo.id}` : null
+}
