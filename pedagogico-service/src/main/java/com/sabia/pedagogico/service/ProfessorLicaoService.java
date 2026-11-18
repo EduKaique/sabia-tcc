@@ -25,6 +25,7 @@ import com.sabia.pedagogico.model.turma.Turma;
 import com.sabia.pedagogico.repository.LicaoRepository;
 import com.sabia.pedagogico.repository.LicaoTurmaRepository;
 import com.sabia.pedagogico.repository.PaginaLicaoRepository;
+import com.sabia.pedagogico.repository.ProgressoPaginaRepository;
 import com.sabia.pedagogico.repository.TurmaRepository;
 import com.sabia.pedagogico.service.licao.ValidadorConteudoPagina;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,7 @@ public class ProfessorLicaoService {
     private final LicaoRepository licaoRepository;
     private final PaginaLicaoRepository paginaRepository;
     private final LicaoTurmaRepository licaoTurmaRepository;
+    private final ProgressoPaginaRepository progressoPaginaRepository;
     private final TurmaRepository turmaRepository;
     private final CenarioRoboValidador cenarioRoboValidador;
     private final ValidadorConteudoPagina validadorConteudo;
@@ -171,7 +173,11 @@ public class ProfessorLicaoService {
             paginas.add(pagina);
         }
         List<PaginaLicao> removidas = existentes.values().stream().filter(p -> !idsUsados.contains(p.getId())).toList();
-        if (!removidas.isEmpty()) paginaRepository.deleteAll(removidas);
+        if (!removidas.isEmpty()) {
+            // O progresso dos alunos nas páginas removidas sai antes (FK de progresso_pagina).
+            progressoPaginaRepository.deleteByPaginaIdIn(removidas.stream().map(PaginaLicao::getId).toList());
+            paginaRepository.deleteAll(removidas);
+        }
         List<PaginaLicao> salvas = paginaRepository.saveAll(paginas);
         licaoRepository.save(licao);
         log.info("Lição id={} salva por professor id={} ({} páginas, {} removidas)",

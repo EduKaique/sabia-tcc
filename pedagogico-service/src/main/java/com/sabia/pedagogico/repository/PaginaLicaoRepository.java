@@ -12,6 +12,10 @@ public interface PaginaLicaoRepository extends JpaRepository<PaginaLicao, Long> 
 
     List<PaginaLicao> findByLicaoIdOrderByOrdemAsc(Long licaoId);
 
+    /** Páginas de várias lições numa consulta (listagem do aluno). */
+    @Query("SELECT p FROM PaginaLicao p WHERE p.licao.id IN :licaoIds ORDER BY p.licao.id, p.ordem")
+    List<PaginaLicao> findByLicaoIdIn(@Param("licaoIds") Collection<Long> licaoIds);
+
     /** Pares [licaoId, quantidade de páginas]; lição sem páginas não aparece. */
     @Query("SELECT p.licao.id, COUNT(p) FROM PaginaLicao p WHERE p.licao.id IN :licaoIds GROUP BY p.licao.id")
     List<Object[]> contarPorLicao(@Param("licaoIds") Collection<Long> licaoIds);

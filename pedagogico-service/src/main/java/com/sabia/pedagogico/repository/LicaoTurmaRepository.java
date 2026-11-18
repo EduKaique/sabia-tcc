@@ -17,6 +17,16 @@ public interface LicaoTurmaRepository extends JpaRepository<LicaoTurma, Long> {
 
     List<LicaoTurma> findByLicaoId(Long licaoId);
 
+    /**
+     * Vínculos das lições visíveis ao aluno (ATIVA, publicada) só com as turmas em que ele está matriculado,
+     * com lição e turma carregadas: lições e turmas da listagem numa consulta.
+     */
+    @Query("SELECT lt FROM LicaoTurma lt JOIN FETCH lt.licao l JOIN FETCH lt.turma t "
+            + "WHERE l.status = com.sabia.pedagogico.model.licao.StatusLicao.ATIVA AND l.publicadaEm IS NOT NULL "
+            + "AND EXISTS (SELECT 1 FROM TurmaAluno ta WHERE ta.turma = t AND ta.alunoId = :alunoId) "
+            + "ORDER BY t.nome, t.id")
+    List<LicaoTurma> findVisiveisParaAluno(@Param("alunoId") Long alunoId);
+
     @Modifying
     @Query("DELETE FROM LicaoTurma lt WHERE lt.turma.id = :turmaId")
     int deleteByTurmaId(@Param("turmaId") Long turmaId);

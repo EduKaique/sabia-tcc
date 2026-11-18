@@ -7,6 +7,7 @@ import com.sabia.pedagogico.exception.GlobalExceptionHandler;
 import com.sabia.pedagogico.security.JwtAuthFilter;
 import com.sabia.pedagogico.security.JwtTokenReader;
 import com.sabia.pedagogico.service.LicaoService;
+import com.sabia.pedagogico.service.ProgressoPaginaService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,11 @@ class AlunoLicaoConcluirControllerTest {
         @Bean
         LicaoService licaoService() {
             return mock(LicaoService.class);
+        }
+
+        @Bean
+        ProgressoPaginaService progressoPaginaService() {
+            return mock(ProgressoPaginaService.class);
         }
     }
 
@@ -108,7 +114,7 @@ class AlunoLicaoConcluirControllerTest {
     @Test
     void usaOAlunoDoTokenEDevolveOVeredito() throws Exception {
         when(licaoService.concluirAtividade(8L, 1L, "{\"blocks\":{}}"))
-                .thenReturn(new ConclusaoAtividadeResponse(false, false, false, null, null));
+                .thenReturn(new ConclusaoAtividadeResponse(false, false, null, null));
 
         comoAluno("8", post(URL).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"estadoJson\":\"{\\\"blocks\\\":{}}\",\"alunoId\":99}"))

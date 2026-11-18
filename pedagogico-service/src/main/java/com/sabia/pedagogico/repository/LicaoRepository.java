@@ -23,4 +23,13 @@ public interface LicaoRepository extends JpaRepository<Licao, Long> {
                                         @Param("turmaId") Long turmaId);
 
     long countByProfessorIdAndStatus(Long professorId, StatusLicao status);
+
+    /**
+     * Lição visível ao aluno: ATIVA, publicada e vinculada a uma turma em que ele está matriculado. Fora disso
+     * (inclusive as legadas, sem turma), vazio, e o serviço responde 404 igual ao inexistente.
+     */
+    @Query("SELECT l FROM Licao l WHERE l.id = :licaoId AND l.status = com.sabia.pedagogico.model.licao.StatusLicao.ATIVA "
+            + "AND l.publicadaEm IS NOT NULL AND EXISTS (SELECT 1 FROM LicaoTurma lt, TurmaAluno ta "
+            + "WHERE lt.licao = l AND ta.turma = lt.turma AND ta.alunoId = :alunoId)")
+    Optional<Licao> findVisivelParaAluno(@Param("licaoId") Long licaoId, @Param("alunoId") Long alunoId);
 }

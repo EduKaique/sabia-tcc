@@ -10,6 +10,7 @@ import com.sabia.pedagogico.model.licao.StatusLicao;
 import com.sabia.pedagogico.repository.LicaoRepository;
 import com.sabia.pedagogico.repository.LicaoTurmaRepository;
 import com.sabia.pedagogico.repository.PaginaLicaoRepository;
+import com.sabia.pedagogico.repository.ProgressoPaginaRepository;
 import com.sabia.pedagogico.repository.TurmaRepository;
 import com.sabia.pedagogico.security.JwtAuthFilter;
 import com.sabia.pedagogico.security.JwtTokenReader;
@@ -87,6 +88,11 @@ class ProfessorLicaoControllerTest {
         @Bean
         LicaoTurmaRepository licaoTurmaRepository() {
             return mock(LicaoTurmaRepository.class);
+        }
+
+        @Bean
+        ProgressoPaginaRepository progressoPaginaRepository() {
+            return mock(ProgressoPaginaRepository.class);
         }
 
         @Bean

@@ -23,11 +23,13 @@ import com.sabia.pedagogico.model.turma.Turma;
 import com.sabia.pedagogico.repository.LicaoRepository;
 import com.sabia.pedagogico.repository.LicaoTurmaRepository;
 import com.sabia.pedagogico.repository.PaginaLicaoRepository;
+import com.sabia.pedagogico.repository.ProgressoPaginaRepository;
 import com.sabia.pedagogico.repository.TurmaRepository;
 import com.sabia.pedagogico.service.licao.ValidadorConteudoPagina;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
@@ -42,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -66,7 +69,9 @@ class ProfessorLicaoServiceTest {
     private final PaginaLicaoRepository paginaRepo = mock(PaginaLicaoRepository.class);
     private final LicaoTurmaRepository vinculoRepo = mock(LicaoTurmaRepository.class);
     private final TurmaRepository turmaRepo = mock(TurmaRepository.class);
-    private final ProfessorLicaoService service = new ProfessorLicaoService(licaoRepo, paginaRepo, vinculoRepo, turmaRepo,
+    private final ProgressoPaginaRepository progressoPaginaRepo = mock(ProgressoPaginaRepository.class);
+    private final ProfessorLicaoService service = new ProfessorLicaoService(licaoRepo, paginaRepo, vinculoRepo,
+            progressoPaginaRepo, turmaRepo,
             new CenarioRoboValidador(mapper), new ValidadorConteudoPagina(mapper), mapper);
 
     private final LocalDateTime ontem = LocalDateTime.now().minusDays(1);
@@ -267,6 +272,30 @@ class ProfessorLicaoServiceTest {
     }
 
     // ---------- salvar ----------
+
+    @Test
+    void salvarApagaOProgressoDasPaginasRemovidasAntesDasPaginas() {
+        PaginaLicao p100 = pagina(100, 0, TipoPagina.TEXTO, "{\"html\":\"<p>a</p>\"}");
+        PaginaLicao p101 = pagina(101, 1, TipoPagina.TEXTO, "{\"html\":\"<p>b</p>\"}");
+        PaginaLicao p102 = pagina(102, 2, TipoPagina.TEXTO, "{\"html\":\"<p>c</p>\"}");
+        when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(p100, p101, p102));
+
+        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(101L, "<p>b</p>"))));
+
+        InOrder ordem = inOrder(progressoPaginaRepo, paginaRepo);
+        ordem.verify(progressoPaginaRepo).deleteByPaginaIdIn(List.of(100L, 102L));
+        ordem.verify(paginaRepo).deleteAll(List.of(p100, p102));
+    }
+
+    @Test
+    void salvarSemRemocaoNaoMexeNoProgresso() {
+        PaginaLicao p100 = pagina(100, 0, TipoPagina.TEXTO, "{\"html\":\"<p>a</p>\"}");
+        when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(p100));
+
+        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(100L, "<p>a2</p>"))));
+
+        verify(progressoPaginaRepo, never()).deleteByPaginaIdIn(anyCollection());
+    }
 
     @Test
     void salvarFazUpsertDasPaginasERegravaAOrdem() {
