@@ -1,4 +1,5 @@
 import type { ModoAtividade } from '@/types'
+import type { EstadoLicaoAluno } from '@/types/licao'
 
 /** Tipos da API de autoria de lições (/api/professor/licoes). As do aluno ficam em types/licao.ts. */
 
@@ -85,4 +86,44 @@ export interface SalvarLicaoPayload {
   modo: ModoAtividade
   cenarioJson: string | null
   paginas: PaginaLicaoPayload[]
+}
+
+/**
+ * GET /api/professor/turmas/{turmaId}/licoes/progresso. `alunos[i].celulas[j]` corresponde a `licoes[j]`.
+ * Lições: só as publicadas e vinculadas à turma (publicação ascendente). Alunos: só os matriculados, por nome.
+ * Datas em UTC, sem fuso.
+ */
+export interface ProgressoLicoesTurma {
+  turmaId: number
+  turmaNome: string
+  totalAlunos: number
+  licoes: ColunaLicaoProgresso[]
+  alunos: LinhaAlunoProgresso[]
+}
+
+export interface ColunaLicaoProgresso {
+  id: number
+  titulo: string
+  conceito: string
+  modo: ModoAtividade
+  totalPaginas: number
+  publicadaEm: string
+  /** Alunos matriculados com a lição concluída. */
+  concluiram: number
+}
+
+export interface LinhaAlunoProgresso {
+  alunoId: number
+  nome: string
+  celulas: CelulaProgressoLicao[]
+}
+
+export interface CelulaProgressoLicao {
+  licaoId: number
+  estado: EstadoLicaoAluno
+  paginasConcluidas: number
+  /** Média inteira dos melhores percentuais dos questionários tentados; null sem tentativa. */
+  melhorPercentualQuestionario: number | null
+  atividadeConcluida: boolean
+  concluidaEm: string | null
 }

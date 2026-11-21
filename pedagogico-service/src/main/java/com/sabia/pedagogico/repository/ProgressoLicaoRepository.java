@@ -16,4 +16,10 @@ public interface ProgressoLicaoRepository extends JpaRepository<ProgressoLicao, 
     @Query("SELECT p FROM ProgressoLicao p WHERE p.alunoId = :alunoId AND p.licao.id IN :licaoIds")
     List<ProgressoLicao> findByAlunoIdAndLicaoIdIn(@Param("alunoId") Long alunoId,
                                                    @Param("licaoIds") Collection<Long> licaoIds);
+
+    /** Painel do professor: progresso de todos os alunos matriculados na turma nessas lições, numa consulta. */
+    @Query("SELECT p FROM ProgressoLicao p WHERE p.licao.id IN :licaoIds "
+            + "AND p.alunoId IN (SELECT ta.alunoId FROM TurmaAluno ta WHERE ta.turma.id = :turmaId)")
+    List<ProgressoLicao> findDaTurmaPorLicoes(@Param("turmaId") Long turmaId,
+                                              @Param("licaoIds") Collection<Long> licaoIds);
 }

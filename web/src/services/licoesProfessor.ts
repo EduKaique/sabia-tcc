@@ -3,6 +3,7 @@ import type {
   CriarLicaoPayload,
   LicaoProfessorDetalhe,
   LicaoProfessorResumo,
+  ProgressoLicoesTurma,
   SalvarLicaoPayload,
 } from '@/types/licaoProfessor'
 
@@ -47,4 +48,10 @@ export async function despublicarLicao(id: number): Promise<LicaoProfessorDetalh
 
 export async function arquivarLicao(id: number): Promise<void> {
   await api.delete(`${BASE}/${id}`)
+}
+
+/** Painel do professor: alunos matriculados x lições publicadas da turma. */
+export async function buscarProgressoLicoesTurma(turmaId: number): Promise<ProgressoLicoesTurma> {
+  const { data } = await api.get<ProgressoLicoesTurma>(`/api/professor/turmas/${turmaId}/licoes/progresso`)
+  return data
 }

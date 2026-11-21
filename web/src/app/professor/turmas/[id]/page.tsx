@@ -11,6 +11,7 @@ import { TurmaFormDialog } from '@/components/professor/turmas/TurmaFormDialog'
 import { ExcluirTurmaDialog } from '@/components/professor/turmas/ExcluirTurmaDialog'
 import { GerenciarAlunosDialog } from '@/components/professor/turmas/GerenciarAlunosDialog'
 import { AlunosTurmaTable } from '@/components/professor/turmas/AlunosTurmaTable'
+import { PainelLicoesTurma } from '@/components/professor/turmas/licoes/PainelLicoesTurma'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -100,6 +101,8 @@ export default function TurmaPage({ params }: { params: Promise<{ id: string }> 
       </div>
 
       <AlunosTurmaTable turmaId={turma.id} />
+
+      <PainelLicoesTurma turmaId={turma.id} />
 
       <TurmaFormDialog key={formKey} open={editando} onOpenChange={setEditando} turma={turma} />
       <ExcluirTurmaDialog
