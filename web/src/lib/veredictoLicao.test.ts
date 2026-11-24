@@ -21,7 +21,6 @@ const validacao = (extra: Partial<ResultadoValidacao>): ResultadoValidacao => ({
 })
 
 const resposta = (atividadeConcluida: boolean, v: ResultadoValidacao | null): ConclusaoAtividade => ({
-  videoVisto: false,
   atividadeConcluida,
   concluida: false,
   concluidaEm: null,
