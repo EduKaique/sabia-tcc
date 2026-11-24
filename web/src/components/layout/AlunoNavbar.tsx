@@ -13,8 +13,8 @@ import { AvatarCabecalhoAluno } from '@/components/layout/AvatarCabecalhoAluno'
 import styles from '@/styles/home.module.css'
 
 const navItems = [
-  { href: '/aluno/atividades', label: 'Avaliações' },
   { href: '/aluno/aprender', label: 'Aprender' },
+  { href: '/aluno/atividades', label: 'Avaliações' },
 ]
 
 const botaoIcone =
@@ -35,7 +35,7 @@ export function AlunoNavbar() {
     <header className="sticky top-0 z-30 shrink-0 border-b-2 border-tinta bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
         <Link
-          href="/aluno/atividades"
+          href="/aluno/aprender"
           className={cn(
             styles.brandBlock,
             fredoka.className,
