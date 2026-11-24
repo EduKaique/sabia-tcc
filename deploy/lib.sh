@@ -56,3 +56,26 @@ compose() {
 banco_no_ar() {
   [[ -n "$(compose ps -q --status running database 2>/dev/null)" ]]
 }
+
+mensageria_pronta() {
+  local filas bindings fila chave
+  compose exec -T auth-service sh -c \
+    'wget -T 5 -qO- http://127.0.0.1:8080/api/health | grep -Eq '"'"'"rabbitmq"[[:space:]]*:[[:space:]]*"UP"'"'"'' || return 1
+  compose exec -T pedagogico-service sh -c \
+    'wget -T 5 -qO- http://127.0.0.1:8081/api/health | grep -Eq '"'"'"rabbitmq"[[:space:]]*:[[:space:]]*"UP"'"'"'' || return 1
+  compose exec -T ia-service python -c \
+    'import json, urllib.request, sys; sys.exit(0 if json.load(urllib.request.urlopen("http://127.0.0.1:8002/health", timeout=4)).get("rabbitmq") == "UP" else 1)' || return 1
+  filas="$(compose exec -T rabbitmq rabbitmqctl -q list_queues name consumers)" || return 1
+  for fila in pedagogico.aluno-perfil.queue pedagogico.revisao-ia.queue ia.submissao-revisao.queue; do
+    awk -v fila="$fila" '$1 == fila && $2 ~ /^[0-9]+$/ && $2 > 0 { encontrado = 1 } END { exit !encontrado }' <<< "$filas" || return 1
+  done
+  bindings="$(compose exec -T rabbitmq rabbitmqctl -q list_bindings source_name destination_name routing_key)" || return 1
+  while read -r fila chave; do
+    awk -v fila="$fila" -v chave="$chave" \
+      '$1 == "sabia.eventos" && $2 == fila && $3 == chave { encontrado = 1 } END { exit !encontrado }' <<< "$bindings" || return 1
+  done <<'EOF'
+pedagogico.aluno-perfil.queue aluno.perfil-atualizado
+pedagogico.revisao-ia.queue submissao.revisao-ia.gerada
+ia.submissao-revisao.queue submissao.enviada
+EOF
+}

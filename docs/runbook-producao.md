@@ -94,6 +94,12 @@ nano .env.prod      # preencha tudo; os comandos para gerar segredos estão no p
   usuário inicial com senha ausente ou curta (usuário que já existe não é afetado).
 - E-mail: `EMAIL_PROVIDER=smtp` e `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `EMAIL_FROM` preenchidos.
   Sem isso o `deploy.sh` recusa o deploy (antes do backup e do pull) e o auth-service não sobe.
+- RabbitMQ: preencha `RABBITMQ_PASS` com uma senha própria e forte; `RABBITMQ_USER` usa `sabia` por padrão.
+  Configure-a antes de atualizar uma instalação existente, pois o compose agora exige essa variável.
+  O broker usa volume persistente e hostname fixo, sem portas publicadas.
+  As credenciais do ambiente só criam o usuário no primeiro início do volume: alterá-las no
+  `.env.prod` não altera o usuário existente. Para rotacioná-las, atualize também o usuário
+  no RabbitMQ com `rabbitmqctl`, de forma coordenada com os serviços.
 - Limite de tentativas (opcional; os padrões já vêm no compose): `RATE_LIMIT_JANELA_SEGUNDOS=60`,
   `RATE_LIMIT_AUTH_MAX=120` e `RATE_LIMIT_ESQUECI_SENHA_MAX=10` (por IP, no gateway);
   `SABIA_LOGIN_MAX_FALHAS=10` e `SABIA_LOGIN_BLOQUEIO_MINUTOS=15` (por conta, no auth-service).
@@ -101,7 +107,8 @@ nano .env.prod      # preencha tudo; os comandos para gerar segredos estão no p
 
 ### Pasta de backup (antes do primeiro deploy)
 
-O `deploy.sh` faz backup a cada deploy e se recusa a começar sem esta pasta:
+O `deploy.sh` faz backup do PostgreSQL a cada deploy e se recusa a começar sem esta pasta
+(o dump não inclui mensagens RabbitMQ):
 
 ```bash
 sudo mkdir -p /var/backups/sabia && sudo chown "$USER" /var/backups/sabia
@@ -133,6 +140,9 @@ Escolha a tag no GHCR (`sha-xxxxxxx` do último build verde da `main`; o workflo
 
 Os usuários iniciais (`SABIA_ADMIN_*`, `SABIA_PROFESSOR_*`) são criados na primeira subida do
 auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acesso.
+O deploy só registra a tag após verificar a conexão RabbitMQ dos três serviços, consumidores
+nas três filas principais e seus bindings. Se falhar, os containers podem continuar rodando; corrija a causa
+e repita o deploy. Essa verificação não substitui um teste de eventos ponta a ponta.
 
 ## 3. Rotina
 
@@ -141,7 +151,8 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 | Atualizar | `cd /opt/sabia && git pull && deploy/deploy.sh sha-novo` (faz backup antes) |
 | Rollback | `deploy/deploy.sh --rollback` (volta para a tag anterior). O schema do banco **não** volta: se a versão nova mudou tabelas, restaure o backup feito antes do deploy |
 | Status | `deploy/dc.sh ps` e `docker stats --no-stream` |
-| Logs | `deploy/dc.sh logs --tail=200 -f <serviço>` (caddy, web, api-gateway, auth-service, pedagogico-service, ia-service, database) |
+| Logs | `deploy/dc.sh logs --tail=200 -f <serviço>` (incluindo rabbitmq, auth-service, pedagogico-service e ia-service) |
+| Filas e consumidores | `deploy/dc.sh exec rabbitmq rabbitmqctl list_queues name messages consumers` |
 | Reiniciar um serviço | `deploy/dc.sh restart <serviço>` |
 | Reiniciar tudo | `deploy/dc.sh restart` |
 | Backup manual | `deploy/backup.sh` |
@@ -154,6 +165,8 @@ auth-service. Troque essas senhas pelo próprio sistema depois do primeiro acess
 anote a tag atual (`cat deploy/.current_tag`). **Depois:** `deploy/dc.sh ps` com tudo `healthy` e o
 `smoke.sh` de outra máquina (seção 5). Se a subida falhar por configuração, corrija o `.env.prod` e rode
 `deploy/deploy.sh <tag>` de novo; se for a versão, `deploy/deploy.sh --rollback`.
+Confira também os fluxos e limitações descritos em [mensageria.md](mensageria.md): não há outbox,
+o dump do banco não contém as filas e o reprocessamento da DLQ não é à prova de perda.
 
 ### Atualização para a v0.3.0
 

@@ -6,7 +6,8 @@ Workflow: `.github/workflows/docker-publish.yml`. O servidor nunca faz build: s�
 
 - push na `main`, tag `v*` criada a partir da `main` ou manualmente (Actions → "Publicar imagens (GHCR)" → Run workflow).
   Não existe mais branch `release`: as imagens saem só da `main`.
-- Job **testes**: `./mvnw -B test` em `auth-service` e `pedagogico-service` (JDK 21). Se falhar, nada é publicado.
+- Jobs **testes** e **testes-ia**: testes Java (JDK 21) e Python. Se falharem, nada é publicado.
+- Job **testes-deploy**: valida o compose de produção e a verificação de prontidão da mensageria.
 - Job **publicar**: constrói as 5 imagens (`linux/amd64`, cache do buildx no GitHub) e envia ao GHCR com o `GITHUB_TOKEN` do próprio workflow. O front não roda `pnpm test` (jest ainda não está instalado).
 
 ## Imagens e tags
@@ -29,6 +30,7 @@ Tags de cada build:
 - `1.2.3`: em tag git `v1.2.3`.
 
 O web é construído com URLs relativas (`NEXT_PUBLIC_API_URL` vazio e `NEXT_PUBLIC_PEDAGOGICO_API_URL=/api/pedagogico`), então a mesma imagem serve qualquer IP ou domínio atrás do proxy.
+RabbitMQ usa uma imagem oficial separada no compose de produção, não é incorporado às imagens GHCR.
 
 ## Acesso do servidor ao GHCR
 

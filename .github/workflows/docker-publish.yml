@@ -61,9 +61,49 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
           python -m pytest
 
+  testes-deploy:
+    name: Validar deploy de produção
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar compose e prontidão da mensageria
+        env:
+          IMAGE_TAG: teste
+          SITE_ADDRESS: localhost
+          CORS_ORIGINS: https://localhost
+          POSTGRES_PASSWORD: teste
+          RABBITMQ_PASS: teste
+          JWT_SECRET: teste
+          FRONTEND_RECUPERAR_SENHA_URL: https://localhost/redefinir-senha
+          EMAIL_PROVIDER: smtp
+          EMAIL_FROM: teste@example.invalid
+          SABIA_ADMIN_EMAIL: admin@example.invalid
+          SABIA_ADMIN_SENHA: teste
+          SABIA_PROFESSOR_EMAIL: professor@example.invalid
+          SABIA_PROFESSOR_SENHA: teste
+          GEMINI_API_KEY: teste
+        run: |
+          docker compose -f docker-compose.prod.yml config --quiet
+          docker compose -f docker-compose.prod.yml config --format json | python -c '
+          import json, sys
+          config = json.load(sys.stdin)
+          services = config["services"]
+          broker = services["rabbitmq"]
+          assert not broker.get("ports")
+          assert broker["hostname"] == "rabbitmq"
+          assert any(v["source"] == "rabbitmq_data" for v in broker["volumes"])
+          for name in ("auth-service", "pedagogico-service", "ia-service"):
+              service = services[name]
+              assert service["environment"]["RABBITMQ_ENABLED"] == "true"
+              assert service["environment"]["RABBITMQ_HOST"] == "rabbitmq"
+              assert service["environment"]["RABBITMQ_PASS"] == broker["environment"]["RABBITMQ_DEFAULT_PASS"]
+              assert service["depends_on"]["rabbitmq"]["condition"] == "service_healthy"
+          '
+          bash deploy/test-mensageria.sh
+
   publicar:
     name: Imagem ${{ matrix.imagem }}
-    needs: [testes, testes-ia]
+    needs: [testes, testes-ia, testes-deploy]
     runs-on: ubuntu-latest
     permissions:
       contents: read
