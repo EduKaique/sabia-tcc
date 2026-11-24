@@ -7,6 +7,83 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-18
+
+Jogo do Robô completo, devolutiva da correção para o aluno e edição de perfil, publicada como
+**pré-release**. Notas completas em [docs/release-notes/v0.3.0.md](docs/release-notes/v0.3.0.md).
+
+### Adicionado
+
+#### Aluno
+
+- Bloco "Resultado" na atividade corrigida, com a nota sobre a pontuação da atividade ("8,5 / 10"), o comentário do professor e a data da correção; a nota também aparece no card da lista (#84).
+- "Visualizar projeto": o projeto entregue abre somente leitura, pela nova rota `GET /api/aluno/atividades/{id}/projeto` (#84).
+- Tela "Meu perfil" (`/perfil`) para trocar o nome e o avatar; o avatar escolhido aparece no cabeçalho (#86).
+
+#### Professor
+
+- Tela "Meu perfil" (`/perfil`) para trocar o próprio nome, com link na barra lateral (#86).
+
+#### Jogo do Robô
+
+- Biblioteca de cenários do professor (`/professor/cenarios`) com editor de grade: tamanho de 3 a 10, início, destino, obstáculos, blocos permitidos e limite de blocos; até 50 cenários por professor (#88).
+- API `/api/professor/cenarios` (listar, detalhar, criar, editar e excluir), com o dono vindo do token e 404 para cenário de outro professor (#88).
+- Seletor de cenário da atividade com os grupos "Prontos" e "Meus cenários" (#88).
+- Simulador do robô em Java no serviço pedagógico, com o contrato e 42 casos em `fixtures/robo/`, lidos pelos testes do front e do back (#90).
+- Validação da prática no servidor: a entrega da atividade grava o resultado em `validacao_json`, e a conclusão da prática da lição depende dele (#90).
+- Resultado da validação do servidor na tela de correção, com a origem indicada (#90).
+
+#### IA
+
+- Rota `POST /atividade/gerar-robo` no ia-service e assistente de IA no modo Jogo do Robô: título e descrição para o cenário escolhido e, opcionalmente, um cenário sugerido que abre no editor (#92).
+- Análise do programa do robô (`analiseRobo`: métricas e pseudocódigo) no detalhe da submissão para o professor, calculada sob demanda (#94).
+- `contextoRobo` opcional em `POST /submissao/revisar` e relatório de IA na correção do robô, sem nota sugerida pela IA (#94).
+
+#### Autenticação e convites
+
+- `GET` e `PATCH /api/auth/perfil` para consultar e editar o próprio nome e avatar; a resposta traz um token novo com o nome atualizado (#86).
+- Rota interna `PUT /api/interno/alunos/{id}/nome` no serviço pedagógico, chamada pelo auth-service para propagar o nome do aluno mesmo sem o RabbitMQ (#86).
+
+### Alterado
+
+#### Aluno
+
+- A pontuação da atividade aparece como "Vale N pontos" no lugar de "XP"; o painel de desempenho mostra as atividades corrigidas; os selos passam a ser "Em avaliação" e "Corrigida" (#84).
+- A página da lição usa a resposta do servidor ao concluir a prática e mostra "Quase lá!" com o motivo quando ela não foi aceita (#90).
+
+#### Professor
+
+- A pontuação máxima da atividade fica entre 1 e 100 também no servidor, e o campo é bloqueado na edição quando a atividade já tem notas (#83).
+
+#### Jogo do Robô
+
+- O servidor recusa cenários sem caminho do início ao destino e com obstáculos repetidos, nas atividades e nos cenários salvos (#88).
+- O cenário personalizado de uma atividade pode ser trocado por um pronto ou salvo (#88).
+- O simulador do navegador ganhou limites de operações (10000), de profundidade (10) e de blocos (200), que terminam em "Limite de execução" (#90).
+- `POST /api/aluno/licoes/{id}/concluir-atividade` valida o projeto e devolve o resultado da validação; conclui só quando o servidor confirma e nunca desfaz uma conclusão (#90).
+- O projeto enviado na entrega e na lição é limitado a 64 KB (400); atividade do robô sem cenário responde 422 (#90).
+- Entregas do Jogo do Robô não publicam mais o evento `submissao.enviada` (#94).
+
+#### IA
+
+- Mensagem amigável quando a cota gratuita da IA acaba (503 `COTA_IA_ESGOTADA`), no assistente e no relatório de IA (#92).
+
+#### Infra e deploy
+
+- Os workflows de CI do front e do serviço pedagógico também rodam quando `fixtures/**` muda (#90).
+
+### Corrigido
+
+#### Professor
+
+- A nota da correção é limitada à pontuação máxima da atividade, com até 2 casas decimais; fora disso, 400 com `campos.nota` (#83).
+- A pontuação máxima não pode mais ser alterada depois que a atividade tem notas (409) (#83).
+
+#### Jogo do Robô
+
+- `repetir` aninhados vazios não travam mais a aba do aluno nem a tela de correção (#90).
+- Direções com nomes como `toString` deixam de mover o robô para uma posição inválida (#90).
+
 ## [0.2.1] - 2026-11-13
 
 Correções de segurança e qualidade sobre a v0.2.0, publicada como **pré-release**. Notas completas em
@@ -222,7 +299,8 @@ Primeira versão, publicada como **pré-release**. Notas completas em
 - Cookie de sessão com `secure` em HTTPS.
 - Em produção, apenas o Caddy publica portas; banco, serviços e documentação da API ficam inacessíveis de fora.
 
-[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EduKaique/sabia-tcc/releases/tag/v0.1.0
