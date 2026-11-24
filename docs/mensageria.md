@@ -15,10 +15,13 @@ Comunicação assíncrona entre `auth-service`, `pedagogico-service` e `ia-servi
 | Routing key | Produtor | Consumidor (fila) | Efeito |
 |---|---|---|---|
 | `aluno.perfil-atualizado` | auth | pedagogico (`pedagogico.aluno-perfil.queue`) | Atualiza `aluno_nome` em `turma_aluno` e `submissao_avaliativa` |
-| `submissao.enviada` | pedagogico | ia (`ia.submissao-revisao.queue`) | Gera revisão com Gemini |
+| `submissao.enviada` | pedagogico | ia (`ia.submissao-revisao.queue`) | Gera revisão com Gemini, exceto no Jogo do Robô |
 | `submissao.revisao-ia.gerada` | ia | pedagogico (`pedagogico.revisao-ia.queue`) | Grava `relatorio_ia_pre_gerado_json` na submissão (exposto em `SubmissaoProfessorDetalheResponse`) |
 
 Os eventos são publicados **após o commit** da transação de origem.
+Na edição do perfil, o auth também tenta atualizar o nome por HTTP após o commit;
+o evento é uma segunda via, não uma garantia de entrega.
+No Jogo do Robô, a revisão continua sob demanda por HTTP, pois exige contexto específico.
 
 ## Relatório de IA persistido (CRUD)
 
@@ -63,22 +66,22 @@ Os records/models dos payloads ficam em `messaging/contrato/Eventos.java` (auth 
 - **Retry:** em processo, com backoff exponencial (Java: 3 tentativas, 1s ×2, máx. 10s; Python: 3 tentativas, 2s ×2).
 - **DLQ:** esgotadas as tentativas, a mensagem é rejeitada sem requeue e vai para `<fila>.dlq`. Mensagens malformadas vão direto para a DLQ.
 - **Idempotência:** no pedagogico, a tabela `evento_consumido` (PK `consumidor:messageId`) é gravada na mesma transação do efeito. No ia-service, cache LRU em memória.
-- **Limitação:** não há outbox; se o broker estiver fora após o commit, o evento é perdido (apenas logado). Há fallback via HTTP.
+- **Limitação:** não há outbox; se o broker estiver fora após o commit, ou a fila ainda não existir, o evento é perdido (apenas logado). A edição de nome tenta HTTP e a revisão pode ser solicitada manualmente; isso não recupera automaticamente todos os eventos perdidos.
 
 ## Observabilidade
 
 - Logs JSON com `messageId`, `correlationId`, `eventType` (Java: `LOGGING_STRUCTURED_FORMAT_CONSOLE=logstash`, via `LOG_FORMAT`; Python: formatter próprio).
 - Health: `GET :8080/api/health`, `GET :8081/api/health`, `GET :8002/health` incluem `rabbitmq: UP | DOWN | DISABLED` (não derruba o status geral).
-- Painel: <http://localhost:15672>.
+- Painel de desenvolvimento: <http://localhost:15672>. Em produção não há portas RabbitMQ publicadas.
 
 ## Variáveis de ambiente
 
 | Variável | Default | Uso |
 |---|---|---|
-| `RABBITMQ_USER` / `RABBITMQ_PASS` | `sabia` / `sabia` | Credenciais |
+| `RABBITMQ_USER` / `RABBITMQ_PASS` | `sabia` / `sabia` em desenvolvimento | Credenciais; senha obrigatória em produção |
 | `RABBITMQ_PORT` / `RABBITMQ_MANAGEMENT_PORT` | `5672` / `15672` | Portas expostas |
 | `RABBITMQ_HOST` | `rabbitmq` (compose) | Host nos serviços |
-| `RABBITMQ_ENABLED` | `true` | `false` desliga a mensageria (usado em `docker-compose.prod.yml`) |
+| `RABBITMQ_ENABLED` | `true` | `false` desliga a mensageria; o compose de produção mantém `true` |
 | `RABBITMQ_RETRY_MAX_ATTEMPTS` | `3` | Tentativas (Java) |
 | `RABBITMQ_RETRY_INITIAL_INTERVAL` | `1000` | Intervalo inicial em ms (Java) |
 | `RABBITMQ_RETRY_INITIAL_INTERVAL_SECONDS` | `2` | Intervalo inicial (ia-service) |
@@ -110,6 +113,10 @@ Os testes cobrem publicação, consumo, validação de envelope, idempotência, 
 3. Falha: publique lixo em `submissao.enviada` pelo painel → a mensagem vai para `ia.submissao-revisao.queue.dlq`.
 
 ## Reprocessar a DLQ
+
+**Atenção:** o script remove as mensagens da DLQ antes de republicá-las. Falha de rede,
+erro no payload ou ausência de rota pode causar perda de mensagens; não o use em produção
+como procedimento confiável. O backup do PostgreSQL não inclui as filas.
 
 ```bash
 python3 scripts/reprocessar-dlq.py <fila>.dlq --dry-run   # lista
