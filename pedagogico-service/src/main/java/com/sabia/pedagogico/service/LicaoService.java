@@ -3,108 +3,191 @@ package com.sabia.pedagogico.service;
 import com.sabia.pedagogico.dto.response.ConclusaoAtividadeResponse;
 import com.sabia.pedagogico.dto.response.LicaoDetalheResponse;
 import com.sabia.pedagogico.dto.response.LicaoResumoResponse;
+import com.sabia.pedagogico.dto.response.PaginaAlunoResponse;
 import com.sabia.pedagogico.dto.response.ProgressoLicaoResponse;
+import com.sabia.pedagogico.dto.response.ProgressoPaginaResponse;
+import com.sabia.pedagogico.dto.response.TurmaVinculadaResponse;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.licao.Licao;
+import com.sabia.pedagogico.model.licao.LicaoTurma;
+import com.sabia.pedagogico.model.licao.PaginaLicao;
 import com.sabia.pedagogico.model.licao.ProgressoLicao;
-import com.sabia.pedagogico.model.licao.StatusLicao;
+import com.sabia.pedagogico.model.licao.ProgressoPagina;
+import com.sabia.pedagogico.model.licao.TipoPagina;
 import com.sabia.pedagogico.repository.LicaoRepository;
+import com.sabia.pedagogico.repository.LicaoTurmaRepository;
+import com.sabia.pedagogico.repository.PaginaLicaoRepository;
 import com.sabia.pedagogico.repository.ProgressoLicaoRepository;
+import com.sabia.pedagogico.repository.ProgressoPaginaRepository;
+import com.sabia.pedagogico.service.licao.ConteudoPaginaLeitor;
+import com.sabia.pedagogico.service.licao.ProgressoLicaoRegras;
 import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
 import com.sabia.pedagogico.service.pratica.ValidadorPratica;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Lições do ponto de vista do aluno. Visível = ATIVA, publicada e vinculada a uma turma em que o aluno do token
+ * está matriculado; fora disso, 404 igual ao inexistente. As respostas são montadas campo a campo, sem gabarito.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LicaoService {
 
+    static final String CONTEUDO_PENDENTE = "Conclua o conteúdo da lição antes da prática.";
+
     private final LicaoRepository licaoRepository;
+    private final LicaoTurmaRepository licaoTurmaRepository;
+    private final PaginaLicaoRepository paginaRepository;
     private final ProgressoLicaoRepository progressoRepository;
+    private final ProgressoPaginaRepository progressoPaginaRepository;
+    private final ConteudoPaginaLeitor leitor;
     private final ValidadorPratica validadorPratica;
+    private final Clock relogio;
 
     // --------- ALUNO ---------
 
+    /** Número fixo de consultas, independente da quantidade de lições: vínculos, páginas e os dois progressos. */
     public List<LicaoResumoResponse> listarParaAluno(Long alunoId) {
-        Map<Long, ProgressoLicao> progressoPorLicao = progressoRepository.findByAlunoId(alunoId).stream()
-                .collect(Collectors.toMap(p -> p.getLicao().getId(), p -> p));
+        List<LicaoTurma> vinculos = licaoTurmaRepository.findVisiveisParaAluno(alunoId);
+        if (vinculos.isEmpty()) return List.of();
 
-        return licaoRepository.findByStatusOrderByOrdemAsc(StatusLicao.ATIVA).stream()
-                .map(l -> new LicaoResumoResponse(
-                        l.getId(), l.getCodigo(), l.getOrdem(), l.getTitulo(), l.getResumo(),
-                        l.getConceito(), l.getHabilidadeBncc(), l.getModo(), l.getVideoId(),
-                        toProgressoResponse(l, progressoPorLicao.get(l.getId()))))
+        Map<Long, Licao> licoes = new LinkedHashMap<>();
+        Map<Long, List<TurmaVinculadaResponse>> turmas = new LinkedHashMap<>();
+        for (LicaoTurma lt : vinculos) {
+            licoes.putIfAbsent(lt.getLicao().getId(), lt.getLicao());
+            turmas.computeIfAbsent(lt.getLicao().getId(), k -> new ArrayList<>())
+                    .add(new TurmaVinculadaResponse(lt.getTurma().getId(), lt.getTurma().getNome()));
+        }
+        List<PaginaLicao> paginas = paginaRepository.findByLicaoIdIn(licoes.keySet());
+        Map<Long, List<PaginaLicao>> paginasPorLicao = paginas.stream()
+                .collect(Collectors.groupingBy(p -> p.getLicao().getId()));
+        Map<Long, ProgressoPagina> progressoPorPagina = progressoDasPaginas(alunoId, paginas);
+        Map<Long, ProgressoLicao> progressoPorLicao = progressoRepository
+                .findByAlunoIdAndLicaoIdIn(alunoId, licoes.keySet()).stream()
+                .collect(Collectors.toMap(p -> p.getLicao().getId(), Function.identity()));
+
+        return licoes.values().stream()
+                .sorted(Comparator.comparing(Licao::getPublicadaEm, Comparator.reverseOrder())
+                        .thenComparing(Licao::getId, Comparator.reverseOrder()))
+                .map(l -> {
+                    List<PaginaLicao> ps = paginasPorLicao.getOrDefault(l.getId(), List.of());
+                    ProgressoLicao pl = progressoPorLicao.get(l.getId());
+                    return new LicaoResumoResponse(l.getId(), l.getTitulo(), l.getConceito(), l.getResumo(),
+                            l.getModo(), ProgressoLicaoRegras.estado(ps, progressoPorPagina, pl), ps.size(),
+                            ProgressoLicaoRegras.paginasConcluidas(ps, progressoPorPagina),
+                            pl != null && pl.isAtividadeConcluida(), pl != null ? pl.getConcluidaEm() : null,
+                            turmas.get(l.getId()));
+                })
                 .toList();
     }
 
     public LicaoDetalheResponse buscarParaAluno(Long alunoId, Long licaoId) {
-        var licao = buscarAtiva(licaoId);
-        var progresso = progressoRepository.findByAlunoIdAndLicaoId(alunoId, licaoId).orElse(null);
-        return new LicaoDetalheResponse(
-                licao.getId(), licao.getCodigo(), licao.getOrdem(), licao.getTitulo(), licao.getResumo(),
-                licao.getConteudo(), licao.getConceito(), licao.getHabilidadeBncc(),
-                licao.getVideoId(), licao.getVideoTitulo(), licao.getVideoCanal(),
-                licao.getModo(), licao.getCenarioJson(),
-                toProgressoResponse(licao, progresso),
-                progresso != null ? progresso.getEstadoJson() : null);
+        Licao licao = buscarVisivel(alunoId, licaoId);
+        List<PaginaLicao> paginas = paginaRepository.findByLicaoIdOrderByOrdemAsc(licaoId);
+        Map<Long, ProgressoPagina> porPagina = progressoDasPaginas(alunoId, paginas);
+        ProgressoLicao pl = progressoRepository.findByAlunoIdAndLicaoId(alunoId, licaoId).orElse(null);
+        List<PaginaAlunoResponse> respostas = paginas.stream()
+                .map(p -> new PaginaAlunoResponse(p.getId(), p.getOrdem(), p.getTipo(), p.getTitulo(),
+                        leitor.paraAluno(p), progressoDaPagina(p, porPagina.get(p.getId()))))
+                .toList();
+        return new LicaoDetalheResponse(licao.getId(), licao.getTitulo(), licao.getConceito(), licao.getResumo(),
+                licao.getModo(), licao.getCenarioJson(), pl != null ? pl.getEstadoJson() : null,
+                pl != null && pl.isAtividadeConcluida(), pl != null ? pl.getConcluidaEm() : null,
+                ProgressoLicaoRegras.estado(paginas, porPagina, pl),
+                ProgressoLicaoRegras.praticaLiberada(paginas, porPagina, pl), respostas);
     }
 
-    @Transactional
-    public ProgressoLicaoResponse marcarVideoVisto(Long alunoId, Long licaoId) {
-        var licao = buscarAtiva(licaoId);
-        if (licao.getVideoId() == null) {
-            throw new OperacaoInvalidaException("Esta lição não tem vídeo.");
-        }
-        var progresso = progressoDe(alunoId, licao);
-        progresso.setVideoVisto(true);
-        atualizarConclusao(progresso);
-        return toProgressoResponse(licao, progressoRepository.save(progresso));
-    }
-
-    /** Autosave do workspace: só guarda o estado, não mexe na conclusão. */
+    /** Autosave do workspace: só guarda o estado, não exige o conteúdo concluído nem mexe na conclusão. */
     @Transactional
     public ProgressoLicaoResponse salvarEstado(Long alunoId, Long licaoId, String estadoJson) {
-        var licao = buscarAtiva(licaoId);
+        var licao = buscarVisivel(alunoId, licaoId);
         var progresso = progressoDe(alunoId, licao);
         progresso.setEstadoJson(estadoJson);
-        return toProgressoResponse(licao, progressoRepository.save(progresso));
+        return toProgressoResponse(progressoRepository.save(progresso));
     }
 
     /**
-     * O servidor decide a conclusão da prática (ValidadorPratica). Não concluir não é erro: devolve o
-     * resultado com atividadeConcluida=false. Uma prática já concluída nunca volta a false.
+     * O servidor decide a conclusão da prática (ValidadorPratica). Enquanto a lição não foi concluída, a prática
+     * exige todas as páginas concluídas (422). Depois de concluída, pode ser refeita livremente. Não concluir não
+     * é erro: devolve o resultado com atividadeConcluida=false. Uma prática concluída nunca volta a false, e
+     * concluidaEm é gravado uma vez, na primeira em que atividadeConcluida passa a true.
      */
     @Transactional
     public ConclusaoAtividadeResponse concluirAtividade(Long alunoId, Long licaoId, String estadoJson) {
-        var licao = buscarAtiva(licaoId);
+        var licao = buscarVisivel(alunoId, licaoId);
+        var progresso = progressoDe(alunoId, licao);
+        if (progresso.getConcluidaEm() == null) {
+            List<PaginaLicao> paginas = paginaRepository.findByLicaoIdOrderByOrdemAsc(licaoId);
+            if (ProgressoLicaoRegras.paginasConcluidas(paginas, progressoDasPaginas(alunoId, paginas))
+                    < paginas.size()) {
+                throw new OperacaoInvalidaException(CONTEUDO_PENDENTE);
+            }
+        }
         // Valida antes de gravar: entrada ilegível vira 400 e lição do robô sem cenário vira 422.
         ResultadoValidacao validacao = validadorPratica.validar(licao.getModo(), licao.getCenarioJson(), estadoJson);
-        var progresso = progressoDe(alunoId, licao);
         progresso.setEstadoJson(estadoJson);
         if (validacao.concluida()) {
             progresso.setAtividadeConcluida(true);
         }
-        atualizarConclusao(progresso);
-        var p = toProgressoResponse(licao, progressoRepository.save(progresso));
-        return new ConclusaoAtividadeResponse(p.videoVisto(), p.atividadeConcluida(), p.concluida(), p.concluidaEm(),
-                validacao);
+        if (progresso.getConcluidaEm() == null && progresso.isAtividadeConcluida()) {
+            progresso.setConcluidaEm(LocalDateTime.now(relogio));
+        }
+        var p = toProgressoResponse(progressoRepository.save(progresso));
+        return new ConclusaoAtividadeResponse(p.atividadeConcluida(), p.concluida(), p.concluidaEm(), validacao);
+    }
+
+    // --------- usados pelo ProgressoPaginaService (públicos: chamados através do proxy) ---------
+
+    /** Inexistente, rascunho, arquivada, legada ou de turma alheia respondem igual (404). */
+    public Licao buscarVisivel(Long alunoId, Long licaoId) {
+        return licaoRepository.findVisivelParaAluno(licaoId, alunoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lição com id " + licaoId + " não encontrada."));
+    }
+
+    public boolean praticaLiberada(Long alunoId, Long licaoId) {
+        List<PaginaLicao> paginas = paginaRepository.findByLicaoIdOrderByOrdemAsc(licaoId);
+        ProgressoLicao pl = progressoRepository.findByAlunoIdAndLicaoId(alunoId, licaoId).orElse(null);
+        return ProgressoLicaoRegras.praticaLiberada(paginas, progressoDasPaginas(alunoId, paginas), pl);
     }
 
     // --------- helpers ---------
 
-    /** Inexistente e INATIVA respondem igual (404), para não expor lições desativadas. */
-    private Licao buscarAtiva(Long licaoId) {
-        return licaoRepository.findByIdAndStatus(licaoId, StatusLicao.ATIVA)
-                .orElseThrow(() -> new ResourceNotFoundException("Lição com id " + licaoId + " não encontrada."));
+    private Map<Long, ProgressoPagina> progressoDasPaginas(Long alunoId, List<PaginaLicao> paginas) {
+        if (paginas.isEmpty()) return Map.of();
+        return progressoPaginaRepository
+                .findByAlunoIdAndPaginaIdIn(alunoId, paginas.stream().map(PaginaLicao::getId).toList()).stream()
+                .collect(Collectors.toMap(pp -> pp.getPagina().getId(), Function.identity()));
+    }
+
+    private ProgressoPaginaResponse progressoDaPagina(PaginaLicao pagina, ProgressoPagina pp) {
+        boolean concluida = ProgressoLicaoRegras.paginaConcluida(pagina, pp);
+        LocalDateTime vistaEm = pp != null ? pp.getVistaEm() : null;
+        if (pagina.getTipo() == TipoPagina.VIDEO_YOUTUBE) {
+            Integer duracao = leitor.video(pagina).duracaoSegundos();
+            return new ProgressoPaginaResponse(concluida, vistaEm, new ProgressoPaginaResponse.Video(
+                    pp != null && pp.getSegundosVideo() != null ? pp.getSegundosVideo() : 0,
+                    duracao != null ? ProgressoLicaoRegras.segundosNecessarios(duracao) : 0, concluida), null);
+        }
+        if (pagina.getTipo() == TipoPagina.QUESTIONARIO) {
+            return new ProgressoPaginaResponse(concluida, vistaEm, null, new ProgressoPaginaResponse.Questionario(
+                    pp != null && pp.getTentativas() != null ? pp.getTentativas() : 0,
+                    pp != null ? pp.getMelhorPercentual() : null, concluida));
+        }
+        return new ProgressoPaginaResponse(concluida, vistaEm, null, null);
     }
 
     /** Upsert: o progresso nasce na primeira interação do aluno com a lição. */
@@ -113,19 +196,7 @@ public class LicaoService {
                 .orElseGet(() -> ProgressoLicao.builder().alunoId(alunoId).licao(licao).build());
     }
 
-    private static boolean concluida(Licao licao, ProgressoLicao p) {
-        return p.isAtividadeConcluida() && (licao.getVideoId() == null || p.isVideoVisto());
-    }
-
-    /** Grava concluidaEm na primeira vez em que a lição fica concluída; nunca desfaz. */
-    private static void atualizarConclusao(ProgressoLicao p) {
-        if (p.getConcluidaEm() == null && concluida(p.getLicao(), p)) {
-            p.setConcluidaEm(LocalDateTime.now(ZoneOffset.UTC));
-        }
-    }
-
-    private static ProgressoLicaoResponse toProgressoResponse(Licao licao, ProgressoLicao p) {
-        if (p == null) return new ProgressoLicaoResponse(false, false, false, null);
-        return new ProgressoLicaoResponse(p.isVideoVisto(), p.isAtividadeConcluida(), concluida(licao, p), p.getConcluidaEm());
+    private static ProgressoLicaoResponse toProgressoResponse(ProgressoLicao p) {
+        return new ProgressoLicaoResponse(p.isAtividadeConcluida(), p.getConcluidaEm() != null, p.getConcluidaEm());
     }
 }

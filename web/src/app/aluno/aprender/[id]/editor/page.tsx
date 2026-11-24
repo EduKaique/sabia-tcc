@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { WorkspaceSvg } from 'blockly/core'
 import { isAxiosError } from 'axios'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -9,10 +10,9 @@ import { linkDiscreto, textoErro } from '@/lib/estilos'
 import { lerCenario } from '@/lib/cenariosRobo'
 import { veredictoConclusao } from '@/lib/veredictoLicao'
 import { hasBlocks } from '@/lib/workspaceBlockly'
-import { temConteudo } from '@/lib/conteudoLicao'
 import type { CenarioRobo } from '@/types'
 import type { LicaoDetalhe } from '@/types/licao'
-import { useLicao, useLicoes, useMutacoesLicao } from '@/hooks/useLicoes'
+import { useLicao, useMutacoesLicao } from '@/hooks/useLicoes'
 import { CabecalhoEditor } from '@/components/aluno/editor/CabecalhoEditor'
 import { AreaPratica } from '@/components/aluno/editor/AreaPratica'
 import { PainelLicao } from '@/components/aluno/licoes/PainelLicao'
@@ -37,9 +37,15 @@ function MensagemErro({ texto }: { texto: string }) {
 
 export default function LicaoEditorPage({ params }: Props) {
   const { id } = use(params)
+  const router = useRouter()
   const { data: licao, isLoading, error } = useLicao(Number(id))
+  // Prática ainda bloqueada (URL direta): volta à lição com o aviso. O servidor também recusa (422) a conclusão.
+  const bloqueada = !!licao && !licao.praticaLiberada
+  useEffect(() => {
+    if (bloqueada) router.replace(`/aluno/aprender/${id}?aviso=pratica`)
+  }, [bloqueada, router, id])
 
-  if (isLoading) {
+  if (isLoading || bloqueada) {
     return (
       <div className="flex flex-col h-full">
         <div className="h-16 border-b-2 border-tinta bg-white flex items-center px-4 gap-4">
@@ -69,7 +75,7 @@ export default function LicaoEditorPage({ params }: Props) {
     return <MensagemErro texto="Não foi possível carregar o cenário desta lição." />
   }
 
-  // key: trocar de lição (ex.: "Próxima lição") remonta o workspace e o autosave.
+  // key: trocar de lição remonta o workspace e o autosave.
   return <PraticaLicao key={licao.id} licao={licao} cenario={cenario} />
 }
 
@@ -89,9 +95,6 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
   const [aviso, setAviso] = useState<string | null>(null)
 
   const { salvarEstado, concluirAtividade } = useMutacoesLicao(licao.id)
-  const { data: licoes } = useLicoes()
-  const indice = licoes?.findIndex((l) => l.id === licao.id) ?? -1
-  const proximaId = indice >= 0 ? licoes?.[indice + 1]?.id : undefined
 
   const salvarPendente = () => {
     timerRef.current = undefined
@@ -132,7 +135,7 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
   }
 
   const concluir = () => {
-    if (licao.progresso.atividadeConcluida || concluindoRef.current) return
+    if (licao.atividadeConcluida || concluindoRef.current) return
     const estado = estadoRef.current
     if (!estado) return
     concluindoRef.current = true
@@ -161,11 +164,7 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
 
   return (
     <>
-      {/* Sem conteúdo, a etapa 1 redireciona para cá: voltar para ela prenderia o aluno. */}
-      <CabecalhoEditor
-        titulo={licao.titulo}
-        hrefVoltar={temConteudo(licao) ? `/aluno/aprender/${licao.id}` : '/aluno/aprender'}
-      />
+      <CabecalhoEditor titulo={licao.titulo} hrefVoltar={`/aluno/aprender/${licao.id}`} />
 
       <AreaPratica
         cenario={cenario}
@@ -175,12 +174,7 @@ function PraticaLicao({ licao, cenario }: { licao: LicaoDetalhe; cenario: Cenari
         onResultadoRobo={(status) => { if (status === 'CHEGOU') concluir() }}
         onExecutarCodigo={concluir}
         sidebar={
-          <PainelLicao
-            licao={licao}
-            proximaId={proximaId}
-            erro={erro}
-            aviso={aviso}
-          />
+          <PainelLicao licao={licao} erro={erro} aviso={aviso} />
         }
       />
     </>

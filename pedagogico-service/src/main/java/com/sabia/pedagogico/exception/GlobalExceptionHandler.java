@@ -69,6 +69,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ErroResponse.ofValidation(Map.of("nota", ex.getMessage())));
     }
 
+    @ExceptionHandler(ConteudoInvalidoException.class)
+    public ResponseEntity<ErroResponse> handleConteudoInvalido(ConteudoInvalidoException ex) {
+        return ResponseEntity.badRequest().body(ErroResponse.ofValidation(ex.getCampos()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> campos = new LinkedHashMap<>();

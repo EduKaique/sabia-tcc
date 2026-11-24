@@ -8,7 +8,7 @@ import { ROTA_TROCAR_SENHA } from '@/lib/auth-helpers'
 const homeByRole = {
   ADMINISTRADOR: '/admin/professores',
   PROFESSOR: '/professor/atividades',
-  ALUNO: '/aluno/atividades',
+  ALUNO: '/aluno/aprender',
 } as const
 
 type Role = keyof typeof homeByRole

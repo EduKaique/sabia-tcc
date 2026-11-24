@@ -37,7 +37,7 @@ export function redirecionarPorPerfil(
       router.push("/professor/atividades");
       break;
     case "ALUNO":
-      router.push("/aluno/atividades");
+      router.push("/aluno/aprender");
       break;
     case "ADMINISTRADOR":
       router.push("/admin/professores");

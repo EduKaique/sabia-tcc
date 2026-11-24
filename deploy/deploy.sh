@@ -8,6 +8,7 @@ source "$(dirname "$0")/lib.sh"
 [[ $# -eq 1 ]] || erro "uso: $0 <tag> | --rollback"
 
 exigir_env_file
+[[ -n "$(ler_env RABBITMQ_PASS)" ]] || erro "RABBITMQ_PASS vazia ou ausente no $ENV_FILE."
 # Antes de qualquer pull: o backup.sh roda a cada deploy e precisa deste diretório.
 preparar_dir_backup "$(dir_backup)"
 
@@ -49,6 +50,19 @@ info "Subindo serviços e aguardando os healthchecks (até 10 min)"
 if ! compose up -d --remove-orphans --wait --wait-timeout 600; then
   compose ps
   erro "algum serviço não ficou saudável. Veja: deploy/dc.sh logs --tail=100 <serviço>"
+fi
+
+info "Verificando conexão e consumidores RabbitMQ (até 2 min)"
+mensageria_ok=0
+for (( tentativa=1; tentativa<=60; tentativa++ )); do
+  if mensageria_pronta; then
+    mensageria_ok=1
+    break
+  fi
+  if (( tentativa < 60 )); then sleep 2; fi
+done
+if (( ! mensageria_ok )); then
+  erro "mensageria não ficou pronta. Verifique os healthchecks e deploy/dc.sh logs --tail=100 rabbitmq auth-service pedagogico-service ia-service."
 fi
 
 compose ps
