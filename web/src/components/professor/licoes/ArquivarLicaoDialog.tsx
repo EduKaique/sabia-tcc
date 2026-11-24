@@ -15,16 +15,23 @@ import {
 } from '@/components/ui/alert-dialog'
 
 interface Props {
-  licao: LicaoProfessorResumo | null
+  licao: Pick<LicaoProfessorResumo, 'id' | 'titulo'> | null
   onOpenChange: (open: boolean) => void
+  /** Chamado depois de arquivar (ex.: voltar para a lista). */
+  onArquivada?: () => void
 }
 
-export function ArquivarLicaoDialog({ licao, onOpenChange }: Props) {
+export function ArquivarLicaoDialog({ licao, onOpenChange, onArquivada }: Props) {
   const arquivar = useArquivarLicao()
 
   const confirmar = () => {
     if (!licao) return
-    arquivar.mutate(licao.id, { onSuccess: () => onOpenChange(false) })
+    arquivar.mutate(licao.id, {
+      onSuccess: () => {
+        onOpenChange(false)
+        onArquivada?.()
+      },
+    })
   }
 
   return (

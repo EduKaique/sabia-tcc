@@ -5,10 +5,8 @@ import { GraduationCap, Plus } from 'lucide-react'
 import { useLicoesProfessor } from '@/hooks/useLicoesProfessor'
 import { useTurmas } from '@/hooks/useTurmas'
 import { extrairErro } from '@/lib/licoes/errosLicao'
-import type { LicaoProfessorResumo } from '@/types/licaoProfessor'
 import { LicaoCard } from '@/components/professor/licoes/LicaoCard'
 import { NovaLicaoDialog } from '@/components/professor/licoes/NovaLicaoDialog'
-import { ArquivarLicaoDialog } from '@/components/professor/licoes/ArquivarLicaoDialog'
 import { LoadingSkeleton } from '@/components/professor/atividades/LoadingSkeleton'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -23,7 +21,6 @@ export default function LicoesPage() {
   const { data: turmas = [] } = useTurmas()
   const [novaAberta, setNovaAberta] = useState(false)
   const [novaKey, setNovaKey] = useState(0)
-  const [paraArquivar, setParaArquivar] = useState<LicaoProfessorResumo | null>(null)
 
   const abrirNova = () => {
     setNovaKey((k) => k + 1)
@@ -84,13 +81,12 @@ export default function LicoesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {licoes.map((l) => (
-            <LicaoCard key={l.id} licao={l} onArquivar={setParaArquivar} />
+            <LicaoCard key={l.id} licao={l} />
           ))}
         </div>
       )}
 
       <NovaLicaoDialog key={novaKey} open={novaAberta} onOpenChange={setNovaAberta} />
-      <ArquivarLicaoDialog licao={paraArquivar} onOpenChange={(open) => !open && setParaArquivar(null)} />
     </div>
   )
 }

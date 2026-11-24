@@ -1,27 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { Archive, FileText, Pencil, Send, Undo2, Users } from 'lucide-react'
-import { useDespublicarLicao, usePublicarLicao } from '@/hooks/useLicoesProfessor'
-import { extrairErro } from '@/lib/licoes/errosLicao'
+import { Eye, FileText, Users } from 'lucide-react'
 import type { LicaoProfessorResumo } from '@/types/licaoProfessor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ROTULO_ESTADO, ROTULO_MODO, VARIANTE_ESTADO, formatarDataUtc } from './estadoLicao'
 
-interface Props {
-  licao: LicaoProfessorResumo
-  onArquivar: (licao: LicaoProfessorResumo) => void
-}
-
-export function LicaoCard({ licao, onArquivar }: Props) {
-  const publicar = usePublicarLicao()
-  const despublicar = useDespublicarLicao()
-  const publicada = licao.estado === 'PUBLICADA'
-  const acao = publicada ? despublicar : publicar
-  const erro = publicar.error ?? despublicar.error
-
+/** Card da lista: resumo da lição e "Ver lição" (ações e progresso dos alunos ficam na página da lição). */
+export function LicaoCard({ licao }: { licao: LicaoProfessorResumo }) {
   return (
     <Card className="rounded-xl border border-border bg-card shadow-sm">
       <CardContent className="flex h-full flex-col gap-3 p-5">
@@ -46,31 +34,13 @@ export function LicaoCard({ licao, onArquivar }: Props) {
           <li>Atualizada em {formatarDataUtc(licao.atualizadaEm)}</li>
         </ul>
 
-        {erro && <p className="text-xs text-destructive">{extrairErro(erro).mensagem}</p>}
-
-        <div className="mt-auto flex flex-wrap gap-2">
+        <div className="mt-auto">
           <Button size="sm" variant="outline" asChild>
-            <Link href={`/professor/licoes/${licao.id}/editar`}>
-              <Pencil size={14} />
-              Editar
+            <Link href={`/professor/licoes/${licao.id}`}>
+              <Eye size={14} />
+              Ver lição
+              <span className="sr-only">: {licao.titulo}</span>
             </Link>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={acao.isPending}
-            onClick={() => {
-              publicar.reset()
-              despublicar.reset()
-              acao.mutate(licao.id)
-            }}
-          >
-            {publicada ? <Undo2 size={14} /> : <Send size={14} />}
-            {publicada ? 'Despublicar' : 'Publicar'}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => onArquivar(licao)} aria-label={`Arquivar ${licao.titulo}`}>
-            <Archive size={14} />
-            Arquivar
           </Button>
         </div>
       </CardContent>

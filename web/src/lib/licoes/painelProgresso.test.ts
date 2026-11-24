@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { ProgressoLicoesTurma } from "@/types/licaoProfessor";
+import type { ProgressoLicaoProfessor } from "@/types/licaoProfessor";
 import {
   ESTADOS_PAINEL,
   ariaLabelCelula,
   classeEstado,
   iconeEstado,
-  montarListaMovel,
-  montarMatriz,
+  montarRelatorioLicao,
   resumoColuna,
-  resumoTurma,
   rotuloEstado,
   textoEstadoCelula,
+  textoPaginaAluno,
   textoPaginas,
   textoQuestionario,
 } from "./painelProgresso";
@@ -18,72 +17,71 @@ import {
 // Meio-dia UTC: a data é a mesma em qualquer fuso do Brasil (o formatador usa o fuso local).
 const CONCLUIDA_EM = "2026-11-12T12:00:00";
 
-const resposta = (): ProgressoLicoesTurma => ({
-  turmaId: 10,
-  turmaNome: "5º A",
-  totalAlunos: 2,
-  licoes: [
-    {
-      id: 3,
-      titulo: "Sequência",
-      conceito: "Algoritmo",
-      modo: "BLOCOS",
-      totalPaginas: 4,
-      publicadaEm: "2026-11-01T10:00:00",
-      concluiram: 1,
-    },
-    {
-      id: 1,
-      titulo: "Repetição",
-      conceito: "Laços",
-      modo: "JOGO_ROBO",
-      totalPaginas: 2,
-      publicadaEm: "2026-11-02T10:00:00",
-      concluiram: 0,
-    },
+const resposta = (): ProgressoLicaoProfessor => ({
+  licao: {
+    id: 1,
+    titulo: "Laços",
+    conceito: "Repetição",
+    modo: "BLOCOS",
+    estado: "PUBLICADA",
+    publicadaEm: "2026-11-01T10:00:00",
+  },
+  paginas: [
+    { id: 11, ordem: 0, tipo: "TEXTO", titulo: "O que é um laço" },
+    { id: 12, ordem: 1, tipo: "VIDEO_YOUTUBE", titulo: null },
+    { id: 13, ordem: 2, tipo: "QUESTIONARIO", titulo: "Confira" },
   ],
-  alunos: [
+  totalAlunos: 3,
+  concluiram: 1,
+  turmas: [
     {
-      alunoId: 8,
-      nome: "Álvaro",
-      celulas: [
+      turmaId: 10,
+      turmaNome: "5º A",
+      alunos: [
         {
-          licaoId: 3,
+          alunoId: 8,
+          nome: "Álvaro",
           estado: "CONCLUIDA",
-          paginasConcluidas: 4,
+          paginasConcluidas: 3,
           melhorPercentualQuestionario: 100,
           atividadeConcluida: true,
           concluidaEm: CONCLUIDA_EM,
+          paginas: [
+            { paginaId: 11, concluida: true, melhorPercentual: null, tentativas: null },
+            { paginaId: 12, concluida: true, melhorPercentual: null, tentativas: null },
+            { paginaId: 13, concluida: true, melhorPercentual: 100, tentativas: 1 },
+          ],
         },
         {
-          licaoId: 1,
+          alunoId: 2,
+          nome: "Bruno",
           estado: "EM_ANDAMENTO",
           paginasConcluidas: 1,
-          melhorPercentualQuestionario: 40,
+          melhorPercentualQuestionario: 50,
           atividadeConcluida: false,
           concluidaEm: null,
+          // Fora de ordem de propósito: o modelo casa pelo id.
+          paginas: [
+            { paginaId: 13, concluida: false, melhorPercentual: 50, tentativas: 2 },
+            { paginaId: 11, concluida: true, melhorPercentual: null, tentativas: null },
+            { paginaId: 12, concluida: false, melhorPercentual: null, tentativas: null },
+          ],
         },
       ],
     },
     {
-      alunoId: 2,
-      nome: "Bruno",
-      celulas: [
+      turmaId: 11,
+      turmaNome: "5º B",
+      alunos: [
         {
-          licaoId: 3,
+          alunoId: 5,
+          nome: "Carla",
           estado: "NAO_INICIADA",
           paginasConcluidas: 0,
           melhorPercentualQuestionario: null,
           atividadeConcluida: false,
           concluidaEm: null,
-        },
-        {
-          licaoId: 1,
-          estado: "PRATICA_LIBERADA",
-          paginasConcluidas: 2,
-          melhorPercentualQuestionario: null,
-          atividadeConcluida: false,
-          concluidaEm: null,
+          paginas: [],
         },
       ],
     },
@@ -128,7 +126,7 @@ describe("textos da célula", () => {
   });
 
   it("aria-label completo, com e sem questionário", () => {
-    const base = { licaoId: 1, atividadeConcluida: false, concluidaEm: null };
+    const base = { concluidaEm: null };
     expect(
       ariaLabelCelula(
         "Maria",
@@ -156,7 +154,6 @@ describe("textos da célula", () => {
           estado: "CONCLUIDA",
           paginasConcluidas: 4,
           melhorPercentualQuestionario: 100,
-          atividadeConcluida: true,
           concluidaEm: CONCLUIDA_EM,
         },
         4
@@ -166,57 +163,58 @@ describe("textos da célula", () => {
 
   it("resumos", () => {
     expect(resumoColuna(3, 12)).toBe("3 de 12 concluíram");
-    expect(resumoTurma(12, 3)).toBe("12 alunos · 3 lições");
-    expect(resumoTurma(1, 1)).toBe("1 aluno · 1 lição");
-    expect(resumoTurma(0, 0)).toBe("0 alunos · 0 lições");
   });
 });
 
-describe("modelo das telas", () => {
-  it("matriz preserva a ordem do servidor e alinha as células às colunas", () => {
-    const { colunas, linhas } = montarMatriz(resposta());
-    expect(colunas.map((c) => c.id)).toEqual([3, 1]);
-    expect(colunas[0]).toEqual({
-      id: 3,
-      titulo: "Sequência",
-      href: "/professor/licoes/3/editar",
-      resumo: "1 de 2 concluíram",
+describe("modelo da tela Ver lição", () => {
+  it("situação de uma página: concluída ou pendente; questionário com % e tentativas ou 'Não tentou'", () => {
+    expect(textoPaginaAluno("TEXTO", { paginaId: 1, concluida: true, melhorPercentual: null, tentativas: null })).toEqual({
+      concluida: true,
+      texto: "Concluída",
+      detalhe: null,
     });
-    expect(linhas.map((l) => l.nome)).toEqual(["Álvaro", "Bruno"]);
-    expect(linhas[0].celulas.map((c) => c.licaoId)).toEqual([3, 1]);
-    expect(linhas[0].celulas[0]).toMatchObject({
-      estado: "CONCLUIDA",
-      textoEstado: "Concluída em 12/11/2026",
-      paginas: "4/4 páginas",
-      questionario: "Questionário 100%",
-      icone: "check",
-    });
-    expect(linhas[1].celulas[1]).toMatchObject({
-      estado: "PRATICA_LIBERADA",
-      paginas: "2/2 páginas",
-      questionario: null,
-    });
+    expect(textoPaginaAluno("VIDEO_YOUTUBE", undefined)).toEqual({ concluida: false, texto: "Pendente", detalhe: null });
+    expect(
+      textoPaginaAluno("QUESTIONARIO", { paginaId: 1, concluida: false, melhorPercentual: 50, tentativas: 2 }).detalhe
+    ).toBe("50% · 2 tentativas");
+    expect(
+      textoPaginaAluno("QUESTIONARIO", { paginaId: 1, concluida: true, melhorPercentual: 100, tentativas: 1 }).detalhe
+    ).toBe("100% · 1 tentativa");
+    expect(textoPaginaAluno("QUESTIONARIO", undefined).detalhe).toBe("Não tentou");
   });
 
-  it('célula ausente vira "Não iniciada" sem quebrar o alinhamento', () => {
-    const r = resposta();
-    r.alunos[1].celulas = [r.alunos[1].celulas[1]];
-    const { linhas } = montarMatriz(r);
-    expect(linhas[1].celulas.map((c) => [c.licaoId, c.estado])).toEqual([
-      [3, "NAO_INICIADA"],
-      [1, "PRATICA_LIBERADA"],
-    ]);
+  it("colunas por página na ordem, com número e tipo", () => {
+    const r = montarRelatorioLicao(resposta());
+    expect(r.colunas.map((c) => c.rotulo)).toEqual(["1 · Texto", "2 · Vídeo", "3 · Questionário"]);
+    expect(r.colunas.map((c) => c.titulo)).toEqual(["O que é um laço", null, "Confira"]);
+    expect(r.resumo).toBe("1 de 3 concluíram");
   });
 
-  it("lista móvel: um cartão por aluno com as lições na mesma ordem", () => {
-    const cartoes = montarListaMovel(resposta());
-    expect(cartoes.map((c) => c.nome)).toEqual(["Álvaro", "Bruno"]);
-    expect(cartoes[0].licoes.map((l) => [l.titulo, l.href, l.textoEstado])).toEqual([
-      ["Sequência", "/professor/licoes/3/editar", "Concluída em 12/11/2026"],
-      ["Repetição", "/professor/licoes/1/editar", "Em andamento"],
-    ]);
-    expect(cartoes[0].licoes[1].ariaLabel).toBe(
-      "Álvaro: Em andamento, 1 de 2 páginas, questionário 40%"
-    );
+  it("grupos e alunos na ordem do servidor, resumo e células casadas pelo id da página", () => {
+    const r = montarRelatorioLicao(resposta());
+    expect(r.grupos.map((g) => g.turmaNome)).toEqual(["5º A", "5º B"]);
+    expect(r.grupos[0].alunos.map((a) => a.nome)).toEqual(["Álvaro", "Bruno"]);
+
+    const alvaro = r.grupos[0].alunos[0];
+    expect(alvaro.textoEstado).toBe("Concluída em 12/11/2026");
+    expect(alvaro.paginas).toBe("3/3 páginas");
+    expect(alvaro.pratica).toBe("Prática concluída");
+    expect(alvaro.icone).toBe("check");
+
+    const bruno = r.grupos[0].alunos[1];
+    expect(bruno.celulas.map((c) => c.paginaId)).toEqual([11, 12, 13]);
+    expect(bruno.celulas.map((c) => c.texto)).toEqual(["Concluída", "Pendente", "Pendente"]);
+    expect(bruno.celulas[2].detalhe).toBe("50% · 2 tentativas");
+    expect(bruno.celulas[2].ariaLabel).toBe("Bruno, página 3 (Questionário): Pendente, 50% · 2 tentativas");
+    expect(bruno.ariaLabel).toBe("Bruno: Em andamento, 1 de 3 páginas, questionário 50%");
+    expect(bruno.pratica).toBe("Prática pendente");
+  });
+
+  it("aluno sem progresso: todas as páginas pendentes e o questionário 'Não tentou'", () => {
+    const carla = montarRelatorioLicao(resposta()).grupos[1].alunos[0];
+    expect(carla.celulas.map((c) => c.texto)).toEqual(["Pendente", "Pendente", "Pendente"]);
+    expect(carla.celulas[2].detalhe).toBe("Não tentou");
+    expect(carla.textoEstado).toBe("Não iniciada");
+    expect(carla.questionario).toBeNull();
   });
 });

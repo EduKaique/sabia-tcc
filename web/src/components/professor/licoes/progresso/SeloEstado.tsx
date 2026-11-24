@@ -1,11 +1,11 @@
-import type { CelulaPainel } from "@/lib/licoes/painelProgresso";
+import type { AlunoRelatorio } from "@/lib/licoes/painelProgresso";
 import { IconeEstado } from "./IconeEstado";
 
 /** Selo com ícone, texto e cor do estado (nunca só a cor). */
 export function SeloEstado({
   celula,
 }: {
-  celula: Pick<CelulaPainel, "classe" | "icone" | "textoEstado">;
+  celula: Pick<AlunoRelatorio, "classe" | "icone" | "textoEstado">;
 }) {
   return (
     <span

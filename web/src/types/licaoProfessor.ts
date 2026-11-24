@@ -89,41 +89,46 @@ export interface SalvarLicaoPayload {
 }
 
 /**
- * GET /api/professor/turmas/{turmaId}/licoes/progresso. `alunos[i].celulas[j]` corresponde a `licoes[j]`.
- * Lições: só as publicadas e vinculadas à turma (publicação ascendente). Alunos: só os matriculados, por nome.
- * Datas em UTC, sem fuso.
+ * GET /api/professor/licoes/{id}/progresso: alunos das turmas vinculadas, por turma. `alunos[i].paginas[j]`
+ * corresponde a `paginas[j]`. `totalAlunos` e `concluiram` contam alunos distintos. Datas em UTC, sem fuso.
  */
-export interface ProgressoLicoesTurma {
+export interface ProgressoLicaoProfessor {
+  licao: {
+    id: number
+    titulo: string
+    conceito: string
+    modo: ModoAtividade
+    estado: EstadoLicaoProfessor
+    publicadaEm: string | null
+  }
+  paginas: { id: number; ordem: number; tipo: TipoPagina; titulo: string | null }[]
+  totalAlunos: number
+  concluiram: number
+  turmas: TurmaProgressoLicao[]
+}
+
+export interface TurmaProgressoLicao {
   turmaId: number
   turmaNome: string
-  totalAlunos: number
-  licoes: ColunaLicaoProgresso[]
-  alunos: LinhaAlunoProgresso[]
+  alunos: AlunoProgressoLicao[]
 }
 
-export interface ColunaLicaoProgresso {
-  id: number
-  titulo: string
-  conceito: string
-  modo: ModoAtividade
-  totalPaginas: number
-  publicadaEm: string
-  /** Alunos matriculados com a lição concluída. */
-  concluiram: number
-}
-
-export interface LinhaAlunoProgresso {
+export interface AlunoProgressoLicao {
   alunoId: number
   nome: string
-  celulas: CelulaProgressoLicao[]
-}
-
-export interface CelulaProgressoLicao {
-  licaoId: number
   estado: EstadoLicaoAluno
   paginasConcluidas: number
   /** Média inteira dos melhores percentuais dos questionários tentados; null sem tentativa. */
   melhorPercentualQuestionario: number | null
   atividadeConcluida: boolean
   concluidaEm: string | null
+  paginas: PaginaProgressoAluno[]
+}
+
+/** `melhorPercentual` e `tentativas`: só em questionário já tentado. */
+export interface PaginaProgressoAluno {
+  paginaId: number
+  concluida: boolean
+  melhorPercentual: number | null
+  tentativas: number | null
 }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   arquivarLicao,
   buscarLicaoProfessor,
+  buscarProgressoLicao,
   criarLicao,
   despublicarLicao,
   listarLicoesProfessor,
@@ -14,6 +15,7 @@ import type { LicaoProfessorDetalhe, SalvarLicaoPayload } from '@/types/licaoPro
 
 /** Chave própria: ['licoes'] é a das lições do aluno (hooks/useLicoes.ts). */
 const QUERY_KEY = ['licoes-professor']
+const CHAVE_PROGRESSO = 'licoes-progresso'
 
 const statusDe = (err: unknown) => (err as { response?: { status?: number } })?.response?.status
 
@@ -36,10 +38,24 @@ export function useLicaoProfessor(id: number) {
   })
 }
 
+/** Relatório da página "Ver lição". Recarrega ao voltar o foco: o progresso muda enquanto se olha. */
+export function useProgressoLicao(id: number) {
+  return useQuery({
+    queryKey: [CHAVE_PROGRESSO, id],
+    queryFn: () => buscarProgressoLicao(id),
+    enabled: Number.isFinite(id),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    retry: (falhas, err) => statusDe(err) !== 403 && statusDe(err) !== 404 && falhas < 1,
+  })
+}
+
 function useAtualizarCache() {
   const queryClient = useQueryClient()
   return (detalhe?: LicaoProfessorDetalhe) => {
     if (detalhe) queryClient.setQueryData([...QUERY_KEY, 'detalhe', detalhe.id], detalhe)
+    // O relatório mostra o estado da lição (publicada, rascunho).
+    if (detalhe) queryClient.invalidateQueries({ queryKey: [CHAVE_PROGRESSO, detalhe.id] })
     return queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'lista'] })
   }
 }
@@ -82,6 +98,9 @@ export function useArquivarLicao() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: arquivarLicao,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: [CHAVE_PROGRESSO, id] })
+      return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+    },
   })
 }

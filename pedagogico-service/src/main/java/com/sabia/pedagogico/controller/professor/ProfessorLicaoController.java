@@ -5,8 +5,10 @@ import com.sabia.pedagogico.dto.request.SalvarLicaoRequest;
 import com.sabia.pedagogico.dto.request.VincularTurmasRequest;
 import com.sabia.pedagogico.dto.response.LicaoProfessorDetalheResponse;
 import com.sabia.pedagogico.dto.response.LicaoProfessorResumoResponse;
+import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse;
 import com.sabia.pedagogico.security.AuthenticatedUser;
 import com.sabia.pedagogico.service.ProfessorLicaoService;
+import com.sabia.pedagogico.service.licao.ProgressoLicaoProfessorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +29,7 @@ import java.util.List;
 public class ProfessorLicaoController {
 
     private final ProfessorLicaoService licaoService;
+    private final ProgressoLicaoProfessorService progressoService;
 
     @GetMapping
     @Operation(summary = "Lista as lições do professor (sem as arquivadas), da mais recente à mais antiga")
@@ -46,6 +49,12 @@ public class ProfessorLicaoController {
     @Operation(summary = "Detalhe da lição com as páginas (inclui o gabarito dos questionários)")
     public ResponseEntity<LicaoProfessorDetalheResponse> buscar(Authentication auth, @PathVariable Long id) {
         return ResponseEntity.ok(licaoService.buscar(professorId(auth), id));
+    }
+
+    @GetMapping("/{id}/progresso")
+    @Operation(summary = "Progresso dos alunos das turmas vinculadas, por turma e página a página (somente leitura)")
+    public ResponseEntity<ProgressoLicaoProfessorResponse> progresso(Authentication auth, @PathVariable Long id) {
+        return ResponseEntity.ok(progressoService.progresso(professorId(auth), id));
     }
 
     @PutMapping("/{id}")

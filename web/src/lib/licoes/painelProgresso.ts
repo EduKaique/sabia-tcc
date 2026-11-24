@@ -1,13 +1,13 @@
 import type { EstadoLicaoAluno } from "@/types/licao";
 import type {
-  CelulaProgressoLicao,
-  ColunaLicaoProgresso,
-  ProgressoLicoesTurma,
+  AlunoProgressoLicao,
+  PaginaProgressoAluno,
+  ProgressoLicaoProfessor,
 } from "@/types/licaoProfessor";
 import { formatarDataUtc } from "@/components/professor/licoes/estadoLicao";
-import { ROTULO_ESTADO_ALUNO } from "./aluno";
+import { ROTULO_ESTADO_ALUNO, ROTULO_TIPO_ALUNO } from "./aluno";
 
-/** Regras puras do painel de progresso das lições da turma (professor). Nunca só cor: sempre ícone e texto. */
+/** Regras puras do relatório de progresso da lição (professor). Nunca só cor: sempre ícone e texto. */
 
 /** Ordem da legenda. */
 export const ESTADOS_PAINEL: readonly EstadoLicaoAluno[] = [
@@ -39,7 +39,7 @@ export const classeEstado = (estado: EstadoLicaoAluno): string => CLASSE[estado]
 
 /** "Concluída em dd/MM/aaaa" quando há data; senão o rótulo do estado. */
 export function textoEstadoCelula(
-  celula: Pick<CelulaProgressoLicao, "estado" | "concluidaEm">
+  celula: Pick<AlunoProgressoLicao, "estado" | "concluidaEm">
 ): string {
   if (celula.estado === "CONCLUIDA" && celula.concluidaEm) {
     const data = formatarDataUtc(celula.concluidaEm);
@@ -58,7 +58,10 @@ export function textoQuestionario(percentual: number | null): string | null {
 /** Ex.: "Maria: Em andamento, 2 de 4 páginas, questionário 80%". */
 export function ariaLabelCelula(
   nome: string,
-  celula: CelulaProgressoLicao,
+  celula: Pick<
+    AlunoProgressoLicao,
+    "estado" | "concluidaEm" | "paginasConcluidas" | "melhorPercentualQuestionario"
+  >,
   totalPaginas: number
 ): string {
   const partes = [
@@ -75,116 +78,104 @@ export function ariaLabelCelula(
 export const resumoColuna = (concluiram: number, totalAlunos: number): string =>
   `${concluiram} de ${totalAlunos} concluíram`;
 
-/** "N alunos · M lições", com singular. */
-export function resumoTurma(totalAlunos: number, totalLicoes: number): string {
-  const alunos = `${totalAlunos} ${totalAlunos === 1 ? "aluno" : "alunos"}`;
-  const licoes = `${totalLicoes} ${totalLicoes === 1 ? "lição" : "lições"}`;
-  return `${alunos} · ${licoes}`;
+// ---------- modelo da tela "Ver lição" ----------
+
+export interface ColunaPagina {
+  id: number;
+  /** "1 · Texto". */
+  rotulo: string;
+  titulo: string | null;
 }
 
-export const linkEditorLicao = (id: number): string => `/professor/licoes/${id}/editar`;
+export interface CelulaPagina {
+  paginaId: number;
+  concluida: boolean;
+  /** "Concluída" ou "Pendente". */
+  texto: string;
+  /** No questionário: "80% · 2 tentativas" ou "Não tentou". */
+  detalhe: string | null;
+  ariaLabel: string;
+}
 
-// ---------- modelo das telas ----------
+export interface AlunoRelatorio {
+  alunoId: number;
+  nome: string;
+  estado: EstadoLicaoAluno;
+  textoEstado: string;
+  classe: string;
+  icone: IconeEstado;
+  paginas: string;
+  questionario: string | null;
+  pratica: string;
+  ariaLabel: string;
+  celulas: CelulaPagina[];
+}
 
-export interface ColunaPainel {
-  id: number;
-  titulo: string;
-  href: string;
+export interface GrupoTurma {
+  turmaId: number;
+  turmaNome: string;
+  alunos: AlunoRelatorio[];
+}
+
+export interface RelatorioLicao {
+  colunas: ColunaPagina[];
+  grupos: GrupoTurma[];
+  /** "N de M concluíram". */
   resumo: string;
 }
 
-export interface CelulaPainel {
-  licaoId: number;
-  estado: EstadoLicaoAluno;
-  rotulo: string;
-  textoEstado: string;
-  paginas: string;
-  questionario: string | null;
-  ariaLabel: string;
-  classe: string;
-  icone: IconeEstado;
+const tentativas = (n: number) => `${n} ${n === 1 ? "tentativa" : "tentativas"}`;
+
+/** Situação de uma página para um aluno. */
+export function textoPaginaAluno(
+  tipo: ProgressoLicaoProfessor["paginas"][number]["tipo"],
+  p: PaginaProgressoAluno | undefined
+): Pick<CelulaPagina, "concluida" | "texto" | "detalhe"> {
+  const concluida = !!p?.concluida;
+  let detalhe: string | null = null;
+  if (tipo === "QUESTIONARIO") {
+    detalhe =
+      p?.melhorPercentual != null
+        ? `${p.melhorPercentual}% · ${tentativas(p.tentativas ?? 0)}`
+        : "Não tentou";
+  }
+  return { concluida, texto: concluida ? "Concluída" : "Pendente", detalhe };
 }
 
-export interface LinhaPainel {
-  alunoId: number;
-  nome: string;
-  celulas: CelulaPainel[];
-}
-
-export interface MatrizPainel {
-  colunas: ColunaPainel[];
-  linhas: LinhaPainel[];
-}
-
-const vazia = (licaoId: number): CelulaProgressoLicao => ({
-  licaoId,
-  estado: "NAO_INICIADA",
-  paginasConcluidas: 0,
-  melhorPercentualQuestionario: null,
-  atividadeConcluida: false,
-  concluidaEm: null,
-});
-
-export function montarCelula(
-  nome: string,
-  coluna: ColunaLicaoProgresso,
-  celula: CelulaProgressoLicao
-): CelulaPainel {
-  return {
-    licaoId: coluna.id,
-    estado: celula.estado,
-    rotulo: rotuloEstado(celula.estado),
-    textoEstado: textoEstadoCelula(celula),
-    paginas: textoPaginas(celula.paginasConcluidas, coluna.totalPaginas),
-    questionario: textoQuestionario(celula.melhorPercentualQuestionario),
-    ariaLabel: ariaLabelCelula(nome, celula, coluna.totalPaginas),
-    classe: classeEstado(celula.estado),
-    icone: iconeEstado(celula.estado),
-  };
-}
-
-/** Mantém a ordem do servidor (colunas e linhas); a célula de cada coluna é casada pelo id da lição. */
-export function montarMatriz(resposta: ProgressoLicoesTurma): MatrizPainel {
-  const colunas = resposta.licoes.map((l) => ({
-    id: l.id,
-    titulo: l.titulo,
-    href: linkEditorLicao(l.id),
-    resumo: resumoColuna(l.concluiram, resposta.totalAlunos),
+/** Mantém a ordem do servidor (turmas, alunos e páginas); cada página do aluno é casada pelo id. */
+export function montarRelatorioLicao(r: ProgressoLicaoProfessor): RelatorioLicao {
+  const colunas = r.paginas.map((p, i) => ({
+    id: p.id,
+    rotulo: `${i + 1} · ${ROTULO_TIPO_ALUNO[p.tipo]}`,
+    titulo: p.titulo,
   }));
-  const linhas = resposta.alunos.map((a) => {
-    const porLicao = new Map(a.celulas.map((c) => [c.licaoId, c]));
-    return {
-      alunoId: a.alunoId,
-      nome: a.nome,
-      celulas: resposta.licoes.map((l) =>
-        montarCelula(a.nome, l, porLicao.get(l.id) ?? vazia(l.id))
-      ),
-    };
-  });
-  return { colunas, linhas };
-}
-
-export interface LicaoCartao extends CelulaPainel {
-  titulo: string;
-  href: string;
-}
-
-export interface CartaoAluno {
-  alunoId: number;
-  nome: string;
-  licoes: LicaoCartao[];
-}
-
-/** Celular: um cartão por aluno, com as lições em linhas (mesma ordem da matriz). */
-export function montarListaMovel(resposta: ProgressoLicoesTurma): CartaoAluno[] {
-  const { colunas, linhas } = montarMatriz(resposta);
-  return linhas.map((linha) => ({
-    alunoId: linha.alunoId,
-    nome: linha.nome,
-    licoes: linha.celulas.map((c, i) => ({
-      ...c,
-      titulo: colunas[i].titulo,
-      href: colunas[i].href,
-    })),
+  const grupos = r.turmas.map((t) => ({
+    turmaId: t.turmaId,
+    turmaNome: t.turmaNome,
+    alunos: t.alunos.map((a) => {
+      const porPagina = new Map(a.paginas.map((p) => [p.paginaId, p]));
+      return {
+        alunoId: a.alunoId,
+        nome: a.nome,
+        estado: a.estado,
+        textoEstado: textoEstadoCelula(a),
+        classe: classeEstado(a.estado),
+        icone: iconeEstado(a.estado),
+        paginas: textoPaginas(a.paginasConcluidas, r.paginas.length),
+        questionario: textoQuestionario(a.melhorPercentualQuestionario),
+        pratica: a.atividadeConcluida ? "Prática concluída" : "Prática pendente",
+        ariaLabel: ariaLabelCelula(a.nome, a, r.paginas.length),
+        celulas: r.paginas.map((pagina, i) => {
+          const situacao = textoPaginaAluno(pagina.tipo, porPagina.get(pagina.id));
+          const extra = situacao.detalhe ? `, ${situacao.detalhe}` : "";
+          return {
+            paginaId: pagina.id,
+            ...situacao,
+            ariaLabel: `${a.nome}, página ${i + 1} (${ROTULO_TIPO_ALUNO[pagina.tipo]}): ${situacao.texto}${extra}`,
+          };
+        }),
+      };
+    }),
   }));
+  return { colunas, grupos, resumo: resumoColuna(r.concluiram, r.totalAlunos) };
 }

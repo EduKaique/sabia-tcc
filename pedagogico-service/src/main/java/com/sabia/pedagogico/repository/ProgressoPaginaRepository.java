@@ -33,11 +33,10 @@ public interface ProgressoPaginaRepository extends JpaRepository<ProgressoPagina
     List<ProgressoPagina> findByAlunoIdAndPaginaIdIn(@Param("alunoId") Long alunoId,
                                                      @Param("paginaIds") Collection<Long> paginaIds);
 
-    /** Painel do professor: progresso de todos os alunos matriculados na turma nessas páginas, numa consulta. */
-    @Query("SELECT pp FROM ProgressoPagina pp WHERE pp.pagina.id IN :paginaIds "
-            + "AND pp.alunoId IN (SELECT ta.alunoId FROM TurmaAluno ta WHERE ta.turma.id = :turmaId)")
-    List<ProgressoPagina> findDaTurmaPorPaginas(@Param("turmaId") Long turmaId,
-                                                @Param("paginaIds") Collection<Long> paginaIds);
+    /** Relatório da lição (professor): progresso dos alunos das turmas vinculadas nas páginas, numa consulta. */
+    @Query("SELECT pp FROM ProgressoPagina pp WHERE pp.pagina.id IN :paginaIds AND pp.alunoId IN :alunoIds")
+    List<ProgressoPagina> findByPaginaIdInAndAlunoIdIn(@Param("paginaIds") Collection<Long> paginaIds,
+                                                       @Param("alunoIds") Collection<Long> alunoIds);
 
     /** O professor apagou páginas: o progresso delas sai antes (FK). */
     @Modifying

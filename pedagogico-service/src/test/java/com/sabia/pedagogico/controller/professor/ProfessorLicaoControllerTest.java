@@ -10,13 +10,22 @@ import com.sabia.pedagogico.model.licao.StatusLicao;
 import com.sabia.pedagogico.repository.LicaoRepository;
 import com.sabia.pedagogico.repository.LicaoTurmaRepository;
 import com.sabia.pedagogico.repository.PaginaLicaoRepository;
+import com.sabia.pedagogico.repository.ProgressoLicaoRepository;
 import com.sabia.pedagogico.repository.ProgressoPaginaRepository;
+import com.sabia.pedagogico.repository.TurmaAlunoRepository;
 import com.sabia.pedagogico.repository.TurmaRepository;
 import com.sabia.pedagogico.security.JwtAuthFilter;
 import com.sabia.pedagogico.security.JwtTokenReader;
 import com.sabia.pedagogico.service.CenarioRoboValidador;
 import com.sabia.pedagogico.service.ProfessorLicaoService;
+import com.sabia.pedagogico.service.licao.ProgressoLicaoProfessorService;
 import com.sabia.pedagogico.service.licao.ValidadorConteudoPagina;
+import com.sabia.pedagogico.model.licao.LicaoTurma;
+import com.sabia.pedagogico.model.licao.ProgressoPagina;
+import com.sabia.pedagogico.model.licao.TipoPagina;
+import com.sabia.pedagogico.model.turma.Turma;
+import com.sabia.pedagogico.model.turma.TurmaAluno;
+import java.time.LocalDateTime;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +77,7 @@ class ProfessorLicaoControllerTest {
     @EnableWebMvc
     @Import({SecurityConfig.class, JwtAuthFilter.class, JwtTokenReader.class, JwtConfig.class,
             GlobalExceptionHandler.class, ProfessorLicaoController.class, ProfessorLicaoService.class,
-            ValidadorConteudoPagina.class, CenarioRoboValidador.class})
+            ValidadorConteudoPagina.class, CenarioRoboValidador.class, ProgressoLicaoProfessorService.class})
     static class Config {
         @Bean
         JsonMapper objectMapper() {
@@ -99,6 +108,16 @@ class ProfessorLicaoControllerTest {
         TurmaRepository turmaRepository() {
             return mock(TurmaRepository.class);
         }
+
+        @Bean
+        TurmaAlunoRepository turmaAlunoRepository() {
+            return mock(TurmaAlunoRepository.class);
+        }
+
+        @Bean
+        ProgressoLicaoRepository progressoLicaoRepository() {
+            return mock(ProgressoLicaoRepository.class);
+        }
     }
 
     @Autowired
@@ -109,6 +128,12 @@ class ProfessorLicaoControllerTest {
     private PaginaLicaoRepository paginaRepo;
     @Autowired
     private LicaoTurmaRepository vinculoRepo;
+    @Autowired
+    private TurmaAlunoRepository matriculaRepo;
+    @Autowired
+    private ProgressoPaginaRepository progressoPaginaRepo;
+    @Autowired
+    private ProgressoLicaoRepository progressoLicaoRepo;
 
     private MockMvc mockMvc;
     private Licao licao;
@@ -116,7 +141,7 @@ class ProfessorLicaoControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-        reset(licaoRepo, paginaRepo, vinculoRepo);
+        reset(licaoRepo, paginaRepo, vinculoRepo, matriculaRepo, progressoPaginaRepo, progressoLicaoRepo);
         licao = Licao.builder().id(1L).codigo("p-x").ordem(0).titulo("Algoritmos").conceito("Sequência")
                 .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(5L).build();
         when(licaoRepo.findById(1L)).thenReturn(Optional.of(licao));
@@ -276,5 +301,61 @@ class ProfessorLicaoControllerTest {
         mockMvc.perform(post(URL).header("Authorization", aluno).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"titulo\":\"Laços\",\"conceito\":\"Repetição\"}")).andExpect(status().isForbidden());
         verify(licaoRepo, never()).save(any());
+    }
+
+    // ---------- relatório de progresso da lição ----------
+
+    private void cenarioProgresso() {
+        Turma turma = Turma.builder().id(10L).nome("5º A").professorId(5L).build();
+        PaginaLicao pagina = PaginaLicao.builder().id(101L).licao(licao).ordem(0).tipo(TipoPagina.TEXTO)
+                .titulo("Introdução").conteudoJson("{}").build();
+        LocalDateTime t = LocalDateTime.of(2026, 11, 10, 9, 0);
+        when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(pagina));
+        when(vinculoRepo.findComTurmaByLicaoIdIn(any())).thenReturn(List.of(
+                LicaoTurma.builder().licao(licao).turma(turma).vinculadaEm(t).build()));
+        when(matriculaRepo.findByTurmaIdIn(any())).thenReturn(List.of(
+                TurmaAluno.builder().turma(turma).alunoId(3L).alunoNome("Maria").ingressoEm(t).build()));
+        when(progressoPaginaRepo.findByPaginaIdInAndAlunoIdIn(any(), any())).thenReturn(List.of(
+                ProgressoPagina.builder().alunoId(3L).pagina(pagina).vistaEm(t).build()));
+        when(progressoLicaoRepo.findByLicaoIdAndAlunoIdIn(any(), any())).thenReturn(List.of());
+    }
+
+    @Test
+    void donoVeOProgressoDaLicaoPorTurmaEPagina() throws Exception {
+        cenarioProgresso();
+        comoProfessor(5, get(URL + "/1/progresso"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.licao.id").value(1))
+                .andExpect(jsonPath("$.licao.estado").value("RASCUNHO"))
+                .andExpect(jsonPath("$.paginas[0].tipo").value("TEXTO"))
+                .andExpect(jsonPath("$.totalAlunos").value(1))
+                .andExpect(jsonPath("$.concluiram").value(0))
+                .andExpect(jsonPath("$.turmas[0].turmaNome").value("5º A"))
+                .andExpect(jsonPath("$.turmas[0].alunos[0].nome").value("Maria"))
+                .andExpect(jsonPath("$.turmas[0].alunos[0].estado").value("PRATICA_LIBERADA"))
+                .andExpect(jsonPath("$.turmas[0].alunos[0].paginas[0].concluida").value(true));
+    }
+
+    @Test
+    void progressoSemEmailCpfNemMatricula() throws Exception {
+        cenarioProgresso();
+        String json = comoProfessor(5, get(URL + "/1/progresso")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        org.assertj.core.api.Assertions.assertThat(json.toLowerCase()).doesNotContain("email", "cpf", "matricula");
+    }
+
+    @Test
+    void progressoDeOutroProfessor403EInexistente404() throws Exception {
+        comoProfessor(6, get(URL + "/1/progresso")).andExpect(status().isForbidden());
+        comoProfessor(5, get(URL + "/99/progresso")).andExpect(status().isNotFound());
+        verify(matriculaRepo, never()).findByTurmaIdIn(any());
+    }
+
+    @Test
+    void progressoRecusaAlunoESemToken() throws Exception {
+        mockMvc.perform(get(URL + "/1/progresso").header("Authorization", "Bearer " + token("3", "ALUNO")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get(URL + "/1/progresso")).andExpect(status().is4xxClientError());
+        verify(licaoRepo, never()).findById(any());
     }
 }
