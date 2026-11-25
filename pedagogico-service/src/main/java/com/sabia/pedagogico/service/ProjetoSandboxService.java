@@ -126,7 +126,7 @@ public class ProjetoSandboxService {
 
         ProjetoSandbox projeto = ProjetoSandbox.builder()
                 .alunoId(alunoId)
-                .nome(normalizarNome(atividade.getTitulo() + " — cópia"))
+                .nome(normalizarNome(nomeDaCopia(atividade.getTitulo())))
                 .modo(robo ? ModoProjetoSandbox.ROBO : ModoProjetoSandbox.BLOCOS_LIVRES)
                 .estadoJson(estadoJson)
                 .cenarioJson(cenarioJson)
@@ -156,6 +156,16 @@ public class ProjetoSandboxService {
         String aparado = nome == null ? "" : nome.trim();
         if (aparado.isEmpty()) return NOME_PADRAO;
         return aparado.length() > NOME_MAXIMO ? aparado.substring(0, NOME_MAXIMO).trim() : aparado;
+    }
+
+    /** "[Título] — cópia", com o título aparado e cortado para o sufixo caber nos 100 caracteres. */
+    static String nomeDaCopia(String titulo) {
+        String sufixo = " — cópia";
+        String base = titulo == null ? "" : titulo.trim();
+        if (base.isEmpty()) return NOME_PADRAO;
+        int maximo = NOME_MAXIMO - sufixo.length();
+        if (base.length() > maximo) base = base.substring(0, maximo).trim();
+        return base + sufixo;
     }
 
     private void validarJson(String estadoJson) {
