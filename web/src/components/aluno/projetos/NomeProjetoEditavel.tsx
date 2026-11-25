@@ -12,13 +12,15 @@ interface Props {
   onFechar: () => void
   rotulo: string
   className?: string
+  /** No cabeçalho do editor não cabe uma linha de erro: ela fica só para leitores de tela (o campo fica vermelho). */
+  erroDiscreto?: boolean
 }
 
 /**
  * Campo de renomear: Enter ou sair do campo confirmam; Esc cancela; nome vazio é rejeitado (mostra o erro e
  * mantém o nome anterior).
  */
-export function NomeProjetoEditavel({ valor, onSalvar, onFechar, rotulo, className }: Props) {
+export function NomeProjetoEditavel({ valor, onSalvar, onFechar, rotulo, className, erroDiscreto }: Props) {
   const [texto, setTexto] = useState(valor)
   const [erro, setErro] = useState<string | null>(null)
   // Evita confirmar duas vezes (Enter seguido do blur de quando o campo some).
@@ -47,6 +49,8 @@ export function NomeProjetoEditavel({ valor, onSalvar, onFechar, rotulo, classNa
         aria-label={rotulo}
         aria-invalid={!!erro}
         maxLength={100}
+        placeholder="Digite um nome"
+        title={erro ?? undefined}
         value={texto}
         onChange={(e) => {
           setTexto(e.target.value)
@@ -71,7 +75,7 @@ export function NomeProjetoEditavel({ valor, onSalvar, onFechar, rotulo, classNa
         className={cn(campo, 'min-h-10 py-1.5')}
       />
       {erro && (
-        <p role="alert" className={cn(textoErro, 'mt-1')}>
+        <p role="alert" className={erroDiscreto ? 'sr-only' : cn(textoErro, 'mt-1')}>
           {erro}
         </p>
       )}
