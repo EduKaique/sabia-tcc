@@ -18,6 +18,75 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - API `/api/aluno/projetos` (listar, detalhar, criar, editar e excluir) e `POST /api/aluno/atividades/{id}/sandbox`. Os projetos são privados do aluno (de outro aluno respondem 404; professor e administrador não têm acesso), sem nota, sem entrega e sem validação no servidor.
 - Limites: 10 projetos por aluno (409 `SANDBOX_LIMITE_PROJETOS`) e 1 MB por projeto (400 `SANDBOX_PROJETO_GRANDE`). O corpo de erro do serviço pedagógico ganhou o campo opcional `codigo`.
 
+## [0.4.0] - 2026-11-25
+
+Lições criadas pelo professor, com páginas de conteúdo, questionário, vínculo com turma e relatório de
+progresso, e mensageria ligada em produção, publicada como **pré-release**. Notas completas em
+[docs/release-notes/v0.4.0.md](docs/release-notes/v0.4.0.md).
+
+### Adicionado
+
+#### Professor
+
+- Página "Lições" (`/professor/licoes`), com link na barra lateral: criar, editar, publicar, despublicar e arquivar lições; até 200 lições por professor (#98).
+- Editor da lição em seções: informações (título, tema e descrição), páginas, prática (Jogo do Robô com cenário ou blocos livres) e turmas e publicação, com a lista do que falta para publicar (#98).
+- Páginas de conteúdo na lição, até 30, em quatro tipos: texto formatado (com título e subtítulo), imagem por endereço com texto alternativo e legenda, vídeo do YouTube com a duração lida do player e questionário de múltipla escolha (1 a 10 perguntas, 2 a 5 alternativas, percentual mínimo de acertos de 0 a 100, padrão 70) (#98).
+- Vínculo da lição com uma ou mais turmas do professor; só os alunos dessas turmas veem a lição publicada (#98).
+- "Ver lição" (`/professor/licoes/<id>`): relatório de progresso dos alunos das turmas vinculadas, por turma e página a página, com a situação da lição, o percentual nos questionários e a prática (#98).
+
+#### Aluno
+
+- Lição em páginas, com navegação entre elas: texto, imagem, vídeo do YouTube e questionário (#98).
+- Questionário com tentativas ilimitadas: o aluno vê se cada resposta está certa ou errada, sem o gabarito, e vale o melhor percentual (#98).
+- Filtro por turma na lista de lições, quando o aluno está em duas ou mais turmas (#98).
+
+#### Lições
+
+- API do professor em `/api/professor/licoes`: listar (com filtro por turma), criar, detalhar, salvar, vincular turmas (`PUT /{id}/turmas`), publicar, despublicar, arquivar (`DELETE`) e progresso (`GET /{id}/progresso`) (#98).
+- API do aluno para as páginas: `POST /api/aluno/licoes/{id}/paginas/{paginaId}/vista`, `.../video/pulso` e `.../questionario` (#98).
+- Tabelas `pagina_licao`, `licao_turma` e `progresso_pagina` no serviço pedagógico (#98).
+
+#### Infra e deploy
+
+- Serviço `rabbitmq` (imagem oficial `rabbitmq:3.13-management`) no compose de produção, com volume persistente, sem portas publicadas e limite de memória `MEM_RABBITMQ` (#100).
+- O `deploy.sh` confere, por até 2 minutos, a conexão dos três serviços com o RabbitMQ, os consumidores das filas principais e os bindings antes de registrar a tag (#100).
+- Job `testes-deploy` no workflow de publicação de imagens, que valida o compose de produção e a verificação da mensageria (`deploy/test-mensageria.sh`) (#100).
+
+### Alterado
+
+#### Aluno
+
+- "Aprender" passa a ser a primeira aba e a página inicial do aluno depois do login (#98).
+- A lista de lições mostra só as lições publicadas nas turmas do aluno (#98).
+- A prática da lição só abre depois que todas as páginas estão concluídas; antes, a página mostra o que falta (#98).
+- O vídeo conta como assistido quando 70% da duração é creditada pelo tempo de reprodução medido no servidor, no lugar do "Já assisti" (#98).
+
+#### Professor
+
+- Excluir uma turma remove só o vínculo dela com as lições, que continuam do professor (#98).
+
+#### Lições
+
+- As lições deixam de ser carregadas do `seed/licoes.json`: o arquivo e a carga na subida foram removidos (#98).
+- `POST /api/aluno/licoes/{id}/video-visto` foi removido, substituído pelo pulso do vídeo por página (#98).
+- `POST /api/aluno/licoes/{id}/concluir-atividade` responde 422 enquanto o aluno não concluiu todas as páginas da lição; depois da conclusão, a prática pode ser refeita livremente (#98).
+
+#### Infra e deploy
+
+- RabbitMQ ligado em produção (`RABBITMQ_ENABLED=true`) no auth-service, no serviço pedagógico e no ia-service, que esperam o broker ficar saudável para subir (#100).
+- `RABBITMQ_PASS` passa a ser obrigatória no `.env.prod`; `RABBITMQ_USER` usa `sabia` por padrão (#100).
+- Documentação da mensageria, do CI/CD e do runbook de produção atualizada para o broker em produção (#100).
+- O `backup.sh` mantém só os 2 dumps mais recentes (`DUMP_RETENCAO`, por data de modificação) antes de gerar o novo, então ficam 3 no diretório de backup; vale para o deploy, o cron e o `restore.sh`.
+- Depois que a stack fica saudável, o `deploy.sh` libera espaço em disco: remove imagens dangling, o cache de build e as imagens sem uso por nenhum container criadas há mais de 24 horas, mostrando `df -h /` e `docker system df` antes e depois. Volumes e containers não são tocados, e uma falha na limpeza só gera aviso.
+
+### Segurança
+
+#### Lições
+
+- O conteúdo das páginas é sanitizado com uma lista restrita de tags (sem imagens embutidas, estilos ou iframes); links só `http(s)` ou `mailto`, em nova aba com `noopener noreferrer` (#98).
+- O gabarito dos questionários só é devolvido pela API do professor (#98).
+- Lição de outro professor responde 403; para o aluno, lição em rascunho, arquivada ou de turma alheia responde 404, igual à inexistente (#98).
+
 ## [0.3.0] - 2026-11-18
 
 Jogo do Robô completo, devolutiva da correção para o aluno e edição de perfil, publicada como
@@ -310,7 +379,8 @@ Primeira versão, publicada como **pré-release**. Notas completas em
 - Cookie de sessão com `secure` em HTTPS.
 - Em produção, apenas o Caddy publica portas; banco, serviços e documentação da API ficam inacessíveis de fora.
 
-[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/EduKaique/sabia-tcc/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/EduKaique/sabia-tcc/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/EduKaique/sabia-tcc/compare/v0.1.0...v0.2.0

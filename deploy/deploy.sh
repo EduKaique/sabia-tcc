@@ -71,6 +71,20 @@ if [[ -n "$anterior" && "$anterior" != "$tag" ]]; then
 fi
 echo "$tag" > "$ARQ_TAG_ATUAL"
 
+# Limpeza de disco, só depois da stack saudável. Remove imagens sem uso por nenhum container e o
+# cache de build; nunca volumes nem containers. Falhas aqui só geram aviso, sem derrubar o deploy.
+IMAGENS_IDADE_MINIMA=24h
+info "Limpando resíduos do Docker (espaço antes)"
+df -h / || true
+docker system df || true
+docker image prune -f || echo "AVISO: falha ao remover imagens dangling." >&2
+docker builder prune -f || echo "AVISO: falha ao remover o cache de build." >&2
+docker image prune -a -f --filter "until=$IMAGENS_IDADE_MINIMA" \
+  || echo "AVISO: falha ao remover imagens sem uso com mais de $IMAGENS_IDADE_MINIMA." >&2
+info "Espaço depois da limpeza"
+df -h / || true
+docker system df || true
+
 info "Deploy de $tag concluído."
 if [[ -n "$(tag_anterior)" ]]; then
   echo "Rollback para $(tag_anterior): $RAIZ/deploy/deploy.sh --rollback"
