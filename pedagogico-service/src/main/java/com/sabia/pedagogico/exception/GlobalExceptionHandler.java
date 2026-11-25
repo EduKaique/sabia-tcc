@@ -64,6 +64,13 @@ public class GlobalExceptionHandler {
                 .body(ErroResponse.of(409, ex.getMessage()));
     }
 
+    /** Erro com código estável para o front (ex.: SANDBOX_LIMITE_PROJETOS); o status vem da exceção. */
+    @ExceptionHandler(ErroCodificadoException.class)
+    public ResponseEntity<ErroResponse> handleErroCodificado(ErroCodificadoException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(new ErroResponse(ex.getStatus().value(),
+                ex.getMessage(), Instant.now().toString(), null, ex.getCodigo()));
+    }
+
     @ExceptionHandler(NotaInvalidaException.class)
     public ResponseEntity<ErroResponse> handleNotaInvalida(NotaInvalidaException ex) {
         return ResponseEntity.badRequest().body(ErroResponse.ofValidation(Map.of("nota", ex.getMessage())));
@@ -119,7 +126,12 @@ public class GlobalExceptionHandler {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record ErroResponse(int status, String erro, String timestamp, Map<String, String> campos) {
+    public record ErroResponse(int status, String erro, String timestamp, Map<String, String> campos,
+                               String codigo) {
+
+        public ErroResponse(int status, String erro, String timestamp, Map<String, String> campos) {
+            this(status, erro, timestamp, campos, null);
+        }
 
         public static ErroResponse of(int status, String erro) {
             return new ErroResponse(status, erro, Instant.now().toString(), null);

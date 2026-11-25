@@ -15,6 +15,7 @@ import styles from '@/styles/home.module.css'
 const navItems = [
   { href: '/aluno/aprender', label: 'Aprender' },
   { href: '/aluno/atividades', label: 'Avaliações' },
+  { href: '/aluno/projetos', label: 'Meus Projetos' },
 ]
 
 const botaoIcone =

@@ -11,6 +11,7 @@ import type { AtividadeAlunoDTO } from '@/types/atividade'
 import { StatusBadge } from './StatusBadge'
 import { getInfoUrgencia } from './IndicadorUrgencia'
 import { ResultadoCorrecao } from './ResultadoCorrecao'
+import { BotaoContinuarSandbox } from './BotaoContinuarSandbox'
 
 interface Props {
   atividade: AtividadeAlunoDTO
@@ -67,12 +68,15 @@ export function PainelDetalhe({ atividade }: Props) {
       )}
 
       {(atividade.status === 'ENTREGUE' || atividade.status === 'CORRIGIDA') && (
-        <Link
-          href={`/aluno/atividades/${atividade.id}/projeto`}
-          className={cn(botaoSecundario, fredoka.className, 'w-full sm:w-auto')}
-        >
-          Visualizar projeto
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={`/aluno/atividades/${atividade.id}/projeto`}
+            className={cn(botaoSecundario, fredoka.className, 'w-full sm:w-auto')}
+          >
+            Visualizar projeto
+          </Link>
+          {atividade.status === 'CORRIGIDA' && <BotaoContinuarSandbox atividadeId={atividade.id} />}
+        </div>
       )}
     </div>
   )

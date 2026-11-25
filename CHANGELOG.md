@@ -7,6 +7,17 @@ e o projeto adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Adicionado
+
+#### Sandbox (aluno)
+
+- "Meus Projetos" (`/aluno/projetos`): galeria de projetos livres do aluno, com cards (nome, tipo e data da última edição), Abrir, Renomear no próprio card (Enter ou sair do campo confirmam, Esc cancela) e Excluir com confirmação; estado vazio com "Novo Projeto" e contador "X/10 projetos".
+- Novo Projeto em dois tipos: Blocos livres e Jogo do Robô (com os cenários prontos), aberto direto no editor.
+- Editor do Sandbox (`/aluno/projetos/{id}/editor`) com a interface das atividades, sem "Entregar" e sem limite de blocos; nome editável no cabeçalho, botão Salvar e auto-save com o indicador "Salvando..." / "Salvo".
+- "Continuar no Sandbox" na atividade corrigida (blocos livres e Jogo do Robô): cria a cópia "[Atividade] — cópia" com o projeto entregue (e o cenário, no robô) e abre o editor; a entrega original continua bloqueada.
+- API `/api/aluno/projetos` (listar, detalhar, criar, editar e excluir) e `POST /api/aluno/atividades/{id}/sandbox`. Os projetos são privados do aluno (de outro aluno respondem 404; professor e administrador não têm acesso), sem nota, sem entrega e sem validação no servidor.
+- Limites: 10 projetos por aluno (409 `SANDBOX_LIMITE_PROJETOS`) e 1 MB por projeto (400 `SANDBOX_PROJETO_GRANDE`). O corpo de erro do serviço pedagógico ganhou o campo opcional `codigo`.
+
 ## [0.4.0] - 2026-11-25
 
 Lições criadas pelo professor, com páginas de conteúdo, questionário, vínculo com turma e relatório de
