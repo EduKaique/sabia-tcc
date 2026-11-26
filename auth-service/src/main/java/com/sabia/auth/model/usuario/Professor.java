@@ -15,6 +15,4 @@ public class Professor {
     @MapsId
     @JoinColumn(name = "id")
     private Usuario usuario;
-
-    private String especialidade;
 }

@@ -41,8 +41,8 @@ VALUES (
     'PROFESSOR', CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO professor (id, especialidade)
-VALUES (2, 'Programação')
+INSERT INTO professor (id)
+VALUES (2)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Aluno
