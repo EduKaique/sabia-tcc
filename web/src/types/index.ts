@@ -46,7 +46,6 @@ export interface AtividadeAvaliativa {
   turmaId: number
   pontuacaoMaxima: number
   dataEntrega: Date | undefined
-  eGeradaIa: boolean
   gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
@@ -99,7 +98,6 @@ export interface AtividadeDetalhes {
   dataEntrega: string | null
   pontuacaoMaxima: number
   status: 'RASCUNHO' | 'PUBLICADA'
-  eGeradaIa: boolean
   criadaEm: string
   totalAlunos: number
   totalEntregas: number

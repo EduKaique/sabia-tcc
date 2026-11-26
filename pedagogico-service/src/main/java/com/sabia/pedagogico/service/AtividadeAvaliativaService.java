@@ -217,7 +217,7 @@ public class AtividadeAvaliativaService {
         return new AtividadeAvaliativaAlunoResponse(
                 a.getId(), a.getTitulo(), a.getDescricao(),
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
-                a.getDataEntrega(), a.isEGeradaIa(),
+                a.getDataEntrega(),
                 statusAluno, a.getCriadaEm(),
                 a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
                 a.getCenarioJson(),

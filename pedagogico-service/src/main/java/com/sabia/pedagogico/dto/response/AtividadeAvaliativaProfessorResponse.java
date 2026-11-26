@@ -12,7 +12,6 @@ public record AtividadeAvaliativaProfessorResponse(
         Long turmaId,
         int pontuacaoMaxima,
         LocalDateTime dataEntrega,
-        boolean eGeradaIa,
         StatusAtividade status,
         LocalDateTime criadaEm,
         String gabaritoEstadoJson,

@@ -32,10 +32,6 @@ public class AtividadeAvaliativa {
     @Column(nullable = false)
     private int pontuacaoMaxima;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean eGeradaIa = false;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

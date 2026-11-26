@@ -13,7 +13,6 @@ public record AtividadeAvaliativaAlunoResponse(
         Long turmaId,
         int pontuacaoMaxima,
         LocalDateTime dataEntrega,
-        boolean eGeradaIa,
         StatusAtividadeAluno status,
         LocalDateTime criadaEm,
         ModoAtividade modo,
