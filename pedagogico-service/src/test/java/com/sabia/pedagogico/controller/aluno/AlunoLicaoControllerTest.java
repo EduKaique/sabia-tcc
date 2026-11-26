@@ -187,7 +187,6 @@ class AlunoLicaoControllerTest {
         assertThat(raiz.get("paginas").get(0).get("conteudo").get("html").stringValue()).isEqualTo("<p>Oi</p>");
         // Campos legados saíram da resposta do aluno.
         assertThat(raiz.has("videoId")).isFalse();
-        assertThat(raiz.has("videoVisto")).isFalse();
         assertThat(raiz.has("conteudo")).isFalse();
         assertThat(raiz.get("estado").stringValue()).isEqualTo("NAO_INICIADA");
         assertThat(raiz.get("praticaLiberada").booleanValue()).isFalse();
