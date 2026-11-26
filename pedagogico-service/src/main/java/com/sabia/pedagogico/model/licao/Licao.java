@@ -34,19 +34,8 @@ public class Licao {
     @Column(columnDefinition = "TEXT")
     private String resumo;
 
-    /** HTML; o front sanitiza antes de exibir. */
-    @Column(columnDefinition = "TEXT")
-    private String conteudo;
-
     @Column(nullable = false)
     private String conceito;
-
-    @Column(length = 20)
-    private String videoId;
-
-    private String videoTitulo;
-
-    private String videoCanal;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
