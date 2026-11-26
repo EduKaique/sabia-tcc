@@ -2,8 +2,8 @@
 -- data.sql  —  Seed de desenvolvimento (Serviço Pedagógico)
 --
 -- professor_id=2 e aluno_id=3 e instituicao_id=1 correspondem aos ids do
--- Usuario/Professor/Aluno/Instituicao seedados no banco do módulo `api`
--- (ver api/src/main/resources/data.sql) — aqui são apenas valores Long
+-- Usuario/Professor/Aluno/Instituicao seedados pelo auth-service
+-- (ver auth-service/src/main/resources/data.sql) — aqui são apenas valores Long
 -- escalares, sem FK entre bancos (schema-per-service).
 -- ================================================================
 

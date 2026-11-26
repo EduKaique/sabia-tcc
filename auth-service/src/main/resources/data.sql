@@ -1,8 +1,8 @@
 -- ================================================================
 -- data.sql  —  Seed de desenvolvimento do auth-service
 -- Senha de todos os usuários: senha123
--- IDs 2 (professor) e 3 (aluno) coincidem com o seed do monólito `api/`
--- para que o mesmo token JWT resolva nos dois serviços durante a transição.
+-- IDs 2 (professor) e 3 (aluno) coincidem com o seed do pedagogico-service
+-- (professor_id=2, aluno_id=3) para que o mesmo token JWT resolva nos dois serviços.
 -- ================================================================
 
 -- 0. CPF opcional para ALUNO (primeiro acesso por convite, HU003.2). O ddl-auto: update

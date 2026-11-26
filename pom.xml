@@ -11,7 +11,7 @@
 	<description>Sabiá — reactor Maven multi-módulo</description>
 
 	<modules>
-		<module>api</module>
+		<module>auth-service</module>
 		<module>pedagogico-service</module>
 	</modules>
 
