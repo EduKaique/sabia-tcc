@@ -23,6 +23,7 @@ export const LIMITES_LICAO = {
   htmlTextoMax: 20_000,
   htmlImagemMax: 10_000,
   urlMax: 500,
+  dataUriMax: 20_000,
   altMax: 200,
   legendaMax: 200,
   entradaVideoMax: MAX_ENTRADA_VIDEO,
@@ -50,6 +51,11 @@ export const metadadosLicaoSchema = z.object({
 
 export const novaLicaoSchema = metadadosLicaoSchema
 export type NovaLicaoForm = z.input<typeof novaLicaoSchema>
+
+/** Imagem raster embutida (data URI), como o servidor (ValidadorConteudoPagina.DATA_URI_IMAGEM). */
+export function urlDataImagem(url: string): boolean {
+  return /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/.test(url)
+}
 
 /** https com host e sem espaços, como o servidor (ValidadorConteudoPagina.https). */
 export function urlHttps(url: string): boolean {
@@ -81,8 +87,9 @@ export const paginaImagemSchema = z.object({
     .string()
     .trim()
     .min(1, 'Informe o endereço da imagem.')
-    .max(L.urlMax, `O endereço deve ter no máximo ${L.urlMax} caracteres.`)
-    .refine(urlHttps, 'Informe um endereço de imagem que comece com https://.'),
+    .max(L.dataUriMax, `O endereço deve ter no máximo ${L.urlMax} caracteres.`)
+    .refine((u) => urlDataImagem(u) || u.length <= L.urlMax, `O endereço deve ter no máximo ${L.urlMax} caracteres.`)
+    .refine((u) => urlDataImagem(u) || urlHttps(u), 'Informe um endereço de imagem que comece com https://.'),
   alt: z
     .string()
     .trim()

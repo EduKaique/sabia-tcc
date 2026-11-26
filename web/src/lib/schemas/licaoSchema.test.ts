@@ -63,6 +63,12 @@ describe('licaoSchema', () => {
     expect(url(500)).toHaveLength(500)
     expect(imagem({ imagemUrl: url(500) })).toBe(true)
     expect(imagem({ imagemUrl: url(501) })).toBe(false)
+    const png = 'data:image/png;base64,iVBORw0KGgo='
+    expect(imagem({ imagemUrl: png })).toBe(true)
+    expect(imagem({ imagemUrl: `data:image/png;base64,${'A'.repeat(20_000 - 22)}` })).toBe(true)
+    expect(imagem({ imagemUrl: `data:image/png;base64,${'A'.repeat(20_000)}` })).toBe(false)
+    expect(imagem({ imagemUrl: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=' })).toBe(false)
+    expect(imagem({ imagemUrl: 'data:text/html;base64,PGI+PC9iPg==' })).toBe(false)
     expect(imagem({ alt: '  ' })).toBe(false)
     expect(imagem({ alt: 'a'.repeat(200) })).toBe(true)
     expect(imagem({ alt: 'a'.repeat(201) })).toBe(false)

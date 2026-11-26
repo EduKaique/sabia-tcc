@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Valida o conteúdo de uma página da lição pelo tipo e devolve o JSON normalizado que é gravado em
@@ -27,6 +28,10 @@ public class ValidadorConteudoPagina {
     static final int MAX_HTML_TEXTO = 20_000;
     static final int MAX_HTML_IMAGEM = 10_000;
     static final int MAX_URL = 500;
+    /** Imagem embutida (data URI), usada pelo seed de demonstração: só raster, sem SVG (que pode ter script). */
+    static final int MAX_DATA_URI = 20_000;
+    private static final Pattern DATA_URI_IMAGEM =
+            Pattern.compile("^data:image/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$");
     static final int MAX_ALT = 200;
     static final int MAX_LEGENDA = 200;
     static final int MAX_TITULO_VIDEO = 255;
@@ -84,9 +89,13 @@ public class ValidadorConteudoPagina {
     }
 
     private ConteudoImagemTexto imagemTexto(JsonNode no, Campos c) {
-        String url = c.texto(no, "imagemUrl", true, MAX_URL, true);
-        if (url != null && !https(url)) {
-            c.erro("imagemUrl", "Informe um endereço de imagem que comece com https://.");
+        String url = c.texto(no, "imagemUrl", true, MAX_DATA_URI, true);
+        if (url != null && !DATA_URI_IMAGEM.matcher(url).matches()) {
+            if (url.length() > MAX_URL) {
+                c.erro("imagemUrl", "Deve ter no máximo " + MAX_URL + " caracteres.");
+            } else if (!https(url)) {
+                c.erro("imagemUrl", "Informe um endereço de imagem que comece com https://.");
+            }
         }
         String alt = c.texto(no, "alt", true, MAX_ALT, true);
         String legenda = c.texto(no, "legenda", false, MAX_LEGENDA, true);
