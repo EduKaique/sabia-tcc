@@ -12,6 +12,8 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -39,7 +41,11 @@ public class SeedDemoRunner implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws SQLException {
+    public void run(ApplicationArguments args) throws SQLException, IOException {
+        if (semComandos()) {
+            log.info("Seed de demonstração ligado, mas o script não tem comandos: nada a fazer.");
+            return;
+        }
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator(false, false, "UTF-8", script);
         populator.setSeparator(SEPARADOR);
         try (Connection conn = dataSource.getConnection()) {
@@ -53,5 +59,14 @@ public class SeedDemoRunner implements ApplicationRunner {
             }
         }
         log.info("Seed de demonstração aplicado (SABIA_SEED_DEMO=true).");
+    }
+
+    /** Script só com comentários ou vazio faz o populator lançar exceção; aqui vira "nada a fazer". */
+    private boolean semComandos() throws IOException {
+        String sql = script.getContentAsString(StandardCharsets.UTF_8)
+                .replaceAll("(?s)/\\*.*?\\*/", "")
+                .replaceAll("(?m)--.*$", "")
+                .replace(SEPARADOR, "");
+        return sql.isBlank();
     }
 }

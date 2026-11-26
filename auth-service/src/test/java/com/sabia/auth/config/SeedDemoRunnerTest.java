@@ -55,6 +55,14 @@ class SeedDemoRunnerTest {
     }
 
     @Test
+    void scriptSoComComentarioOuVazioNaoFalha() throws Exception {
+        runner("-- só comentário\n").run(null);
+        runner("").run(null);
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM item", Integer.class)).isZero();
+    }
+
+    @Test
     void naoAlteraLinhaExistente() throws Exception {
         jdbc.update("INSERT INTO item VALUES (9000001, 'real')");
         runner(insert(9_000_001, "demo")).run(null);
