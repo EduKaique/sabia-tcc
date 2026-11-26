@@ -66,7 +66,7 @@ public class ProfessorAlunoService {
                     aluno != null ? aluno.getMatricula() : null,
                     aluno != null ? aluno.getAvatar() : null,
                     r.ingressoEm() == null ? null : LocalDateTime.parse(r.ingressoEm()),
-                    usuario != null && usuario.isMustChangePassword());
+                    usuario != null && usuario.isTrocaSenhaObrigatoria());
         }).toList();
     }
 
@@ -89,7 +89,7 @@ public class ProfessorAlunoService {
 
         String senha = request.modo() == Modo.ALEATORIA ? geradorSenha.gerar() : request.senha();
         aluno.setSenhaHash(passwordEncoder.encode(senha));
-        aluno.setMustChangePassword(request.exigirTroca());
+        aluno.setTrocaSenhaObrigatoria(request.exigirTroca());
         usuarioRepository.save(aluno);
         // Senha nova: libera a conta se ela estava bloqueada por tentativas erradas.
         limiteTentativas.liberar(aluno.getEmail(),

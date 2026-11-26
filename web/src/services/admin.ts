@@ -6,7 +6,7 @@ export interface ProfessorAdmin {
   cpf: string
   email: string
   ativo: boolean
-  mustChangePassword: boolean
+  trocaSenhaObrigatoria: boolean
 }
 
 export interface CriarProfessorPayload {

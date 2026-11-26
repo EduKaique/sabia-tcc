@@ -219,7 +219,7 @@ export function EntradaAluno({ codigoInicial }: { codigoInicial?: string }) {
         onSuccess: (resposta) => {
           salvarToken(resposta.token)
           // Com troca de senha pendente o backend recusa o vínculo: troca primeiro, turma depois.
-          if (resposta.role === 'ALUNO' && turma && !resposta.mustChangePassword) {
+          if (resposta.role === 'ALUNO' && turma && !resposta.trocaSenhaObrigatoria) {
             vincularAposLogin(resposta, turma)
           } else {
             redirecionarPorPerfil(resposta, router)

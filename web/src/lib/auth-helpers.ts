@@ -28,7 +28,7 @@ export function redirecionarPorPerfil(
   data: LoginResponse,
   router: { push: (path: string) => void }
 ) {
-  if (data.mustChangePassword) {
+  if (data.trocaSenhaObrigatoria) {
     router.push(ROTA_TROCAR_SENHA);
     return;
   }

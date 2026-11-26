@@ -98,7 +98,7 @@
         "tags": [
           "Autenticação"
         ],
-        "summary": "Troca a senha do usuário autenticado (uso obrigatório quando mustChangePassword=true)",
+        "summary": "Troca a senha do usuário autenticado (uso obrigatório quando trocaSenhaObrigatoria=true)",
         "operationId": "trocarSenha",
         "requestBody": {
           "content": {
@@ -264,7 +264,7 @@
         "tags": [
           "Admin — Professores"
         ],
-        "summary": "Cadastra um professor com senha temporária (mustChangePassword=true)",
+        "summary": "Cadastra um professor com senha temporária (trocaSenhaObrigatoria=true)",
         "operationId": "criar",
         "requestBody": {
           "content": {
@@ -595,7 +595,7 @@
           "nome": {
             "type": "string"
           },
-          "mustChangePassword": {
+          "trocaSenhaObrigatoria": {
             "type": "boolean"
           }
         }
@@ -656,7 +656,7 @@
           "ativo": {
             "type": "boolean"
           },
-          "mustChangePassword": {
+          "trocaSenhaObrigatoria": {
             "type": "boolean"
           }
         }

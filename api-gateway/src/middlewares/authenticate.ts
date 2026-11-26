@@ -10,7 +10,8 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   }
   // Troca de senha pendente: só a troca (no auth-service) fica liberada. Responde direto, no
   // mesmo formato dos serviços ({ status, erro, codigo }), para o front reconhecer pelo `codigo`.
-  if (request.user.mustChangePassword === true) {
+  // mustChangePassword: nome antigo da claim, ainda presente em tokens emitidos antes do rename.
+  if (request.user.trocaSenhaObrigatoria === true || request.user.mustChangePassword === true) {
     return reply.code(403).send({
       status: 403,
       erro: 'Você precisa trocar sua senha para continuar.',

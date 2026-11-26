@@ -20,7 +20,7 @@ export function TrocaSenhaGuard({ children }: { children: React.ReactNode }) {
     () => true,
     () => false,
   )
-  const pendente = hydrated && !!user?.mustChangePassword
+  const pendente = hydrated && !!user?.trocaSenhaObrigatoria
 
   useEffect(() => {
     if (pendente) router.replace(ROTA_TROCAR_SENHA)

@@ -40,7 +40,7 @@ public class AdminProfessorController {
     }
 
     @PostMapping
-    @Operation(summary = "Cadastra um professor com senha temporária (mustChangePassword=true)")
+    @Operation(summary = "Cadastra um professor com senha temporária (trocaSenhaObrigatoria=true)")
     public ResponseEntity<ProfessorResponse> criar(Authentication authentication,
                                                     @Valid @RequestBody CriarProfessorRequest request) {
         Usuario admin = (Usuario) authentication.getPrincipal();

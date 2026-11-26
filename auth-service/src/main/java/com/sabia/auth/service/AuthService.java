@@ -58,7 +58,7 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(usuario);
         log.info("Login bem-sucedido para usuário id={}", usuario.getId());
         return new LoginResponse(token, "Bearer", usuario.getTipoPerfil().name(), usuario.getNome(),
-                usuario.isMustChangePassword());
+                usuario.isTrocaSenhaObrigatoria());
     }
 
     private Optional<Usuario> buscarPorLogin(String login) {
@@ -81,7 +81,7 @@ public class AuthService {
         }
 
         usuario.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
-        usuario.setMustChangePassword(false);
+        usuario.setTrocaSenhaObrigatoria(false);
         usuarioRepository.save(usuario);
 
         log.info("Senha alterada pelo próprio usuário id={}", usuario.getId());

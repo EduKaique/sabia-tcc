@@ -22,7 +22,9 @@ public class JwtTokenProvider {
 
     /** Perfil do token de serviço (auth-service → pedagogico). Não existe em PerfilUsuario. */
     public static final String PERFIL_SISTEMA = "SISTEMA";
-    public static final String CLAIM_TROCA_SENHA = "mustChangePassword";
+    public static final String CLAIM_TROCA_SENHA = "trocaSenhaObrigatoria";
+    /** Nome antigo da claim: tokens emitidos antes do rename (validade de até 8 h) ainda a carregam. */
+    public static final String CLAIM_TROCA_SENHA_LEGADA = "mustChangePassword";
     private static final long VALIDADE_TOKEN_SERVICO_MS = 60_000;
     // O pedagogico faz Long.parseLong(sub); 0 nunca é id de usuário (IDENTITY começa em 1).
     private static final String SUB_SISTEMA = "0";
@@ -36,7 +38,7 @@ public class JwtTokenProvider {
                 .claim("role", usuario.getTipoPerfil().name())
                 .claim("nome", usuario.getNome())
                 // Troca de senha pendente: os filtros JWT bloqueiam tudo, menos a própria troca.
-                .claim(CLAIM_TROCA_SENHA, usuario.isMustChangePassword())
+                .claim(CLAIM_TROCA_SENHA, usuario.isTrocaSenhaObrigatoria())
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + jwtProperties.expirationMs()))
                 .signWith(signingKey())
@@ -61,7 +63,8 @@ public class JwtTokenProvider {
     }
 
     public boolean exigeTrocaDeSenha(Claims claims) {
-        return Boolean.TRUE.equals(claims.get(CLAIM_TROCA_SENHA, Boolean.class));
+        return Boolean.TRUE.equals(claims.get(CLAIM_TROCA_SENHA, Boolean.class))
+                || Boolean.TRUE.equals(claims.get(CLAIM_TROCA_SENHA_LEGADA, Boolean.class));
     }
 
     public Long extractUserId(String token) {

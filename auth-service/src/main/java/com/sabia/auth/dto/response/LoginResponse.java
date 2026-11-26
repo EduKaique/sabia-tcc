@@ -5,5 +5,5 @@ public record LoginResponse(
         String tipo,
         String role,
         String nome,
-        boolean mustChangePassword
+        boolean trocaSenhaObrigatoria
 ) {}

@@ -47,7 +47,7 @@ class BootstrapUsuariosIniciaisTest {
         assertThat(admin.getEmail()).isEqualTo("admin@escola.edu");
         assertThat(admin.getNome()).isEqualTo("Administrador");
         assertThat(admin.getCpf()).isEqualTo("00000000000");
-        assertThat(admin.isMustChangePassword()).isFalse();
+        assertThat(admin.isTrocaSenhaObrigatoria()).isFalse();
         assertThat(admin.getSenhaHash()).isNotEqualTo("senha-admin-forte");
         assertThat(passwordEncoder.matches("senha-admin-forte", admin.getSenhaHash())).isTrue();
 

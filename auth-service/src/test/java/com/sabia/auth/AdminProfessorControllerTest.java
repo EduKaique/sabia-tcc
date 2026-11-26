@@ -133,7 +133,7 @@ class AdminProfessorControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("novo.professor@sabia.edu"))
                 .andExpect(jsonPath("$.ativo").value(true))
-                .andExpect(jsonPath("$.mustChangePassword").value(true));
+                .andExpect(jsonPath("$.trocaSenhaObrigatoria").value(true));
 
         ArgumentCaptor<String> senhaCaptor = ArgumentCaptor.forClass(String.class);
         verify(emailService).enviarSenhaTemporaria(eq("novo.professor@sabia.edu"), eq("Novo Professor"), senhaCaptor.capture());
@@ -148,7 +148,7 @@ class AdminProfessorControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.createObjectNode().put("email", "novo.professor@sabia.edu").put("senha", senhaTemporaria).toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.mustChangePassword").value(true));
+                .andExpect(jsonPath("$.trocaSenhaObrigatoria").value(true));
     }
 
     @Test

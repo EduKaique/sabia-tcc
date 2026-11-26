@@ -39,7 +39,7 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `sen
 | `POST` | `/api/auth/validate` | pública | Verifica assinatura/validade de um token (uso do Gateway) |
 | `POST` | `/api/auth/esqueci-senha` | pública | Gera um token de recuperação (24h) e envia o link por e-mail |
 | `POST` | `/api/auth/redefinir-senha` | pública | Redefine a senha a partir de um token de recuperação válido |
-| `POST` | `/api/auth/trocar-senha` | Bearer | Troca obrigatória de senha (quando `mustChangePassword=true`) |
+| `POST` | `/api/auth/trocar-senha` | Bearer | Troca obrigatória de senha (quando `trocaSenhaObrigatoria=true`) |
 | `PUT` | `/api/auth/perfil` | Bearer | Aluno completa o perfil (nome, CPF, matrícula, avatar) |
 | `GET` | `/api/auth/perfil/status` | Bearer | `{ perfilCompleto }` do usuário autenticado |
 | `GET` | `/api/admin/professores` | Bearer (ADMINISTRADOR) | Lista professores, com filtro opcional `?ativo=true\|false` |
@@ -51,15 +51,17 @@ Seed de desenvolvimento (`src/main/resources/data.sql`) — senha de todos: `sen
 ### `POST /api/auth/login`
 ```jsonc
 // 200
-{ "token": "eyJ...", "tipo": "Bearer", "role": "PROFESSOR", "nome": "Ana Professora", "mustChangePassword": false }
+{ "token": "eyJ...", "tipo": "Bearer", "role": "PROFESSOR", "nome": "Ana Professora", "trocaSenhaObrigatoria": false }
 // 401 — mensagem genérica (não revela qual campo falhou)
 { "status": 401, "erro": "E-mail ou senha incorretos", "timestamp": "..." }
 
 // 403 — credenciais corretas, mas a conta foi desativada pelo admin
 { "status": 403, "erro": "Usuário inativo.", "timestamp": "..." }
 ```
-Se `mustChangePassword=true` (ex.: senha gerada pelo admin), o front deve barrar o acesso ao
+Se `trocaSenhaObrigatoria=true` (ex.: senha gerada pelo admin), o front deve barrar o acesso ao
 dashboard e forçar a chamada de `POST /api/auth/trocar-senha` antes de liberar o resto da app.
+
+> A claim do JWT e o campo do JSON se chamavam `mustChangePassword`. Os leitores (auth-service, pedagogico-service, api-gateway e front) aceitam os dois nomes na claim enquanto houver tokens emitidos antes do rename (validade de 8 h); o JSON e os tokens novos usam só `trocaSenhaObrigatoria`.
 
 ### `GET /api/auth/me`
 ```jsonc
@@ -113,7 +115,7 @@ na hora) e invalida também os demais tokens de recuperação ativos do mesmo us
 // 422 — senhas divergentes
 { "status": 422, "erro": "As senhas não coincidem.", "timestamp": "..." }
 ```
-Grava a nova senha com BCrypt e zera `mustChangePassword`.
+Grava a nova senha com BCrypt e zera `trocaSenhaObrigatoria`.
 
 ### `PUT /api/auth/perfil` (Bearer, apenas ALUNO)
 ```jsonc
@@ -147,7 +149,7 @@ Para PROFESSOR/ADMINISTRADOR sempre retorna `perfilCompleto: true` (não há per
 
 // 200
 [ { "id": 2, "nome": "Ana Professora", "cpf": "12345678901", "email": "professor@sabia.edu",
-    "ativo": true, "mustChangePassword": false } ]
+    "ativo": true, "trocaSenhaObrigatoria": false } ]
 ```
 
 ### `POST /api/admin/professores` (Bearer, apenas ADMINISTRADOR)
@@ -157,14 +159,14 @@ Para PROFESSOR/ADMINISTRADOR sempre retorna `perfilCompleto: true` (não há per
 
 // 201
 { "id": 10, "nome": "Novo Professor", "cpf": "11111111111", "email": "novo.professor@sabia.edu",
-  "ativo": true, "mustChangePassword": true }
+  "ativo": true, "trocaSenhaObrigatoria": true }
 
 // 409 — CPF ou e-mail já usados por outro usuário
 { "status": 409, "erro": "CPF já cadastrado.", "timestamp": "..." }
 { "status": 409, "erro": "E-mail já cadastrado.", "timestamp": "..." }
 ```
 Gera uma senha temporária aleatória (nunca retornada na resposta), salva com BCrypt, seta
-`mustChangePassword = true` e envia a senha por e-mail via `EmailService` (mesmo mecanismo
+`trocaSenhaObrigatoria = true` e envia a senha por e-mail via `EmailService` (mesmo mecanismo
 `dev`/`smtp` do fluxo de recuperação de senha). A conta herda a `instituicao` do admin logado.
 
 ### `PATCH /api/admin/professores/{id}/desativar` e `/reativar` (Bearer, apenas ADMINISTRADOR)

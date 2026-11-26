@@ -8,7 +8,7 @@ public record ProfessorResponse(
         String cpf,
         String email,
         boolean ativo,
-        boolean mustChangePassword
+        boolean trocaSenhaObrigatoria
 ) {
     public static ProfessorResponse from(Usuario usuario) {
         return new ProfessorResponse(
@@ -17,7 +17,7 @@ public record ProfessorResponse(
                 usuario.getCpf(),
                 usuario.getEmail(),
                 usuario.isAtivo(),
-                usuario.isMustChangePassword()
+                usuario.isTrocaSenhaObrigatoria()
         );
     }
 }
