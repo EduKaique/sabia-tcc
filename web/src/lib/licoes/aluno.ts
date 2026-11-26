@@ -8,14 +8,14 @@ import type {
   ProgressoPagina,
   ProgressoVideo,
   PulsoVideo,
-  TipoPaginaAluno,
+  TipoPagina,
   VistaPagina,
 } from '@/types/licao'
 import { formatarDuracao } from './youtube'
 
 /** Regras puras das telas de lição do aluno. */
 
-export const ROTULO_TIPO_ALUNO: Record<TipoPaginaAluno, string> = {
+export const ROTULO_TIPO_ALUNO: Record<TipoPagina, string> = {
   TEXTO: 'Texto',
   IMAGEM_TEXTO: 'Imagem',
   VIDEO_YOUTUBE: 'Vídeo',

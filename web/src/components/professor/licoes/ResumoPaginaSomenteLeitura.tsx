@@ -1,4 +1,4 @@
-import type { TipoPagina } from '@/types/licaoProfessor'
+import type { TipoPagina } from '@/types/licao'
 
 /**
  * Resumo de uma página que não pode ser editada aqui (hoje só o vídeo enviado). Ela é mantida exatamente como

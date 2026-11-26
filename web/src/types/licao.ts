@@ -7,7 +7,7 @@ import type { ModoAtividade, ResultadoValidacao } from '@/types'
 
 export type EstadoLicaoAluno = 'NAO_INICIADA' | 'EM_ANDAMENTO' | 'PRATICA_LIBERADA' | 'CONCLUIDA'
 
-export type TipoPaginaAluno = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
+export type TipoPagina = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
 
 /** Item de GET /api/aluno/licoes. `turmas`: só as turmas do aluno às quais a lição está vinculada. */
 export interface LicaoResumo {
@@ -71,7 +71,7 @@ export interface ProgressoPagina {
 export interface PaginaAluno {
   id: number
   ordem: number
-  tipo: TipoPaginaAluno
+  tipo: TipoPagina
   titulo: string | null
   conteudo: unknown
   progresso: ProgressoPagina

@@ -4,8 +4,8 @@ import type {
   ConteudoTexto,
   EstadoLicaoProfessor,
   LicaoProfessorDetalhe,
-  TipoPagina,
 } from '@/types/licaoProfessor'
+import type { TipoPagina } from '@/types/licao'
 import { perguntaVazia, LIMITES_QUESTIONARIO, type ConteudoQuestionarioEditor } from './questionario'
 import { lerDuracao, type ConteudoVideoEditor } from './youtube'
 

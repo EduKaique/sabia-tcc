@@ -1,11 +1,9 @@
 import type { ModoAtividade } from '@/types'
-import type { EstadoLicaoAluno } from '@/types/licao'
+import type { EstadoLicaoAluno, TipoPagina } from '@/types/licao'
 
 /** Tipos da API de autoria de lições (/api/professor/licoes). As do aluno ficam em types/licao.ts. */
 
 export type EstadoLicaoProfessor = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA'
-
-export type TipoPagina = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
 
 export interface ConteudoTexto {
   html: string
