@@ -15,7 +15,7 @@ export function getInfoUrgencia(
   const diffHours = diffMs / (1000 * 60 * 60)
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 
-  const isPending = status === 'PENDENTE' || status === 'EM_ANDAMENTO'
+  const isPending = status === 'PENDENTE'
 
   if (diffMs <= 0) {
     return { text: 'Prazo encerrado', urgent: isPending }

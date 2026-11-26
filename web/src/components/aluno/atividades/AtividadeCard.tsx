@@ -17,8 +17,7 @@ interface Props {
 export function AtividadeCard({ atividade }: Props) {
   const { text: dateText, urgent } = getInfoUrgencia(atividade.dataEntrega, atividade.status)
 
-  const actionLabel =
-    atividade.status === 'EM_ANDAMENTO' ? 'Continuar' : 'Começar Agora'
+  const actionLabel = 'Começar Agora'
 
   return (
     <article className={cn(cartao, 'p-5', urgent && 'border-l-8 border-l-sabia-erro')}>

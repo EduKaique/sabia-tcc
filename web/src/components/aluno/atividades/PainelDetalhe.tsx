@@ -50,12 +50,12 @@ export function PainelDetalhe({ atividade }: Props) {
         <HtmlContent html={atividade.descricao} className="max-w-none text-tinta" />
       </section>
 
-      {(atividade.status === 'PENDENTE' || atividade.status === 'EM_ANDAMENTO') && (
+      {atividade.status === 'PENDENTE' && (
         <Link
           href={`/aluno/atividades/${atividade.id}/editor`}
           className={cn(botaoPrincipal, fredoka.className, 'w-full sm:w-auto')}
         >
-          {atividade.status === 'EM_ANDAMENTO' ? 'Continuar' : 'Iniciar Atividade'}
+          Iniciar Atividade
         </Link>
       )}
 

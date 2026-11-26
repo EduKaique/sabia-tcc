@@ -1,6 +1,6 @@
 import type { ModoAtividade } from '@/types'
 
-export type StatusAtividadeAluno = 'PENDENTE' | 'EM_ANDAMENTO' | 'ENTREGUE' | 'CORRIGIDA'
+export type StatusAtividadeAluno = 'PENDENTE' | 'ENTREGUE' | 'CORRIGIDA'
 
 export interface AtividadeAlunoDTO {
   id: number

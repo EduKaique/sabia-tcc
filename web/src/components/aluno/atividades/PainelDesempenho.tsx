@@ -8,7 +8,7 @@ interface Props {
 
 export function PainelDesempenho({ atividades }: Props) {
   const pendentes = atividades.filter(
-    (a) => a.status === 'PENDENTE' || a.status === 'EM_ANDAMENTO',
+    (a) => a.status === 'PENDENTE',
   ).length
 
   const corrigidas = atividades.filter((a) => a.status === 'CORRIGIDA').length

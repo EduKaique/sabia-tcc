@@ -37,7 +37,7 @@ export default function AtividadesAlunoPage() {
   const semTurma = turmas.data?.length === 0
 
   const pendentes = atividades.filter(
-    (a) => a.status === 'PENDENTE' || a.status === 'EM_ANDAMENTO',
+    (a) => a.status === 'PENDENTE',
   )
   const entregues = atividades.filter(
     (a) => a.status === 'ENTREGUE' || a.status === 'CORRIGIDA',
