@@ -106,7 +106,7 @@ export interface AtividadeDetalhes {
   mediaTurma: number | null
 }
 
-export type StatusSubmissao = 'PENDENTE' | 'EM_CORRECAO' | 'CORRIGIDA'
+export type StatusSubmissao = 'PENDENTE' | 'CORRIGIDA'
 
 export interface SubmissaoItem {
   id: string
@@ -310,7 +310,6 @@ export interface StatusEntregas {
   totalEsperado: number
   naoEntregues: number
   pendentes: number
-  emCorrecao: number
   corrigidas: number
   entreguesNoPrazo: number
   entreguesComAtraso: number

@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { AlunoAvatar } from './AlunoAvatar'
 import { SubmissaoStatusBadge } from './SubmissaoStatusBadge'
 
-const ACTION_STATUSES: StatusSubmissao[] = ['PENDENTE', 'EM_CORRECAO']
+const ACTION_STATUSES: StatusSubmissao[] = ['PENDENTE']
 
 function formatDateTime(iso: string) {
   return new Intl.DateTimeFormat('pt-BR', {
