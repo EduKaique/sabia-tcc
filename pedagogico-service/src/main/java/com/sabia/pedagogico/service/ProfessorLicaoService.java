@@ -15,7 +15,7 @@ import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
-import com.sabia.pedagogico.model.licao.EstadoLicao;
+import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
@@ -91,7 +91,7 @@ public class ProfessorLicaoService {
         }
 
         return licoes.stream()
-                .map(l -> new LicaoProfessorResumoResponse(l.getId(), EstadoLicao.de(l), l.getTitulo(), l.getConceito(),
+                .map(l -> new LicaoProfessorResumoResponse(l.getId(), EstadoPublicacaoLicao.de(l), l.getTitulo(), l.getConceito(),
                         l.getResumo(), l.getModo(), turmas.getOrDefault(l.getId(), List.of()),
                         paginas.getOrDefault(l.getId(), 0L), l.getAtualizadaEm()))
                 .toList();
@@ -312,7 +312,7 @@ public class ProfessorLicaoService {
                 .map(p -> new PaginaLicaoResponse(p.getId(), p.getOrdem(), p.getTipo(), p.getTitulo(),
                         objectMapper.readTree(p.getConteudoJson())))
                 .toList();
-        return new LicaoProfessorDetalheResponse(licao.getId(), EstadoLicao.de(licao), licao.getTitulo(),
+        return new LicaoProfessorDetalheResponse(licao.getId(), EstadoPublicacaoLicao.de(licao), licao.getTitulo(),
                 licao.getConceito(), licao.getResumo(), licao.getModo(), licao.getCenarioJson(),
                 turmaIds.stream().sorted().toList(), respostas, licao.getPublicadaEm(), licao.getCriadaEm(),
                 licao.getAtualizadaEm());

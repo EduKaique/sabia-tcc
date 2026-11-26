@@ -8,7 +8,7 @@ import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse.PaginaI
 import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse.TurmaProgresso;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.licao.EstadoLicao;
+import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
@@ -111,7 +111,7 @@ public class ProgressoLicaoProfessorService {
                 licaoId, professorId, grupos.size(), alunoIds.size());
         return new ProgressoLicaoProfessorResponse(
                 new LicaoInfo(licao.getId(), licao.getTitulo(), licao.getConceito(), licao.getModo(),
-                        EstadoLicao.de(licao), licao.getPublicadaEm()),
+                        EstadoPublicacaoLicao.de(licao), licao.getPublicadaEm()),
                 paginas.stream().map(p -> new PaginaInfo(p.getId(), p.getOrdem(), p.getTipo(), p.getTitulo())).toList(),
                 alunoIds.size(), concluiram.size(), grupos);
     }

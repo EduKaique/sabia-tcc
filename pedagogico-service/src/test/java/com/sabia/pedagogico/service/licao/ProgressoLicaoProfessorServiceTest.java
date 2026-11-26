@@ -8,7 +8,7 @@ import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse.TurmaPr
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
-import com.sabia.pedagogico.model.licao.EstadoLicao;
+import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
@@ -162,7 +162,7 @@ class ProgressoLicaoProfessorServiceTest {
 
         assertThat(r.paginas()).extracting(p -> p.tipo()).containsExactly(TipoPagina.TEXTO,
                 TipoPagina.IMAGEM_TEXTO, TipoPagina.VIDEO_YOUTUBE, TipoPagina.QUESTIONARIO);
-        assertThat(r.licao().estado()).isEqualTo(EstadoLicao.PUBLICADA);
+        assertThat(r.licao().estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
         assertThat(r.licao().titulo()).isEqualTo("Laços");
         assertThat(r.totalAlunos()).isEqualTo(4);
         assertThat(r.concluiram()).isEqualTo(1);
@@ -256,7 +256,7 @@ class ProgressoLicaoProfessorServiceTest {
         licao.setPublicadaEm(null);
         cenario(List.of(turmaA), List.of(), List.of(matricula(turmaA, 1L, "Ana")), List.of(), List.of());
 
-        assertThat(service.progresso(PROF, LICAO).licao().estado()).isEqualTo(EstadoLicao.RASCUNHO);
+        assertThat(service.progresso(PROF, LICAO).licao().estado()).isEqualTo(EstadoPublicacaoLicao.RASCUNHO);
     }
 
     @Test

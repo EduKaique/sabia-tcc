@@ -13,7 +13,7 @@ import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.atividade.ModoAtividade;
-import com.sabia.pedagogico.model.licao.EstadoLicao;
+import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
@@ -143,7 +143,7 @@ class ProfessorLicaoServiceTest {
         assertThat(salva.getAtualizadaEm()).isNotNull();
         assertThat(salva.getPublicadaEm()).isNull();
         assertThat(salva.getCenarioJson()).isNull();
-        assertThat(r.estado()).isEqualTo(EstadoLicao.RASCUNHO);
+        assertThat(r.estado()).isEqualTo(EstadoPublicacaoLicao.RASCUNHO);
         assertThat(r.paginas()).isEmpty();
         assertThat(r.turmaIds()).isEmpty();
     }
@@ -176,10 +176,10 @@ class ProfessorLicaoServiceTest {
         List<LicaoProfessorResumoResponse> lista = service.listar(DONO, null);
 
         assertThat(lista).extracting(LicaoProfessorResumoResponse::id).containsExactly(3L, 1L);
-        assertThat(lista.get(0).estado()).isEqualTo(EstadoLicao.PUBLICADA);
+        assertThat(lista.get(0).estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
         assertThat(lista.get(0).turmas()).extracting("nome").containsExactly("Turma 10");
         assertThat(lista.get(0).quantidadePaginas()).isEqualTo(4);
-        assertThat(lista.get(1).estado()).isEqualTo(EstadoLicao.RASCUNHO);
+        assertThat(lista.get(1).estado()).isEqualTo(EstadoPublicacaoLicao.RASCUNHO);
         assertThat(lista.get(1).turmas()).isEmpty();
         assertThat(lista.get(1).quantidadePaginas()).isZero();
     }
@@ -387,7 +387,7 @@ class ProfessorLicaoServiceTest {
         licao.setPublicadaEm(ontem);
         LicaoProfessorDetalheResponse r = service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(null, "x"))));
         assertThat(licao.getPublicadaEm()).isEqualTo(ontem);
-        assertThat(r.estado()).isEqualTo(EstadoLicao.PUBLICADA);
+        assertThat(r.estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
     }
 
     // ---------- publicar / despublicar / arquivar ----------
@@ -421,7 +421,7 @@ class ProfessorLicaoServiceTest {
         verify(licaoRepo, never()).save(any());
 
         licao.setCenarioJson(CENARIO);
-        assertThat(service.publicar(DONO, 1L).estado()).isEqualTo(EstadoLicao.PUBLICADA);
+        assertThat(service.publicar(DONO, 1L).estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
     }
 
     @Test
@@ -431,7 +431,7 @@ class ProfessorLicaoServiceTest {
 
         LicaoProfessorDetalheResponse r = service.publicar(DONO, 1L);
         LocalDateTime publicadaEm = licao.getPublicadaEm();
-        assertThat(r.estado()).isEqualTo(EstadoLicao.PUBLICADA);
+        assertThat(r.estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
         assertThat(publicadaEm).isNotNull();
 
         service.publicar(DONO, 1L);
@@ -447,7 +447,7 @@ class ProfessorLicaoServiceTest {
 
         LicaoProfessorDetalheResponse r = service.despublicar(DONO, 1L);
 
-        assertThat(r.estado()).isEqualTo(EstadoLicao.RASCUNHO);
+        assertThat(r.estado()).isEqualTo(EstadoPublicacaoLicao.RASCUNHO);
         assertThat(r.paginas()).hasSize(1);
         assertThat(licao.getPublicadaEm()).isNull();
         verify(paginaRepo, never()).deleteAll(anyList());
@@ -461,7 +461,7 @@ class ProfessorLicaoServiceTest {
         service.arquivar(DONO, 1L);
         verify(licaoRepo, times(1)).save(any());
 
-        assertThat(service.buscar(DONO, 1L).estado()).isEqualTo(EstadoLicao.ARQUIVADA);
+        assertThat(service.buscar(DONO, 1L).estado()).isEqualTo(EstadoPublicacaoLicao.ARQUIVADA);
         SalvarLicaoRequest req = salvar(ModoAtividade.BLOCOS, null, List.of());
         for (Executable chamada : List.<Executable>of(
                 () -> service.salvar(DONO, 1L, req),

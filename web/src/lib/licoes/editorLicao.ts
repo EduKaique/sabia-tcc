@@ -2,7 +2,7 @@ import type { ModoAtividade } from '@/types'
 import type {
   ConteudoImagemTexto,
   ConteudoTexto,
-  EstadoLicaoProfessor,
+  EstadoPublicacaoLicao,
   LicaoProfessorDetalhe,
 } from '@/types/licaoProfessor'
 import type { TipoPagina } from '@/types/licao'
@@ -48,7 +48,7 @@ export interface MetadadosLicao {
 
 export interface EstadoEditor {
   licaoId: number | null
-  estadoPublicacao: EstadoLicaoProfessor | null
+  estadoPublicacao: EstadoPublicacaoLicao | null
   metadados: MetadadosLicao
   modo: ModoAtividade
   cenarioJson: string | null
@@ -74,7 +74,7 @@ export type ConteudoParcial =
 
 export type AcaoEditor =
   | { tipo: 'carregar'; detalhe: LicaoProfessorDetalhe; manterTurmas?: boolean }
-  | { tipo: 'sincronizarPublicacao'; estadoPublicacao: EstadoLicaoProfessor }
+  | { tipo: 'sincronizarPublicacao'; estadoPublicacao: EstadoPublicacaoLicao }
   | { tipo: 'adicionarPagina'; tipoPagina: TipoEditavel }
   | { tipo: 'removerPagina'; chave: string }
   | { tipo: 'moverPagina'; chave: string; direcao: -1 | 1 }

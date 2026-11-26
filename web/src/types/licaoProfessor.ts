@@ -3,7 +3,7 @@ import type { EstadoLicaoAluno, TipoPagina } from '@/types/licao'
 
 /** Tipos da API de autoria de lições (/api/professor/licoes). As do aluno ficam em types/licao.ts. */
 
-export type EstadoLicaoProfessor = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA'
+export type EstadoPublicacaoLicao = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA'
 
 export interface ConteudoTexto {
   html: string
@@ -39,7 +39,7 @@ export interface PaginaLicaoProfessor {
 
 export interface LicaoProfessorResumo {
   id: number
-  estado: EstadoLicaoProfessor
+  estado: EstadoPublicacaoLicao
   titulo: string
   conceito: string
   resumo: string | null
@@ -51,7 +51,7 @@ export interface LicaoProfessorResumo {
 
 export interface LicaoProfessorDetalhe {
   id: number
-  estado: EstadoLicaoProfessor
+  estado: EstadoPublicacaoLicao
   titulo: string
   conceito: string
   resumo: string | null
@@ -96,7 +96,7 @@ export interface ProgressoLicaoProfessor {
     titulo: string
     conceito: string
     modo: ModoAtividade
-    estado: EstadoLicaoProfessor
+    estado: EstadoPublicacaoLicao
     publicadaEm: string | null
   }
   paginas: { id: number; ordem: number; tipo: TipoPagina; titulo: string | null }[]
