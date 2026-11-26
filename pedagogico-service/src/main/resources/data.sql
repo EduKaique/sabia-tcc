@@ -89,7 +89,7 @@ WHERE id = 30 AND aluno_nome IS NULL;
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM turma), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('turma', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;
@@ -97,7 +97,7 @@ FROM (
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM turma_aluno), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma_aluno WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('turma_aluno', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;
@@ -105,7 +105,7 @@ FROM (
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM atividade_avaliativa), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM atividade_avaliativa WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('atividade_avaliativa', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;

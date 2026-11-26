@@ -1,0 +1,1 @@
+-- Seed de demonstração (idempotente; separador @@FIM@@). Conteúdo na Fase 2.
