@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class SeedDemoRunnerTest {
 
@@ -35,7 +35,7 @@ class SeedDemoRunnerTest {
     }
 
     @Test
-    void pontoEVirgulaEmHtmlEJsonNaoQuebraOScript() throws Exception {
+    void pontoEVirgulaEmHtmlEJsonNaoQuebraOScript() {
         String html = "<p>a&nbsp;b; c</p>";
         String json = "{\"a\":\"x;y\",\"b\":[1;2]}".replace("[1;2]", "[1,2]");
         runner(insert(9_000_001, html) + insert(9_000_002, json.replace("'", "''"))).run(null);
@@ -45,7 +45,7 @@ class SeedDemoRunnerTest {
     }
 
     @Test
-    void rodarVariasVezesNaoDuplica() throws Exception {
+    void rodarVariasVezesNaoDuplica() {
         SeedDemoRunner r = runner(insert(9_000_001, "a") + insert(9_000_002, "b"));
         r.run(null);
         r.run(null);
@@ -55,7 +55,7 @@ class SeedDemoRunnerTest {
     }
 
     @Test
-    void scriptSoComComentarioOuVazioNaoFalha() throws Exception {
+    void scriptSoComComentarioOuVazioNaoFalha() {
         runner("-- só comentário\n").run(null);
         runner("").run(null);
 
@@ -63,7 +63,7 @@ class SeedDemoRunnerTest {
     }
 
     @Test
-    void naoAlteraLinhaExistente() throws Exception {
+    void naoAlteraLinhaExistente() {
         jdbc.update("INSERT INTO item VALUES (9000001, 'real')");
         runner(insert(9_000_001, "demo")).run(null);
 
@@ -71,10 +71,17 @@ class SeedDemoRunnerTest {
     }
 
     @Test
-    void erroDesfazTudoEPropaga() {
+    void scriptInvalidoNaoDerrubaOServicoENadaEhInserido() {
         SeedDemoRunner r = runner(insert(9_000_001, "a") + "INSERT INTO tabela_inexistente VALUES (1)\n@@FIM@@\n");
 
-        assertThatThrownBy(() -> r.run(null)).isInstanceOf(RuntimeException.class);
+        assertThatCode(() -> r.run(null)).doesNotThrowAnyException();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM item", Integer.class)).isZero();
+    }
+
+    @Test
+    void recursoInexistenteNaoDerrubaOServico() {
+        SeedDemoRunner r = new SeedDemoRunner(ds, new org.springframework.core.io.ClassPathResource("nao-existe.sql"));
+
+        assertThatCode(() -> r.run(null)).doesNotThrowAnyException();
     }
 }

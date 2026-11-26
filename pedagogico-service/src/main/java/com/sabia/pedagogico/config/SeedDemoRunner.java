@@ -22,7 +22,7 @@ import java.sql.SQLException;
  * Hibernate criar/atualizar as tabelas (ApplicationRunner) em qualquer perfil, inclusive prod, onde
  * o data.sql não executa. O script só pode ter INSERT idempotente: nunca UPDATE/DELETE.
  * O separador de comandos é "@@FIM@@" (e não ";") porque HTML e JSON do seed têm ponto e vírgula.
- * Tudo roda numa transação: falhou, nada entra e a aplicação não sobe.
+ * Tudo roda numa transação: se falhar, há rollback, o erro é registrado (SEED_DEMO_FALHOU) e o serviço sobe.
  */
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -41,11 +41,22 @@ public class SeedDemoRunner implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws SQLException, IOException {
-        if (semComandos()) {
-            log.info("Seed de demonstração ligado, mas o script não tem comandos: nada a fazer.");
-            return;
+    public void run(ApplicationArguments args) {
+        try {
+            if (semComandos()) {
+                log.info("Seed de demonstração ligado, mas o script não tem comandos: nada a fazer.");
+                return;
+            }
+            aplicar();
+            log.info("Seed de demonstração aplicado (SABIA_SEED_DEMO=true).");
+        } catch (Exception e) {
+            // Seed é opcional: falhar não pode derrubar o serviço (nada foi gravado, houve rollback).
+            log.error("SEED_DEMO_FALHOU: seed de demonstração NÃO aplicado, nada foi gravado; o serviço segue no ar. "
+                    + "Para desligar: SABIA_SEED_DEMO=false. Causa: {}", causaRaiz(e), e);
         }
+    }
+
+    private void aplicar() throws SQLException {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator(false, false, "UTF-8", script);
         populator.setSeparator(SEPARADOR);
         try (Connection conn = dataSource.getConnection()) {
@@ -58,7 +69,12 @@ public class SeedDemoRunner implements ApplicationRunner {
                 throw e;
             }
         }
-        log.info("Seed de demonstração aplicado (SABIA_SEED_DEMO=true).");
+    }
+
+    private static String causaRaiz(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) t = t.getCause();
+        return t.getMessage();
     }
 
     /** Script só com comentários ou vazio faz o populator lançar exceção; aqui vira "nada a fazer". */
