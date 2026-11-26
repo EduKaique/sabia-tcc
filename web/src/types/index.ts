@@ -18,7 +18,7 @@ export type StatusAtividade = 'RASCUNHO' | 'PUBLICADA'
 export type TipoAtividade = 'ATIVIDADE_AVALIATIVA'
 
 /** Modo de apresentação da atividade, ortogonal ao tipo. `null` no backend é tratado como BLOCOS. */
-export type ModoAtividade = 'BLOCOS' | 'JOGO_ROBO'
+export type ModoPratica = 'BLOCOS' | 'JOGO_ROBO'
 
 export type TipoBlocoRobo = 'robo_mover' | 'robo_repetir'
 
@@ -49,7 +49,7 @@ export interface AtividadeAvaliativa {
   gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   possuiNotas: boolean
 }
@@ -189,7 +189,7 @@ export type StatusPratica =
 /** ResultadoValidacao do pedagogico-service (fixtures/blocos-livres/README.md). */
 export interface ResultadoValidacao {
   versaoValidador: number
-  modo: ModoAtividade
+  modo: ModoPratica
   concluida: boolean
   status: StatusPratica
   blocosUsados: number

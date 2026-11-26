@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.dto.response;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 import com.sabia.pedagogico.model.licao.TipoPagina;
@@ -20,7 +20,7 @@ public record ProgressoLicaoProfessorResponse(
         int concluiram,
         List<TurmaProgresso> turmas
 ) {
-    public record LicaoInfo(Long id, String titulo, String conceito, ModoAtividade modo, EstadoPublicacaoLicao estado,
+    public record LicaoInfo(Long id, String titulo, String conceito, ModoPratica modo, EstadoPublicacaoLicao estado,
                             LocalDateTime publicadaEm) {}
 
     public record PaginaInfo(Long id, int ordem, TipoPagina tipo, String titulo) {}

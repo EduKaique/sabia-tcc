@@ -1,5 +1,5 @@
 package com.sabia.pedagogico.model.atividade;
 
-public enum ModoAtividade {
+public enum ModoPratica {
     BLOCOS, JOGO_ROBO
 }

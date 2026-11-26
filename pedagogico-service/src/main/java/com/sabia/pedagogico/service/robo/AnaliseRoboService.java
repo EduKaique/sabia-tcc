@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.service.robo;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.service.CenarioRoboValidador;
 import com.sabia.pedagogico.service.CenarioRoboValidador.Posicao;
 import com.sabia.pedagogico.service.pratica.ResultadoValidacao;
@@ -49,7 +49,7 @@ public class AnaliseRoboService {
             return null;
         }
 
-        ResultadoValidacao v = validadorPratica.validar(ModoAtividade.JOGO_ROBO, cenarioJson, estadoJson);
+        ResultadoValidacao v = validadorPratica.validar(ModoPratica.JOGO_ROBO, cenarioJson, estadoJson);
         int menor = cenarioRoboValidador.menorCaminho(cenarioJson);
         Integer passosMinimos = menor >= 0 ? menor : null;
         BigDecimal eficiencia = v.status() == StatusPratica.CHEGOU && v.passosExecutados() > 0 && passosMinimos != null

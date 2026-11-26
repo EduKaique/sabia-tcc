@@ -42,7 +42,7 @@ public class AtividadeAvaliativa {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ModoAtividade modo;
+    private ModoPratica modo;
 
     @Column(columnDefinition = "TEXT")
     private String cenarioJson;

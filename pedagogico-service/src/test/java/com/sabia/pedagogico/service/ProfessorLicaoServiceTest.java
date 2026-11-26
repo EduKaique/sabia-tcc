@@ -12,7 +12,7 @@ import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
@@ -76,7 +76,7 @@ class ProfessorLicaoServiceTest {
 
     private final LocalDateTime ontem = LocalDateTime.now().minusDays(1);
     private final Licao licao = Licao.builder().id(1L).titulo("Algoritmos").conceito("Sequência")
-            .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(DONO).criadaEm(ontem).atualizadaEm(ontem)
+            .modo(ModoPratica.BLOCOS).status(StatusLicao.ATIVA).professorId(DONO).criadaEm(ontem).atualizadaEm(ontem)
             .build();
     private final AtomicLong proximoId = new AtomicLong(500);
 
@@ -84,7 +84,7 @@ class ProfessorLicaoServiceTest {
         when(licaoRepo.findById(1L)).thenReturn(Optional.of(licao));
         when(licaoRepo.findById(99L)).thenReturn(Optional.empty());
         when(licaoRepo.findById(2L)).thenReturn(Optional.of(Licao.builder().id(2L)
-                .titulo("Legada").conceito("Sequência").modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).build()));
+                .titulo("Legada").conceito("Sequência").modo(ModoPratica.BLOCOS).status(StatusLicao.ATIVA).build()));
         when(licaoRepo.save(any(Licao.class))).thenAnswer(inv -> {
             Licao l = inv.getArgument(0);
             if (l.getId() == null) l.setId(10L);
@@ -113,7 +113,7 @@ class ProfessorLicaoServiceTest {
         return new PaginaLicaoRequest(id, TipoPagina.TEXTO, null, mapper.createObjectNode().put("html", html));
     }
 
-    private SalvarLicaoRequest salvar(ModoAtividade modo, String cenario, List<PaginaLicaoRequest> paginas) {
+    private SalvarLicaoRequest salvar(ModoPratica modo, String cenario, List<PaginaLicaoRequest> paginas) {
         return new SalvarLicaoRequest("Algoritmos 2", "Sequência", "Descrição", modo, cenario, paginas);
     }
 
@@ -136,7 +136,7 @@ class ProfessorLicaoServiceTest {
         Licao salva = captor.getValue();
         assertThat(salva.getTitulo()).isEqualTo("Laços");
         assertThat(salva.getConceito()).isEqualTo("Repetição");
-        assertThat(salva.getModo()).isEqualTo(ModoAtividade.BLOCOS);
+        assertThat(salva.getModo()).isEqualTo(ModoPratica.BLOCOS);
         assertThat(salva.getStatus()).isEqualTo(StatusLicao.ATIVA);
         assertThat(salva.getProfessorId()).isEqualTo(DONO);
         assertThat(salva.getCriadaEm()).isNotNull();
@@ -163,7 +163,7 @@ class ProfessorLicaoServiceTest {
 
     @Test
     void listarTrazSoAsDoDonoNaOrdemDoRepositorioComTurmasEPaginas() {
-        Licao recente = Licao.builder().id(3L).titulo("Recente").conceito("C").modo(ModoAtividade.JOGO_ROBO)
+        Licao recente = Licao.builder().id(3L).titulo("Recente").conceito("C").modo(ModoPratica.JOGO_ROBO)
                 .status(StatusLicao.ATIVA).professorId(DONO).publicadaEm(ontem).atualizadaEm(LocalDateTime.now()).build();
         when(licaoRepo.findByProfessorIdAndStatusOrderByAtualizadaEmDesc(DONO, StatusLicao.ATIVA))
                 .thenReturn(List.of(recente, licao));
@@ -199,7 +199,7 @@ class ProfessorLicaoServiceTest {
 
     @Test
     void outroProfessorRecebe403EmTodasAsOperacoes() {
-        SalvarLicaoRequest req = salvar(ModoAtividade.BLOCOS, null, List.of(texto(null, "<p>a</p>")));
+        SalvarLicaoRequest req = salvar(ModoPratica.BLOCOS, null, List.of(texto(null, "<p>a</p>")));
         List<Executable> chamadas = List.of(
                 () -> service.buscar(OUTRO, 1L),
                 () -> service.salvar(OUTRO, 1L, req),
@@ -278,7 +278,7 @@ class ProfessorLicaoServiceTest {
         PaginaLicao p102 = pagina(102, 2, TipoPagina.TEXTO, "{\"html\":\"<p>c</p>\"}");
         when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(p100, p101, p102));
 
-        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(101L, "<p>b</p>"))));
+        service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, List.of(texto(101L, "<p>b</p>"))));
 
         InOrder ordem = inOrder(progressoPaginaRepo, paginaRepo);
         ordem.verify(progressoPaginaRepo).deleteByPaginaIdIn(List.of(100L, 102L));
@@ -290,7 +290,7 @@ class ProfessorLicaoServiceTest {
         PaginaLicao p100 = pagina(100, 0, TipoPagina.TEXTO, "{\"html\":\"<p>a</p>\"}");
         when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(p100));
 
-        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(100L, "<p>a2</p>"))));
+        service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, List.of(texto(100L, "<p>a2</p>"))));
 
         verify(progressoPaginaRepo, never()).deleteByPaginaIdIn(anyCollection());
     }
@@ -304,7 +304,7 @@ class ProfessorLicaoServiceTest {
         PaginaLicaoRequest video = new PaginaLicaoRequest(null, TipoPagina.VIDEO_YOUTUBE, "Vídeo",
                 mapper.createObjectNode().put("videoId", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
         LicaoProfessorDetalheResponse r = service.salvar(DONO, 1L,
-                salvar(ModoAtividade.BLOCOS, null, List.of(texto(101L, "<p>nova</p>"), video)));
+                salvar(ModoPratica.BLOCOS, null, List.of(texto(101L, "<p>nova</p>"), video)));
 
         assertThat(p101.getOrdem()).isZero();
         assertThat(p101.getConteudoJson()).contains("nova");
@@ -324,11 +324,11 @@ class ProfessorLicaoServiceTest {
         when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L))
                 .thenReturn(List.of(pagina(100, 0, TipoPagina.TEXTO, "{\"html\":\"a\"}")));
 
-        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(777L, "a")))))
+        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, List.of(texto(777L, "a")))))
                 .isInstanceOfSatisfying(ConteudoInvalidoException.class,
                         e -> assertThat(e.getCampos()).containsKey("paginas[0].id"));
         assertThatThrownBy(() -> service.salvar(DONO, 1L,
-                salvar(ModoAtividade.BLOCOS, null, List.of(texto(100L, "a"), texto(100L, "b")))))
+                salvar(ModoPratica.BLOCOS, null, List.of(texto(100L, "a"), texto(100L, "b")))))
                 .isInstanceOfSatisfying(ConteudoInvalidoException.class,
                         e -> assertThat(e.getCampos()).containsKey("paginas[1].id"));
         nadaGravado();
@@ -339,7 +339,7 @@ class ProfessorLicaoServiceTest {
         PaginaLicaoRequest semAlt = new PaginaLicaoRequest(null, TipoPagina.IMAGEM_TEXTO, null,
                 mapper.createObjectNode().put("imagemUrl", "https://exemplo.org/a.png"));
         assertThatThrownBy(() -> service.salvar(DONO, 1L,
-                salvar(ModoAtividade.BLOCOS, null, List.of(texto(null, ""), semAlt))))
+                salvar(ModoPratica.BLOCOS, null, List.of(texto(null, ""), semAlt))))
                 .isInstanceOfSatisfying(ConteudoInvalidoException.class,
                         e -> assertThat(e.getCampos()).containsOnlyKeys("paginas[0].html", "paginas[1].alt"));
         nadaGravado();
@@ -349,43 +349,43 @@ class ProfessorLicaoServiceTest {
     void conteudoAcimaDe256KbResponde400() {
         List<PaginaLicaoRequest> paginas = new ArrayList<>();
         for (int i = 0; i < 14; i++) paginas.add(texto(null, "a".repeat(19_990)));
-        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, paginas)))
+        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, paginas)))
                 .isInstanceOfSatisfying(ConteudoInvalidoException.class,
                         e -> assertThat(e.getCampos()).containsKey("paginas"));
         nadaGravado();
 
         paginas.subList(13, 14).clear();
-        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, paginas));
+        service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, paginas));
     }
 
     @Test
     void videoUploadResponde422() {
         PaginaLicaoRequest upload = new PaginaLicaoRequest(null, TipoPagina.VIDEO_UPLOAD, null, mapper.createObjectNode());
-        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(upload))))
+        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, List.of(upload))))
                 .isInstanceOf(OperacaoInvalidaException.class);
         nadaGravado();
     }
 
     @Test
     void praticaBlocosIgnoraOCenario_eRoboValidaQuandoHaCenario() {
-        service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, CENARIO, List.of()));
+        service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, CENARIO, List.of()));
         assertThat(licao.getCenarioJson()).isNull();
 
-        service.salvar(DONO, 1L, salvar(ModoAtividade.JOGO_ROBO, null, List.of()));
-        assertThat(licao.getModo()).isEqualTo(ModoAtividade.JOGO_ROBO);
+        service.salvar(DONO, 1L, salvar(ModoPratica.JOGO_ROBO, null, List.of()));
+        assertThat(licao.getModo()).isEqualTo(ModoPratica.JOGO_ROBO);
         assertThat(licao.getCenarioJson()).isNull();
 
-        service.salvar(DONO, 1L, salvar(ModoAtividade.JOGO_ROBO, CENARIO, List.of()));
+        service.salvar(DONO, 1L, salvar(ModoPratica.JOGO_ROBO, CENARIO, List.of()));
         assertThat(licao.getCenarioJson()).isEqualTo(CENARIO);
 
-        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoAtividade.JOGO_ROBO, IMPOSSIVEL, List.of())))
+        assertThatThrownBy(() -> service.salvar(DONO, 1L, salvar(ModoPratica.JOGO_ROBO, IMPOSSIVEL, List.of())))
                 .isInstanceOf(CenarioInvalidoException.class);
     }
 
     @Test
     void editarLicaoPublicadaPreservaPublicadaEm() {
         licao.setPublicadaEm(ontem);
-        LicaoProfessorDetalheResponse r = service.salvar(DONO, 1L, salvar(ModoAtividade.BLOCOS, null, List.of(texto(null, "x"))));
+        LicaoProfessorDetalheResponse r = service.salvar(DONO, 1L, salvar(ModoPratica.BLOCOS, null, List.of(texto(null, "x"))));
         assertThat(licao.getPublicadaEm()).isEqualTo(ontem);
         assertThat(r.estado()).isEqualTo(EstadoPublicacaoLicao.PUBLICADA);
     }
@@ -412,7 +412,7 @@ class ProfessorLicaoServiceTest {
     void publicarRoboSemCenarioOuComCenarioImpossivelResponde422() {
         when(paginaRepo.findByLicaoIdOrderByOrdemAsc(1L)).thenReturn(List.of(
                 pagina(100, 0, TipoPagina.TEXTO, "{\"html\":\"a\"}")));
-        licao.setModo(ModoAtividade.JOGO_ROBO);
+        licao.setModo(ModoPratica.JOGO_ROBO);
         assertThatThrownBy(() -> service.publicar(DONO, 1L)).isInstanceOf(OperacaoInvalidaException.class);
 
         licao.setCenarioJson(IMPOSSIVEL);
@@ -462,7 +462,7 @@ class ProfessorLicaoServiceTest {
         verify(licaoRepo, times(1)).save(any());
 
         assertThat(service.buscar(DONO, 1L).estado()).isEqualTo(EstadoPublicacaoLicao.ARQUIVADA);
-        SalvarLicaoRequest req = salvar(ModoAtividade.BLOCOS, null, List.of());
+        SalvarLicaoRequest req = salvar(ModoPratica.BLOCOS, null, List.of());
         for (Executable chamada : List.<Executable>of(
                 () -> service.salvar(DONO, 1L, req),
                 () -> service.vincularTurmas(DONO, 1L, new VincularTurmasRequest(List.of())),

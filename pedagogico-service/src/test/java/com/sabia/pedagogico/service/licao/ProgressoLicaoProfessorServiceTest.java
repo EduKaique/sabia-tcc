@@ -7,7 +7,7 @@ import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse.PaginaA
 import com.sabia.pedagogico.dto.response.ProgressoLicaoProfessorResponse.TurmaProgresso;
 import com.sabia.pedagogico.exception.AcessoNegadoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 import com.sabia.pedagogico.model.licao.Licao;
@@ -70,7 +70,7 @@ class ProgressoLicaoProfessorServiceTest {
     private final Turma turmaA = Turma.builder().id(10L).nome("5º A").professorId(PROF).build();
     private final Turma turmaB = Turma.builder().id(11L).nome("5º B").professorId(PROF).build();
     private final Licao licao = Licao.builder().id(LICAO).titulo("Laços").conceito("Repetição")
-            .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(PROF).publicadaEm(T).build();
+            .modo(ModoPratica.BLOCOS).status(StatusLicao.ATIVA).professorId(PROF).publicadaEm(T).build();
 
     // ---------- construtores ----------
 

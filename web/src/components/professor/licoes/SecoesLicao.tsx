@@ -6,7 +6,7 @@ import { CheckCircle2, Circle } from 'lucide-react'
 import { useTurmas } from '@/hooks/useTurmas'
 import type { AcaoEditor, EstadoEditor, ItemProntidao } from '@/lib/licoes/editorLicao'
 import { LIMITES_LICAO } from '@/lib/schemas/licaoSchema'
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 import { SeletorCenario } from '@/components/professor/cenarios/SeletorCenario'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -113,7 +113,7 @@ export function SecaoPratica({ estado, dispatch, erro, desabilitado }: PropsPrat
         <Label htmlFor="licao-modo">Tipo de prática</Label>
         <Select
           value={estado.modo}
-          onValueChange={(modo) => dispatch({ tipo: 'trocarModo', modo: modo as ModoAtividade })}
+          onValueChange={(modo) => dispatch({ tipo: 'trocarModo', modo: modo as ModoPratica })}
           disabled={desabilitado}
         >
           <SelectTrigger id="licao-modo" className="w-full sm:w-80">

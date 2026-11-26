@@ -64,8 +64,8 @@ export default function ProjetoSandboxEditorPage({ params }: Props) {
     )
   }
 
-  const cenarioLido = projeto.modo === 'ROBO' ? lerCenario(projeto.cenarioJson) : null
-  if (projeto.modo === 'ROBO' && !cenarioLido) {
+  const cenarioLido = projeto.modo === 'JOGO_ROBO' ? lerCenario(projeto.cenarioJson) : null
+  if (projeto.modo === 'JOGO_ROBO' && !cenarioLido) {
     return <MensagemErro texto="Não foi possível carregar o cenário deste projeto." />
   }
   // Sandbox não tem limite de blocos.

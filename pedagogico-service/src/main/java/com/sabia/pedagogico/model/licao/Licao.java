@@ -3,7 +3,7 @@ package com.sabia.pedagogico.model.licao;
 import jakarta.persistence.*;
 import lombok.*;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 
 import java.time.LocalDateTime;
 
@@ -33,7 +33,7 @@ public class Licao {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ModoAtividade modo;
+    private ModoPratica modo;
 
     /** Obrigatório quando modo = JOGO_ROBO (validado no seed pelo CenarioRoboValidador). */
     @Column(columnDefinition = "TEXT")

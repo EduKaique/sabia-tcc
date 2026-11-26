@@ -4,7 +4,7 @@ import com.sabia.pedagogico.dto.response.ConclusaoAtividadeResponse;
 import com.sabia.pedagogico.exception.EstadoPraticaInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
 import com.sabia.pedagogico.model.licao.ProgressoLicao;
@@ -67,7 +67,7 @@ class LicaoServiceConclusaoTest {
             new ValidadorPratica(new CenarioRoboValidador(JsonMapper.builder().build())),
             Clock.fixed(AGORA.toInstant(ZoneOffset.UTC), ZoneOffset.UTC));
     private final Licao licao = Licao.builder().id(1L).status(StatusLicao.ATIVA)
-            .modo(ModoAtividade.JOGO_ROBO).cenarioJson(CENARIO).build();
+            .modo(ModoPratica.JOGO_ROBO).cenarioJson(CENARIO).build();
     private final PaginaLicao texto = PaginaLicao.builder().id(10L).licao(licao).ordem(0).tipo(TipoPagina.TEXTO)
             .conteudoJson("{\"html\":\"<p>a</p>\"}").build();
 
@@ -116,7 +116,7 @@ class LicaoServiceConclusaoTest {
 
     @Test
     void blocosLivresConcluiComComandoENaoSoComValores() {
-        licao.setModo(ModoAtividade.BLOCOS);
+        licao.setModo(ModoPratica.BLOCOS);
         licao.setCenarioJson(null);
 
         assertThat(service.concluirAtividade(7L, 1L,

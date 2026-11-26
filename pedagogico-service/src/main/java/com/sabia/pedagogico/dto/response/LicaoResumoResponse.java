@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.dto.response;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public record LicaoResumoResponse(
         String titulo,
         String conceito,
         String resumo,
-        ModoAtividade modo,
+        ModoPratica modo,
         EstadoLicaoAluno estado,
         int totalPaginas,
         int paginasConcluidas,

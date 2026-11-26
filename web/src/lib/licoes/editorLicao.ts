@@ -1,4 +1,4 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 import type {
   ConteudoImagemTexto,
   ConteudoTexto,
@@ -50,7 +50,7 @@ export interface EstadoEditor {
   licaoId: number | null
   estadoPublicacao: EstadoPublicacaoLicao | null
   metadados: MetadadosLicao
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   turmaIds: number[]
   paginas: PaginaEditor[]
@@ -80,7 +80,7 @@ export type AcaoEditor =
   | { tipo: 'moverPagina'; chave: string; direcao: -1 | 1 }
   | { tipo: 'atualizarPagina'; chave: string; titulo?: string; conteudo?: ConteudoParcial }
   | { tipo: 'atualizarMetadados'; metadados: Partial<MetadadosLicao> }
-  | { tipo: 'trocarModo'; modo: ModoAtividade }
+  | { tipo: 'trocarModo'; modo: ModoPratica }
   | { tipo: 'trocarCenario'; cenarioJson: string | null }
   | { tipo: 'trocarTurmas'; turmaIds: number[] }
 

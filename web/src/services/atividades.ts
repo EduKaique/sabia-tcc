@@ -1,5 +1,5 @@
 import api from '@/lib/pedagogicoApi'
-import type { AtividadeAvaliativa, AtividadeDetalhes, ModoAtividade, StatusAtividade } from '@/types'
+import type { AtividadeAvaliativa, AtividadeDetalhes, ModoPratica, StatusAtividade } from '@/types'
 
 export interface CriarAtividadePayload {
   titulo: string
@@ -9,7 +9,7 @@ export interface CriarAtividadePayload {
   dataEntrega: string | undefined
   status: StatusAtividade
   gabaritoEstadoJson?: string
-  modo?: ModoAtividade
+  modo?: ModoPratica
   cenarioJson?: string
 }
 

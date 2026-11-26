@@ -1,4 +1,4 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 
 export type StatusAtividadeAluno = 'PENDENTE' | 'ENTREGUE' | 'CORRIGIDA'
 
@@ -9,7 +9,7 @@ export interface AtividadeAlunoDTO {
   dataEntrega: string
   pontuacaoMaxima: number
   status: StatusAtividadeAluno
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   /** Nota, comentário e data da correção: só vêm preenchidos quando status é CORRIGIDA. */
   nota: number | null

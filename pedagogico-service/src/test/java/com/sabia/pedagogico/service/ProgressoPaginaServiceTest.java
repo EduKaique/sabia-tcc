@@ -5,7 +5,7 @@ import com.sabia.pedagogico.dto.response.PulsoVideoResponse;
 import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
 import com.sabia.pedagogico.model.licao.ProgressoPagina;
@@ -59,9 +59,9 @@ class ProgressoPaginaServiceTest {
     private final ProgressoPaginaService service = new ProgressoPaginaService(licaoService, paginaRepo,
             progressoPaginaRepo, leitor, relogio);
 
-    private final Licao licao = Licao.builder().id(1L).status(StatusLicao.ATIVA).modo(ModoAtividade.BLOCOS)
+    private final Licao licao = Licao.builder().id(1L).status(StatusLicao.ATIVA).modo(ModoPratica.BLOCOS)
             .publicadaEm(LocalDateTime.of(2026, 11, 1, 0, 0)).build();
-    private final Licao outra = Licao.builder().id(2L).status(StatusLicao.ATIVA).modo(ModoAtividade.BLOCOS).build();
+    private final Licao outra = Licao.builder().id(2L).status(StatusLicao.ATIVA).modo(ModoPratica.BLOCOS).build();
     private final PaginaLicao texto = pagina(10L, licao, 0, TipoPagina.TEXTO, "{\"html\":\"<p>a</p>\"}");
     private final PaginaLicao video = pagina(11L, licao, 1, TipoPagina.VIDEO_YOUTUBE,
             "{\"videoId\":\"dQw4w9WgXcQ\",\"duracaoSegundos\":100}");

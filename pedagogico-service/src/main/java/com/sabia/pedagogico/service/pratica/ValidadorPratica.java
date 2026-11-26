@@ -3,7 +3,7 @@ package com.sabia.pedagogico.service.pratica;
 import com.sabia.pedagogico.exception.CenarioInvalidoException;
 import com.sabia.pedagogico.exception.EstadoPraticaInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.service.CenarioRoboValidador;
 import com.sabia.pedagogico.service.robo.ResultadoSimulacao;
 import com.sabia.pedagogico.service.robo.SimuladorRobo;
@@ -40,12 +40,12 @@ public class ValidadorPratica {
         this.simulador = new SimuladorRobo(cenarioRoboValidador);
     }
 
-    public ResultadoValidacao validar(ModoAtividade modo, String cenarioJson, String estadoJson) {
+    public ResultadoValidacao validar(ModoPratica modo, String cenarioJson, String estadoJson) {
         JsonNode estado = SimuladorRobo.lerEstado(estadoJson);
         if (estado == null) {
             throw new EstadoPraticaInvalidoException("O projeto enviado não é um JSON válido.");
         }
-        return modo == ModoAtividade.JOGO_ROBO ? validarRobo(cenarioJson, estado) : validarBlocosLivres(estado);
+        return modo == ModoPratica.JOGO_ROBO ? validarRobo(cenarioJson, estado) : validarBlocosLivres(estado);
     }
 
     private ResultadoValidacao validarRobo(String cenarioJson, JsonNode estado) {
@@ -75,7 +75,7 @@ public class ValidadorPratica {
         StatusPratica status = StatusPratica.valueOf(sim.status().name());
         boolean concluida = status == StatusPratica.CHEGOU && !excedeu && !naoPermitido;
         String motivo = concluida ? null : motivoRobo(status, naoPermitido, excedeu, sim.totalBlocosWorkspace(), maxBlocos);
-        return new ResultadoValidacao(ResultadoValidacao.VERSAO_VALIDADOR, ModoAtividade.JOGO_ROBO, concluida, status,
+        return new ResultadoValidacao(ResultadoValidacao.VERSAO_VALIDADOR, ModoPratica.JOGO_ROBO, concluida, status,
                 sim.blocosUsados(), sim.totalBlocosWorkspace(), maxBlocos, excedeu, naoPermitido,
                 sim.passosExecutados(), sim.blocosSoltos(), sim.posicaoFinal(), motivo);
     }
@@ -104,7 +104,7 @@ public class ValidadorPratica {
             case BLOCOS_LIVRES_VAZIO -> "Monte um programa com pelo menos um bloco de comando, como \"imprimir\".";
             default -> null;
         };
-        return new ResultadoValidacao(ResultadoValidacao.VERSAO_VALIDADOR, ModoAtividade.BLOCOS, concluida, status,
+        return new ResultadoValidacao(ResultadoValidacao.VERSAO_VALIDADOR, ModoPratica.BLOCOS, concluida, status,
                 analise.totalBlocos(), analise.totalBlocos(), null, false, false, 0, 0, null, motivo);
     }
 

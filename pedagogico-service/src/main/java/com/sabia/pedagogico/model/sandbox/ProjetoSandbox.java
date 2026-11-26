@@ -1,5 +1,6 @@
 package com.sabia.pedagogico.model.sandbox;
 
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,12 +29,12 @@ public class ProjetoSandbox {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ModoProjetoSandbox modo;
+    private ModoPratica modo;
 
     @Column(name = "estado_json", columnDefinition = "TEXT")
     private String estadoJson;
 
-    /** Snapshot do cenário (só no modo ROBO). */
+    /** Snapshot do cenário (só no modo JOGO_ROBO). */
     @Column(name = "cenario_json", columnDefinition = "TEXT")
     private String cenarioJson;
 

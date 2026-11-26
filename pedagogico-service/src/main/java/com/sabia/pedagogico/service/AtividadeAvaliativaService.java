@@ -14,7 +14,7 @@ import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
 import com.sabia.pedagogico.model.atividade.Correcao;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
 import com.sabia.pedagogico.model.atividade.StatusSubmissao;
@@ -219,7 +219,7 @@ public class AtividadeAvaliativaService {
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
                 a.getDataEntrega(),
                 statusAluno, a.getCriadaEm(),
-                a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
+                a.getModo() != null ? a.getModo() : ModoPratica.BLOCOS,
                 a.getCenarioJson(),
                 correcao != null ? correcao.getNota() : null,
                 correcao != null ? correcao.getFeedbackProfessor() : null,
@@ -240,8 +240,8 @@ public class AtividadeAvaliativaService {
                 atividade, submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividade.getId()));
     }
 
-    private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
-        if (modo != ModoAtividade.JOGO_ROBO) return null;
+    private String cenarioDoModo(ModoPratica modo, String cenarioJson) {
+        if (modo != ModoPratica.JOGO_ROBO) return null;
         if (cenarioJson == null || cenarioJson.isBlank()) {
             throw new CenarioInvalidoException("Atividades no modo Jogo do Robô precisam de um cenário.");
         }

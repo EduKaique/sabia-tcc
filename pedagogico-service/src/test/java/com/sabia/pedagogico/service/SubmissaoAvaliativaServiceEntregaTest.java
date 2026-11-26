@@ -6,7 +6,7 @@ import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.mapper.CorrecaoMapper;
 import com.sabia.pedagogico.messaging.SubmissaoEnviadaEvent;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.ProjetoAvaliativo;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.SubmissaoAvaliativa;
@@ -68,7 +68,7 @@ class SubmissaoAvaliativaServiceEntregaTest {
         atividade.setId(10L);
         atividade.setTurma(turma);
         atividade.setStatus(StatusAtividade.PUBLICADA);
-        atividade.setModo(ModoAtividade.JOGO_ROBO);
+        atividade.setModo(ModoPratica.JOGO_ROBO);
         atividade.setCenarioJson(CENARIO);
         when(atividadeRepo.findById(10L)).thenReturn(Optional.of(atividade));
         when(turmaAlunoRepo.existsByTurmaIdAndAlunoId(3L, 7L)).thenReturn(true);
@@ -108,12 +108,12 @@ class SubmissaoAvaliativaServiceEntregaTest {
 
     @Test
     void entregaDeBlocosLivresGravaOResultado() {
-        atividade.setModo(ModoAtividade.BLOCOS);
+        atividade.setModo(ModoPratica.BLOCOS);
         atividade.setCenarioJson(null);
 
         ResultadoValidacao r = entregarELerResultado("{\"blocks\":{\"blocks\":[{\"type\":\"text_print\"}]}}");
 
-        assertThat(r.modo()).isEqualTo(ModoAtividade.BLOCOS);
+        assertThat(r.modo()).isEqualTo(ModoPratica.BLOCOS);
         assertThat(r.status()).isEqualTo(StatusPratica.BLOCOS_LIVRES_OK);
     }
 
@@ -148,7 +148,7 @@ class SubmissaoAvaliativaServiceEntregaTest {
     @Test
     void detalheDoProfessorTrazAValidacaoGravada() {
         ResultadoValidacao gravado = new ValidadorPratica(new CenarioRoboValidador(json)).validar(
-                ModoAtividade.JOGO_ROBO, CENARIO, CHEGA);
+                ModoPratica.JOGO_ROBO, CENARIO, CHEGA);
         submissaoGravada(json.writeValueAsString(gravado));
 
         ResultadoValidacao lido = service.buscarParaProfessor(5L, 50L).validacao();
@@ -186,7 +186,7 @@ class SubmissaoAvaliativaServiceEntregaTest {
 
     @Test
     void detalheDeBlocosLivresNaoTemAnalise() {
-        atividade.setModo(ModoAtividade.BLOCOS);
+        atividade.setModo(ModoPratica.BLOCOS);
         atividade.setCenarioJson(null);
         comProjeto(submissaoGravada(null), "{\"blocks\":{\"blocks\":[{\"type\":\"text_print\"}]}}");
 
@@ -212,7 +212,7 @@ class SubmissaoAvaliativaServiceEntregaTest {
 
     @Test
     void entregaDeBlocosLivresContinuaPublicandoOEvento() {
-        atividade.setModo(ModoAtividade.BLOCOS);
+        atividade.setModo(ModoPratica.BLOCOS);
         atividade.setCenarioJson(null);
 
         entregarELerResultado("{\"blocks\":{\"blocks\":[{\"type\":\"text_print\"}]}}");

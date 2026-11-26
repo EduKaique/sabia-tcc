@@ -1,4 +1,4 @@
-import type { ModoAtividade, ResultadoValidacao } from '@/types'
+import type { ModoPratica, ResultadoValidacao } from '@/types'
 
 /**
  * Tipos da API do aluno (/api/aluno/licoes). Os do professor ficam em types/licaoProfessor.ts.
@@ -15,7 +15,7 @@ export interface LicaoResumo {
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   estado: EstadoLicaoAluno
   totalPaginas: number
   paginasConcluidas: number
@@ -83,7 +83,7 @@ export interface LicaoDetalhe {
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   /** Texto JSON no modo JOGO_ROBO (ler com lerCenario); null em BLOCOS. */
   cenarioJson: string | null
   /** Último workspace salvo; null antes do primeiro autosave. */

@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.service.pratica;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.service.CenarioRoboValidador.Posicao;
 
 /**
@@ -9,7 +9,7 @@ import com.sabia.pedagogico.service.CenarioRoboValidador.Posicao;
  */
 public record ResultadoValidacao(
         int versaoValidador,
-        ModoAtividade modo,
+        ModoPratica modo,
         boolean concluida,
         StatusPratica status,
         int blocosUsados,

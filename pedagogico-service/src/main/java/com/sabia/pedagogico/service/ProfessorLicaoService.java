@@ -14,7 +14,7 @@ import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
@@ -108,7 +108,7 @@ public class ProfessorLicaoService {
                 .titulo(request.titulo())
                 .conceito(request.conceito())
                 .resumo(vazioComoNulo(request.resumo()))
-                .modo(ModoAtividade.BLOCOS)
+                .modo(ModoPratica.BLOCOS)
                 .status(StatusLicao.ATIVA)
                 .professorId(professorId)
                 .criadaEm(agora)
@@ -225,7 +225,7 @@ public class ProfessorLicaoService {
                 }
             }
         }
-        if (licao.getModo() == ModoAtividade.JOGO_ROBO) {
+        if (licao.getModo() == ModoPratica.JOGO_ROBO) {
             if (licao.getCenarioJson() == null || licao.getCenarioJson().isBlank()) {
                 throw new OperacaoInvalidaException("Escolha o cenário do Jogo do Robô antes de publicar.");
             }
@@ -293,8 +293,8 @@ public class ProfessorLicaoService {
     }
 
     /** Como AtividadeAvaliativaService.cenarioDoModo, mas o rascunho do robô pode ficar sem cenário. */
-    private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
-        if (modo != ModoAtividade.JOGO_ROBO || cenarioJson == null || cenarioJson.isBlank()) return null;
+    private String cenarioDoModo(ModoPratica modo, String cenarioJson) {
+        if (modo != ModoPratica.JOGO_ROBO || cenarioJson == null || cenarioJson.isBlank()) return null;
         cenarioRoboValidador.validar(cenarioJson);
         return cenarioJson;
     }

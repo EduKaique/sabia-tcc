@@ -11,7 +11,7 @@ interface Props {
 
 /** Painel lateral do editor do Sandbox (no lugar das instruções da atividade). */
 export function SidebarSandbox({ projeto }: Props) {
-  const robo = projeto.modo === 'ROBO'
+  const robo = projeto.modo === 'JOGO_ROBO'
   const Icone = robo ? Bot : Puzzle
 
   return (

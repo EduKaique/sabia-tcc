@@ -1,4 +1,4 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 import type {
   CorrecaoQuestionario,
   EstadoLicaoAluno,
@@ -30,7 +30,7 @@ export const ROTULO_ESTADO_ALUNO: Record<EstadoLicaoAluno, string> = {
   CONCLUIDA: 'Concluída',
 }
 
-export const ROTULO_MODO: Record<ModoAtividade, string> = {
+export const ROTULO_MODO: Record<ModoPratica, string> = {
   JOGO_ROBO: 'Jogo do Robô',
   BLOCOS: 'Programação em blocos',
 }

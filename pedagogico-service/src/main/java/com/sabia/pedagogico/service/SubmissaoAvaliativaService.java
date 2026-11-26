@@ -88,7 +88,7 @@ public class SubmissaoAvaliativaService {
 
         // O único consumidor de submissao.enviada é a revisão genérica do ia-service, que não conhece o
         // robô: entregas do robô não publicam o evento (o item 3.5 pode reabrir isso com contextoRobo).
-        if (atividade.getModo() != ModoAtividade.JOGO_ROBO) {
+        if (atividade.getModo() != ModoPratica.JOGO_ROBO) {
             eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
         }
         log.info("Submissão id={} criada pelo aluno id={} (prática {})", submissao.getId(), alunoId, validacao.status());
@@ -144,7 +144,7 @@ public class SubmissaoAvaliativaService {
     /** Análise do programa do robô; nula fora do modo robô e se cenário ou estado não forem legíveis. */
     private AnaliseRobo analisarRobo(SubmissaoAvaliativa submissao, String estadoJson) {
         var atividade = submissao.getAtividade();
-        if (atividade.getModo() != ModoAtividade.JOGO_ROBO || estadoJson == null) {
+        if (atividade.getModo() != ModoPratica.JOGO_ROBO || estadoJson == null) {
             return null;
         }
         try {

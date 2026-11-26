@@ -17,7 +17,7 @@ import { alertaErro, botaoPrincipal, botaoSecundario, cartao, rotulo } from '@/l
 import { PRESETS_CENARIO } from '@/lib/cenariosRobo'
 import { extrairErroSandbox } from '@/lib/sandbox/errosSandbox'
 import { useCriarProjetoSandbox } from '@/hooks/useProjetosSandbox'
-import type { ModoProjetoSandbox } from '@/types/projetoSandbox'
+import type { ModoPratica } from '@/types'
 import { PalcoRobo } from '@/components/aluno/editor/PalcoRobo'
 
 interface Props {
@@ -28,16 +28,16 @@ interface Props {
 const opcaoBase =
   'flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left text-base font-bold text-tinta transition-colors outline-none focus-visible:ring-4 focus-visible:ring-sabia-azul'
 
-const TIPOS: { modo: ModoProjetoSandbox; titulo: string; descricao: string; Icone: typeof Bot }[] = [
-  { modo: 'BLOCOS_LIVRES', titulo: 'Blocos livres', descricao: 'Programe com todos os blocos e veja o resultado.', Icone: Puzzle },
-  { modo: 'ROBO', titulo: 'Jogo do Robô', descricao: 'Leve o robô até a estrela em um cenário pronto.', Icone: Bot },
+const TIPOS: { modo: ModoPratica; titulo: string; descricao: string; Icone: typeof Bot }[] = [
+  { modo: 'BLOCOS', titulo: 'Blocos livres', descricao: 'Programe com todos os blocos e veja o resultado.', Icone: Puzzle },
+  { modo: 'JOGO_ROBO', titulo: 'Jogo do Robô', descricao: 'Leve o robô até a estrela em um cenário pronto.', Icone: Bot },
 ]
 
 /** Escolha do tipo do novo projeto (e do cenário pronto, no Jogo do Robô). Ao criar, abre o editor. */
 export function NovoProjetoModal({ open, onClose }: Props) {
   const router = useRouter()
   const criar = useCriarProjetoSandbox()
-  const [modo, setModo] = useState<ModoProjetoSandbox>('BLOCOS_LIVRES')
+  const [modo, setModo] = useState<ModoPratica>('BLOCOS')
   const [cenarioId, setCenarioId] = useState<string>(PRESETS_CENARIO[0].id)
   const cenario = PRESETS_CENARIO.find((p) => p.id === cenarioId)?.cenario
 
@@ -49,7 +49,7 @@ export function NovoProjetoModal({ open, onClose }: Props) {
 
   const confirmar = () => {
     criar.mutate(
-      { modo, cenario: modo === 'ROBO' ? cenarioId : undefined },
+      { modo, cenario: modo === 'JOGO_ROBO' ? cenarioId : undefined },
       { onSuccess: (projeto) => router.push(`/aluno/projetos/${projeto.id}/editor`) },
     )
   }
@@ -88,7 +88,7 @@ export function NovoProjetoModal({ open, onClose }: Props) {
           ))}
         </fieldset>
 
-        {modo === 'ROBO' && (
+        {modo === 'JOGO_ROBO' && (
           <fieldset className="space-y-2">
             <legend className={cn(rotulo, 'mb-2')}>Cenário</legend>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
