@@ -53,8 +53,8 @@ VALUES (
     'ALUNO', CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO aluno (id, pontuacao_geral, perfil_completo)
-VALUES (3, 0, true)
+INSERT INTO aluno (id, perfil_completo)
+VALUES (3, true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Bases criadas antes deste ajuste já têm o aluno 3 com perfil incompleto (idempotente)
@@ -72,12 +72,12 @@ INSERT INTO usuario (id, instituicao_id, nome, cpf, email, senha_hash, tipo_perf
     (9, 1, 'Helena Costa',    '11122233305', 'helena@sabia.edu',  '$2a$10$NMi8koKdplXEAFg7WsxUAOfQTMM0BQKeZUNrURtIxnEnYXi56i56u', 'ALUNO', CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO aluno (id, pontuacao_geral, matricula, perfil_completo) VALUES
-    (5, 0, '20260001', true),
-    (6, 0, '20260002', true),
-    (7, 0, '20260003', true),
-    (8, 0, '20260004', true),
-    (9, 0, '20260005', true)
+INSERT INTO aluno (id, matricula, perfil_completo) VALUES
+    (5, '20260001', true),
+    (6, '20260002', true),
+    (7, '20260003', true),
+    (8, '20260004', true),
+    (9, '20260005', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 5.1 Matrícula normalizada (sem espaços nas pontas, em maiúsculas), como o cadastro grava.

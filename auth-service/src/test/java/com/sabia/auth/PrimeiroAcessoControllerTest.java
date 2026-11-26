@@ -135,7 +135,6 @@ class PrimeiroAcessoControllerTest {
         assertThat(aluno.getMatricula()).isEqualTo("2026A100");
         assertThat(aluno.getAvatar()).isEqualTo("sabia-azul");
         assertThat(aluno.isPerfilCompleto()).isTrue();
-        assertThat(aluno.getPontuacaoGeral()).isZero();
 
         verify(pedagogicoClient).matricular(10L, usuario.getId(), "Maria Souza");
 

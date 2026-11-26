@@ -78,7 +78,6 @@ public class PrimeiroAcessoService {
                     .matricula(request.matricula())
                     .avatar(request.avatar())
                     .perfilCompleto(true)
-                    .pontuacaoGeral(0)
                     .build());
         } catch (DataIntegrityViolationException e) {
             // Corrida entre dois cadastros simultâneos com a mesma matrícula.
