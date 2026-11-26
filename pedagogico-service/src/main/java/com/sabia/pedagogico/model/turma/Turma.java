@@ -21,9 +21,6 @@ public class Turma {
     @Column(name = "professor_id", nullable = false)
     private Long professorId;
 
-    @Column(name = "instituicao_id")
-    private Long instituicaoId;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EtapaEnsino etapa;

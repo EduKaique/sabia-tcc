@@ -1,19 +1,18 @@
 -- ================================================================
 -- data.sql  —  Seed de desenvolvimento (Serviço Pedagógico)
 --
--- professor_id=2 e aluno_id=3 e instituicao_id=1 correspondem aos ids do
--- Usuario/Professor/Aluno/Instituicao seedados pelo auth-service
+-- professor_id=2 e aluno_id=3 correspondem aos ids do
+-- Usuario/Professor/Aluno seedados pelo auth-service
 -- (ver auth-service/src/main/resources/data.sql) — aqui são apenas valores Long
 -- escalares, sem FK entre bancos (schema-per-service).
 -- ================================================================
 
 -- 1. Turma
-INSERT INTO turma (id, nome, professor_id, instituicao_id, etapa, criada_em)
+INSERT INTO turma (id, nome, professor_id, etapa, criada_em)
 VALUES (
     10,
     'Programação I — 2025/1',
     2,
-    1,
     'ANOS_INICIAIS',
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
