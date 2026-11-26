@@ -10,7 +10,7 @@ Não possui banco de dados nem acesso ao serviço pedagógico.
 ```json
 {
   "idTurma": 1,
-  "tipoAtividade": "ATIVIDADE_TRILHA",
+  "tipoAtividade": "ATIVIDADE_AVALIATIVA",
   "descricaoObjetivo": "Praticar repeticao e tomada de decisao"
 }
 ```

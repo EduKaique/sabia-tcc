@@ -15,9 +15,7 @@ export interface PageResponse<T> {
 
 export type StatusAtividade = 'RASCUNHO' | 'PUBLICADA'
 
-export type TipoAtividade =
-  | 'ATIVIDADE_AVALIATIVA'
-  | 'ATIVIDADE_TRILHA'
+export type TipoAtividade = 'ATIVIDADE_AVALIATIVA'
 
 /** Modo de apresentação da atividade, ortogonal ao tipo. `null` no backend é tratado como BLOCOS. */
 export type ModoAtividade = 'BLOCOS' | 'JOGO_ROBO'

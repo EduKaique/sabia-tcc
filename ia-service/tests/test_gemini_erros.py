@@ -11,7 +11,7 @@ from app.routes.atividade import create_atividade_router
 from app.services.atividade import AtividadeService
 
 CHAVE = "AIzaSy-chave-secreta-de-teste-123456"
-PAYLOAD = {"idTurma": 1, "tipoAtividade": "ATIVIDADE_TRILHA", "descricaoObjetivo": "Praticar laços"}
+PAYLOAD = {"idTurma": 1, "tipoAtividade": "ATIVIDADE_AVALIATIVA", "descricaoObjetivo": "Praticar laços"}
 
 
 def criar_app(api_key: str, handler) -> tuple[TestClient, list[httpx.Request]]:
