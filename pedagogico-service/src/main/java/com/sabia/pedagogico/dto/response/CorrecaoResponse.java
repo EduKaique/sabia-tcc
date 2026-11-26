@@ -7,5 +7,5 @@ public record CorrecaoResponse(
         Long id,
         BigDecimal nota,
         String feedbackProfessor,
-        LocalDateTime avaliadaEm
+        LocalDateTime corrigidaEm
 ) {}

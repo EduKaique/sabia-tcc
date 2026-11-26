@@ -24,13 +24,13 @@ export function CabecalhoCorrecao({ submissao }: Props) {
   const { data: atividade, isLoading } = useAtividade(String(submissao.atividadeId))
   const { data: turmas } = useTurmas()
   const turma = turmas?.find((t) => t.id === atividade?.turmaId)
-  const dataEnvio = parseDataUtc(submissao.dataEnvio)
+  const enviadaEm = parseDataUtc(submissao.enviadaEm)
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <SubmissaoStatusBadge status={submissao.status} />
-        <span title={formatarDataHora(dataEnvio)}>Enviada {tempoDesde(dataEnvio)}</span>
+        <span title={formatarDataHora(enviadaEm)}>Enviada {tempoDesde(enviadaEm)}</span>
       </div>
       {isLoading ? (
         <Skeleton className="h-9 w-80 rounded" />

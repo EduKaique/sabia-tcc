@@ -72,7 +72,7 @@ class AtividadeAvaliativaServiceAlunoTest {
 
     private static Correcao correcao(SubmissaoAvaliativa s) {
         var c = Correcao.builder().submissao(s).nota(new BigDecimal("8.50"))
-                .feedbackProfessor("Muito bem!\nRevise o laço.").avaliadaEm(AVALIADA_EM).build();
+                .feedbackProfessor("Muito bem!\nRevise o laço.").corrigidaEm(AVALIADA_EM).build();
         s.setCorrecao(c);
         return c;
     }
@@ -87,7 +87,7 @@ class AtividadeAvaliativaServiceAlunoTest {
         assertThat(r.status()).isEqualTo(StatusAtividadeAluno.CORRIGIDA);
         assertThat(r.nota()).isEqualByComparingTo("8.5");
         assertThat(r.feedbackProfessor()).isEqualTo("Muito bem!\nRevise o laço.");
-        assertThat(r.avaliadaEm()).isEqualTo(AVALIADA_EM);
+        assertThat(r.corrigidaEm()).isEqualTo(AVALIADA_EM);
         assertThat(r.pontuacaoMaxima()).isEqualTo(10);
     }
 
@@ -105,7 +105,7 @@ class AtividadeAvaliativaServiceAlunoTest {
         for (var r : List.of(r1, r2)) {
             assertThat(r.nota()).isNull();
             assertThat(r.feedbackProfessor()).isNull();
-            assertThat(r.avaliadaEm()).isNull();
+            assertThat(r.corrigidaEm()).isNull();
         }
     }
 
@@ -140,12 +140,12 @@ class AtividadeAvaliativaServiceAlunoTest {
         var projeto = new ProjetoAvaliativo();
         projeto.setEstadoJson("{\"blocks\":{}}");
         s.setProjeto(projeto);
-        s.setDataEnvio(AVALIADA_EM);
+        s.setEnviadaEm(AVALIADA_EM);
 
         var r = service.buscarProjetoDoAluno(ALUNO, 1L);
 
         assertThat(r.estadoJson()).isEqualTo("{\"blocks\":{}}");
-        assertThat(r.dataEnvio()).isEqualTo(AVALIADA_EM);
+        assertThat(r.enviadaEm()).isEqualTo(AVALIADA_EM);
     }
 
     @Test

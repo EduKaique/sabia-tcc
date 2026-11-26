@@ -44,7 +44,7 @@ public class RelatorioProfessorService {
                 .filter(submissao -> atividades.stream()
                         .anyMatch(atividade -> atividade.getId().equals(submissao.getAtividade().getId())))
                 .filter(submissao -> dentroDoPeriodo(
-                        submissao.getDataEnvio(), request.dataInicio(), request.dataFim()))
+                        submissao.getEnviadaEm(), request.dataInicio(), request.dataFim()))
                 .toList();
 
         if (!request.incluirDetalhesOrDefault()) {

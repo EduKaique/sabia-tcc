@@ -89,7 +89,7 @@ public class RelatorioTurmaService {
         var submissoes = ids.isEmpty()
                 ? List.<SubmissaoAvaliativa>of()
                 : submissaoRepository.findByAtividade_IdIn(ids).stream()
-                        .filter(s -> relatorioRules.dentroDoPeriodo(s.getDataEnvio(), dataInicio, dataFim))
+                        .filter(s -> relatorioRules.dentroDoPeriodo(s.getEnviadaEm(), dataInicio, dataFim))
                         .toList();
 
         return new DadosTurma(atividades, matriculas, submissoes);

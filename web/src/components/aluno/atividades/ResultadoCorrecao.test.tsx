@@ -20,7 +20,7 @@ const base: AtividadeAlunoDTO = {
   cenarioJson: null,
   nota: 8.5,
   feedbackProfessor: 'Muito bem!\nRevise o laço.',
-  avaliadaEm: '2026-11-10T14:30:00',
+  corrigidaEm: '2026-11-10T14:30:00',
 }
 
 describe('ResultadoCorrecao', () => {
@@ -35,7 +35,7 @@ describe('ResultadoCorrecao', () => {
   it('não mostra nada enquanto a atividade está em avaliação', () => {
     const { container } = render(
       <ResultadoCorrecao
-        atividade={{ ...base, status: 'ENTREGUE', nota: null, feedbackProfessor: null, avaliadaEm: null }}
+        atividade={{ ...base, status: 'ENTREGUE', nota: null, feedbackProfessor: null, corrigidaEm: null }}
       />,
     )
     expect(container.innerHTML).toBe('')

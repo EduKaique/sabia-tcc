@@ -115,7 +115,7 @@ export interface SubmissaoItem {
   entregueComAtraso: boolean
   status: StatusSubmissao
   nota: number | null
-  dataEnvio: string | null
+  enviadaEm: string | null
 }
 
 export interface CorrigirSubmissaoPayload {
@@ -127,13 +127,13 @@ export interface Correcao {
   id: number
   nota: number
   feedbackProfessor: string | null
-  avaliadaEm: string
+  corrigidaEm: string
 }
 
 export interface SubmissaoAvaliativa {
   id: number
   atividadeId: number
-  dataEnvio: string
+  enviadaEm: string
   status: StatusSubmissao
   correcao: Correcao | null
 }
@@ -142,7 +142,7 @@ export interface SubmissaoProfessorDetalhe {
   id: number
   atividadeId: number
   alunoNome: string | null
-  dataEnvio: string
+  enviadaEm: string
   status: StatusSubmissao
   estadoJson: string | null
   correcao: Correcao | null

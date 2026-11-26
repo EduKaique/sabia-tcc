@@ -188,7 +188,7 @@ public class AtividadeAvaliativaService {
         var sub = submissaoAvaliativaRepository.findByAlunoIdAndAtividadeId(alunoId, atividadeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Você ainda não entregou esta atividade."));
         var projeto = sub.getProjeto();
-        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getDataEnvio());
+        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getEnviadaEm());
     }
 
     private AtividadeAvaliativa buscarDisponivelParaAluno(Long alunoId, Long atividadeId) {
@@ -223,7 +223,7 @@ public class AtividadeAvaliativaService {
                 a.getCenarioJson(),
                 correcao != null ? correcao.getNota() : null,
                 correcao != null ? correcao.getFeedbackProfessor() : null,
-                correcao != null ? correcao.getAvaliadaEm() : null
+                correcao != null ? correcao.getCorrigidaEm() : null
         );
     }
 

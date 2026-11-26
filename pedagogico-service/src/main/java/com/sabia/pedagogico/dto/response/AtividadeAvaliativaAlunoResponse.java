@@ -20,5 +20,5 @@ public record AtividadeAvaliativaAlunoResponse(
         /** Nota, comentário e data da correção: só preenchidos quando a atividade está CORRIGIDA. */
         BigDecimal nota,
         String feedbackProfessor,
-        LocalDateTime avaliadaEm
+        LocalDateTime corrigidaEm
 ) {}

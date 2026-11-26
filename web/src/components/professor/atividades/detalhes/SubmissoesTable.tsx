@@ -136,9 +136,9 @@ export function SubmissoesTable({ atividadeId, filtroPendentes, onFiltrarPendent
                       </div>
                     </td>
                     <td className="px-5 py-4 hidden sm:table-cell">
-                      {s.dataEnvio ? (
+                      {s.enviadaEm ? (
                         <div>
-                          <p className="text-sm text-foreground">{formatDateTime(s.dataEnvio)}</p>
+                          <p className="text-sm text-foreground">{formatDateTime(s.enviadaEm)}</p>
                           {s.entregueComAtraso && (
                             <p className="text-xs text-red-500 mt-0.5">Entregue com atraso</p>
                           )}

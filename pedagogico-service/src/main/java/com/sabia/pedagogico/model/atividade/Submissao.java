@@ -22,8 +22,8 @@ public abstract class Submissao {
     @Column(name = "aluno_nome")
     private String alunoNome;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime dataEnvio;
+    @Column(name = "data_envio", nullable = false, updatable = false)
+    private LocalDateTime enviadaEm;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -32,6 +32,6 @@ public abstract class Submissao {
 
     @PrePersist
     void prePersist() {
-        dataEnvio = LocalDateTime.now(ZoneOffset.UTC);
+        enviadaEm = LocalDateTime.now(ZoneOffset.UTC);
     }
 }

@@ -131,7 +131,7 @@ public class SubmissaoAvaliativaService {
                 submissao.getId(),
                 submissao.getAtividade().getId(),
                 submissao.getAlunoNome(),
-                submissao.getDataEnvio(),
+                submissao.getEnviadaEm(),
                 submissao.getStatus(),
                 projeto != null ? projeto.getEstadoJson() : null,
                 correcao != null ? correcaoMapper.toResponse(correcao) : null,
@@ -216,7 +216,7 @@ public class SubmissaoAvaliativaService {
         return new SubmissaoAvaliativaResponse(
                 submissao.getId(),
                 submissao.getAtividade().getId(),
-                submissao.getDataEnvio(),
+                submissao.getEnviadaEm(),
                 submissao.getStatus(),
                 CorrecaoResponse
         );
@@ -227,7 +227,7 @@ public class SubmissaoAvaliativaService {
         var correcao = submissao.getCorrecao();
 
         boolean entregueComAtraso = atividade.getDataEntrega() != null
-                && submissao.getDataEnvio().isAfter(atividade.getDataEntrega());
+                && submissao.getEnviadaEm().isAfter(atividade.getDataEntrega());
 
         var nota = correcao != null ? correcao.getNota() : null;
 
@@ -242,7 +242,7 @@ public class SubmissaoAvaliativaService {
                 entregueComAtraso,
                 submissao.getStatus(),
                 nota,
-                submissao.getDataEnvio()
+                submissao.getEnviadaEm()
         );
     }
 }

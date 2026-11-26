@@ -26,11 +26,11 @@ public class Correcao {
     @Column(columnDefinition = "TEXT")
     private String feedbackProfessor;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime avaliadaEm;
+    @Column(name = "avaliada_em", nullable = false, updatable = false)
+    private LocalDateTime corrigidaEm;
 
     @PrePersist
     void prePersist() {
-        avaliadaEm = LocalDateTime.now(ZoneOffset.UTC);
+        corrigidaEm = LocalDateTime.now(ZoneOffset.UTC);
     }
 }

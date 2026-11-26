@@ -29,9 +29,9 @@ export function ResultadoCorrecao({ atividade }: Props) {
         </div>
       )}
 
-      {atividade.avaliadaEm && (
+      {atividade.corrigidaEm && (
         <p className={textoApoio}>
-          Corrigida em {formatarDataHora(parseDataUtc(atividade.avaliadaEm))}
+          Corrigida em {formatarDataHora(parseDataUtc(atividade.corrigidaEm))}
         </p>
       )}
     </section>

@@ -7,7 +7,7 @@ import com.sabia.pedagogico.model.atividade.StatusSubmissao;
 public record SubmissaoAvaliativaResponse(
         Long id,
         Long atividadeId,
-        LocalDateTime dataEnvio,
+        LocalDateTime enviadaEm,
         StatusSubmissao status,
         CorrecaoResponse correcao
 ) {}

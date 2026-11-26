@@ -25,7 +25,7 @@ class RelatorioTurmaRulesTest {
 
     private SubmissaoAvaliativa submissao(long alunoId, AtividadeAvaliativa atividade, String nota) {
         var s = SubmissaoAvaliativa.builder().alunoId(alunoId).atividade(atividade)
-                .dataEnvio(LocalDateTime.now())
+                .enviadaEm(LocalDateTime.now())
                 .status(nota == null ? StatusSubmissao.PENDENTE : StatusSubmissao.CORRIGIDA).build();
         if (nota != null) {
             s.setCorrecao(Correcao.builder().nota(new BigDecimal(nota)).build());

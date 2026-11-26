@@ -5,5 +5,5 @@ import java.time.LocalDateTime;
 /** Projeto entregue pelo próprio aluno, para visualização somente leitura. */
 public record ProjetoEntregueResponse(
         String estadoJson,
-        LocalDateTime dataEnvio
+        LocalDateTime enviadaEm
 ) {}

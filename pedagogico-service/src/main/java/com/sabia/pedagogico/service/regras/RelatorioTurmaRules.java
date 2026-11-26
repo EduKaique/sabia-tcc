@@ -174,7 +174,7 @@ public class RelatorioTurmaRules {
 
     private boolean entregueComAtraso(SubmissaoAvaliativa submissao) {
         var prazo = submissao.getAtividade().getDataEntrega();
-        return prazo != null && submissao.getDataEnvio().isAfter(prazo);
+        return prazo != null && submissao.getEnviadaEm().isAfter(prazo);
     }
 
     private String nomeDe(TurmaAluno matricula) {
