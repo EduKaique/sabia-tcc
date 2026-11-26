@@ -14,7 +14,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "evento_consumido")
 @Getter @NoArgsConstructor @AllArgsConstructor
-public class MensagemProcessada {
+public class EventoConsumido {
 
     /** {@code consumidor:messageId} */
     @Id
@@ -24,7 +24,7 @@ public class MensagemProcessada {
     @Column(nullable = false)
     private Instant processadaEm;
 
-    public static MensagemProcessada de(String consumidor, String messageId) {
-        return new MensagemProcessada(consumidor + ":" + messageId, Instant.now());
+    public static EventoConsumido de(String consumidor, String messageId) {
+        return new EventoConsumido(consumidor + ":" + messageId, Instant.now());
     }
 }
