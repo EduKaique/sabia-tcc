@@ -8,7 +8,7 @@ import java.time.ZoneOffset;
 
 /**
  * Projeto livre do aluno no Sandbox: privado (só o próprio aluno lê e altera), sem nota, sem
- * entrega e sem validação no servidor. Não herda de ProjetoScratch para não entrar nas consultas
+ * entrega e sem validação no servidor. Não herda de ProjetoBlocos para não entrar nas consultas
  * polimórficas dos projetos entregues.
  */
 @Entity

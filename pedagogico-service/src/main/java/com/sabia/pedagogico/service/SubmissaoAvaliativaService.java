@@ -41,7 +41,7 @@ public class SubmissaoAvaliativaService {
     private final SubmissaoAvaliativaRepository submissaoRepository;
     private final CorrecaoRepository correcaoRepository;
     private final AtividadeAvaliativaRepository atividadeAvaliativaRepository;
-    private final ProjetoAvaliativoRepository projetoScratchRepository;
+    private final ProjetoAvaliativoRepository projetoBlocosRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final CorrecaoMapper correcaoMapper;
     private final ApplicationEventPublisher eventPublisher;
@@ -74,7 +74,7 @@ public class SubmissaoAvaliativaService {
                 .alunoId(alunoId)
                 .estadoJson(request.estadoJson())
                 .build();
-        projeto = projetoScratchRepository.save(projeto);
+        projeto = projetoBlocosRepository.save(projeto);
 
         var submissao = SubmissaoAvaliativa.builder()
                 .atividade(atividade)
