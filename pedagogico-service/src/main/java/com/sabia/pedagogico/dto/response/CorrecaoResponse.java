@@ -7,6 +7,5 @@ public record CorrecaoResponse(
         Long id,
         BigDecimal nota,
         String feedbackProfessor,
-        String relatorioIaJson,
         LocalDateTime avaliadaEm
 ) {}

@@ -127,7 +127,6 @@ export interface Correcao {
   id: number
   nota: number
   feedbackProfessor: string | null
-  relatorioIaJson: string | null
   avaliadaEm: string
 }
 

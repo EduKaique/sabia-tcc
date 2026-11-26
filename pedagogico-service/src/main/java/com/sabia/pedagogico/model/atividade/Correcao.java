@@ -26,9 +26,6 @@ public class Correcao {
     @Column(columnDefinition = "TEXT")
     private String feedbackProfessor;
 
-    @Column(columnDefinition = "TEXT")
-    private String relatorioIaJson;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime avaliadaEm;
 

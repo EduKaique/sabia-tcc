@@ -191,7 +191,7 @@ export default function CorrigirSubmissaoPage({
             )}
             <PainelRelatorioIa
               submissaoId={id}
-              relatorioIaJson={submissao.relatorioIaPreGeradoJson ?? submissao.correcao?.relatorioIaJson}
+              relatorioIaJson={submissao.relatorioIaPreGeradoJson}
               payload={pedidoRobo && 'payload' in pedidoRobo ? pedidoRobo.payload : null}
               indisponivel={pedidoRobo && 'indisponivel' in pedidoRobo ? pedidoRobo.indisponivel : null}
               modoRobo
@@ -200,7 +200,7 @@ export default function CorrigirSubmissaoPage({
         ) : (
           <PainelRelatorioIa
             submissaoId={id}
-            relatorioIaJson={submissao.relatorioIaPreGeradoJson ?? submissao.correcao?.relatorioIaJson}
+            relatorioIaJson={submissao.relatorioIaPreGeradoJson}
             payload={
               atividade && submissao.estadoJson
                 ? {
