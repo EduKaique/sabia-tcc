@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * Lição do módulo de aprendizado, criada por um professor: páginas de conteúdo (PaginaLicao), vínculo com
  * turmas (LicaoTurma) e uma prática própria (modo + cenário). Colunas novas são anuláveis (ddl-auto update):
- * as lições legadas do antigo seed ficam com professorId nulo. `codigo`, `ordem`, `conceito` e `modo`
+ * as lições legadas do antigo seed ficam com professorId nulo. `conceito` e `modo`
  * continuam NOT NULL no banco e são sempre preenchidos pelo serviço.
  */
 @Entity
@@ -21,12 +21,6 @@ public class Licao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, unique = true, length = 100)
-    private String codigo;
-
-    @Column(nullable = false)
-    private int ordem;
 
     @Column(nullable = false)
     private String titulo;

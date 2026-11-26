@@ -142,7 +142,7 @@ class ProfessorLicaoControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         reset(licaoRepo, paginaRepo, vinculoRepo, matriculaRepo, progressoPaginaRepo, progressoLicaoRepo);
-        licao = Licao.builder().id(1L).codigo("p-x").ordem(0).titulo("Algoritmos").conceito("Sequência")
+        licao = Licao.builder().id(1L).titulo("Algoritmos").conceito("Sequência")
                 .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(5L).build();
         when(licaoRepo.findById(1L)).thenReturn(Optional.of(licao));
         when(licaoRepo.findById(99L)).thenReturn(Optional.empty());

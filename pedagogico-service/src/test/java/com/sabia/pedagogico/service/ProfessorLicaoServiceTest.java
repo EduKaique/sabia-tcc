@@ -75,7 +75,7 @@ class ProfessorLicaoServiceTest {
             new CenarioRoboValidador(mapper), new ValidadorConteudoPagina(mapper), mapper);
 
     private final LocalDateTime ontem = LocalDateTime.now().minusDays(1);
-    private final Licao licao = Licao.builder().id(1L).codigo("p-x").ordem(0).titulo("Algoritmos").conceito("Sequência")
+    private final Licao licao = Licao.builder().id(1L).titulo("Algoritmos").conceito("Sequência")
             .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(DONO).criadaEm(ontem).atualizadaEm(ontem)
             .build();
     private final AtomicLong proximoId = new AtomicLong(500);
@@ -83,7 +83,7 @@ class ProfessorLicaoServiceTest {
     ProfessorLicaoServiceTest() {
         when(licaoRepo.findById(1L)).thenReturn(Optional.of(licao));
         when(licaoRepo.findById(99L)).thenReturn(Optional.empty());
-        when(licaoRepo.findById(2L)).thenReturn(Optional.of(Licao.builder().id(2L).codigo("teste-robo-01").ordem(1)
+        when(licaoRepo.findById(2L)).thenReturn(Optional.of(Licao.builder().id(2L)
                 .titulo("Legada").conceito("Sequência").modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).build()));
         when(licaoRepo.save(any(Licao.class))).thenAnswer(inv -> {
             Licao l = inv.getArgument(0);
@@ -134,8 +134,6 @@ class ProfessorLicaoServiceTest {
         ArgumentCaptor<Licao> captor = ArgumentCaptor.forClass(Licao.class);
         verify(licaoRepo).save(captor.capture());
         Licao salva = captor.getValue();
-        assertThat(salva.getCodigo()).startsWith("p-").hasSize(38);
-        assertThat(salva.getOrdem()).isZero();
         assertThat(salva.getTitulo()).isEqualTo("Laços");
         assertThat(salva.getConceito()).isEqualTo("Repetição");
         assertThat(salva.getModo()).isEqualTo(ModoAtividade.BLOCOS);

@@ -44,7 +44,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -106,8 +105,6 @@ public class ProfessorLicaoService {
         }
         LocalDateTime agora = agora();
         Licao licao = licaoRepository.save(Licao.builder()
-                .codigo("p-" + UUID.randomUUID())
-                .ordem(0)
                 .titulo(request.titulo())
                 .conceito(request.conceito())
                 .resumo(vazioComoNulo(request.resumo()))
