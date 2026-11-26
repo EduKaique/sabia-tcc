@@ -35,7 +35,7 @@ function lerRelatorio(json: string | null | undefined): RelatorioIa | null {
 
 interface Props {
   submissaoId: string
-  relatorioIaJson: string | null | undefined
+  relatorioIaPreGeradoJson: string | null | undefined
   payload: RevisarSubmissaoIaPayload | null
   /** Jogo do Robô: mostra o aviso fixo e não usa a nota sugerida da IA. */
   modoRobo?: boolean
@@ -45,7 +45,7 @@ interface Props {
 
 export function PainelRelatorioIa({
   submissaoId,
-  relatorioIaJson,
+  relatorioIaPreGeradoJson,
   payload,
   modoRobo = false,
   indisponivel = null,
@@ -55,7 +55,7 @@ export function PainelRelatorioIa({
   const remover = useRemoverRelatorioIa(submissaoId)
   const [relatorioGerado, setRelatorioGerado] = useState<RelatorioIa | null>(null)
   const [secaoAberta, setSecaoAberta] = useState<'acertos' | 'erros' | 'resumo' | null>(null)
-  const relatorio = relatorioGerado ?? lerRelatorio(relatorioIaJson)
+  const relatorio = relatorioGerado ?? lerRelatorio(relatorioIaPreGeradoJson)
 
   function gerarRelatorio() {
     if (!payload) return

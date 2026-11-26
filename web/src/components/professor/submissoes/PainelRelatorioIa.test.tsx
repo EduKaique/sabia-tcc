@@ -18,14 +18,14 @@ const SALVO = JSON.stringify({ resumo: 'Chegou ao destino.', notaSugerida: 9, ac
 
 describe('PainelRelatorioIa', () => {
   it('no robô mostra o aviso fixo e não mostra a nota sugerida', () => {
-    render(<PainelRelatorioIa submissaoId="1" relatorioIaJson={SALVO} payload={null} modoRobo />)
+    render(<PainelRelatorioIa submissaoId="1" relatorioIaPreGeradoJson={SALVO} payload={null} modoRobo />)
 
     expect(screen.getByText(AVISO_RELATORIO_ROBO)).toBeTruthy()
     expect(screen.queryByText('Nota sugerida')).toBeNull()
   })
 
   it('nos blocos mostra a nota sugerida e não mostra o aviso', () => {
-    render(<PainelRelatorioIa submissaoId="1" relatorioIaJson={SALVO} payload={null} />)
+    render(<PainelRelatorioIa submissaoId="1" relatorioIaPreGeradoJson={SALVO} payload={null} />)
 
     expect(screen.getByText('Nota sugerida')).toBeTruthy()
     expect(screen.queryByText(AVISO_RELATORIO_ROBO)).toBeNull()
@@ -35,7 +35,7 @@ describe('PainelRelatorioIa', () => {
     render(
       <PainelRelatorioIa
         submissaoId="1"
-        relatorioIaJson={null}
+        relatorioIaPreGeradoJson={null}
         payload={null}
         modoRobo
         indisponivel="Sem análise."
