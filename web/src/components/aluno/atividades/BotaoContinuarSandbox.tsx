@@ -41,7 +41,7 @@ export function BotaoContinuarSandbox({ atividadeId }: Props) {
         ) : (
           <Sparkles size={16} aria-hidden="true" />
         )}
-        {ocupado ? 'Copiando...' : 'Continuar no Sandbox'}
+        {ocupado ? 'Copiando...' : 'Continuar no Meus Projetos'}
       </button>
       {erro && (
         <p role="alert" className={cn(alertaErro, 'mt-3 w-full')}>
