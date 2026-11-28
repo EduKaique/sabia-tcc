@@ -1,19 +1,19 @@
-import type { EstadoLicaoProfessor } from '@/types/licaoProfessor'
-import type { ModoAtividade } from '@/types'
+import type { EstadoPublicacaoLicao } from '@/types/licaoProfessor'
+import type { ModoPratica } from '@/types'
 
-export const ROTULO_ESTADO: Record<EstadoLicaoProfessor, string> = {
+export const ROTULO_ESTADO: Record<EstadoPublicacaoLicao, string> = {
   RASCUNHO: 'Rascunho',
   PUBLICADA: 'Publicada',
   ARQUIVADA: 'Arquivada',
 }
 
-export const VARIANTE_ESTADO: Record<EstadoLicaoProfessor, 'secondary' | 'default' | 'outline'> = {
+export const VARIANTE_ESTADO: Record<EstadoPublicacaoLicao, 'secondary' | 'default' | 'outline'> = {
   RASCUNHO: 'secondary',
   PUBLICADA: 'default',
   ARQUIVADA: 'outline',
 }
 
-export const ROTULO_MODO: Record<ModoAtividade, string> = {
+export const ROTULO_MODO: Record<ModoPratica, string> = {
   BLOCOS: 'Blocos livres',
   JOGO_ROBO: 'Jogo do Robô',
 }

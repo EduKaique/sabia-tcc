@@ -16,7 +16,7 @@ export interface LoginResponse {
   role: 'PROFESSOR' | 'ALUNO' | 'ADMINISTRADOR'
   nome: string
   /** true: o usuário precisa trocar a senha antes de usar o sistema. */
-  mustChangePassword: boolean
+  trocaSenhaObrigatoria: boolean
 }
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {

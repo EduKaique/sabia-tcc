@@ -12,8 +12,8 @@ import type { ProjetoSandboxResumo } from '@/types/projetoSandbox'
 import { NomeProjetoEditavel } from './NomeProjetoEditavel'
 
 export const ROTULO_MODO = {
-  BLOCOS_LIVRES: 'Blocos livres',
-  ROBO: 'Jogo do Robô',
+  BLOCOS: 'Blocos livres',
+  JOGO_ROBO: 'Jogo do Robô',
 } as const
 
 interface Props {
@@ -24,7 +24,7 @@ interface Props {
 export function ProjetoCard({ projeto, onExcluir }: Props) {
   const [renomeando, setRenomeando] = useState(false)
   const atualizar = useAtualizarProjetoSandbox(projeto.id)
-  const Icone = projeto.modo === 'ROBO' ? Bot : Puzzle
+  const Icone = projeto.modo === 'JOGO_ROBO' ? Bot : Puzzle
   const erro = atualizar.isError ? extrairErroSandbox(atualizar.error).mensagem : null
 
   return (

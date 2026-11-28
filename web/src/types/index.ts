@@ -15,12 +15,10 @@ export interface PageResponse<T> {
 
 export type StatusAtividade = 'RASCUNHO' | 'PUBLICADA'
 
-export type TipoAtividade =
-  | 'ATIVIDADE_AVALIATIVA'
-  | 'ATIVIDADE_TRILHA'
+export type TipoAtividade = 'ATIVIDADE_AVALIATIVA'
 
 /** Modo de apresentação da atividade, ortogonal ao tipo. `null` no backend é tratado como BLOCOS. */
-export type ModoAtividade = 'BLOCOS' | 'JOGO_ROBO'
+export type ModoPratica = 'BLOCOS' | 'JOGO_ROBO'
 
 export type TipoBlocoRobo = 'robo_mover' | 'robo_repetir'
 
@@ -48,11 +46,10 @@ export interface AtividadeAvaliativa {
   turmaId: number
   pontuacaoMaxima: number
   dataEntrega: Date | undefined
-  eGeradaIa: boolean
   gabaritoEstadoJson: string
   status: StatusAtividade
   criadaEm: string
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   possuiNotas: boolean
 }
@@ -101,14 +98,13 @@ export interface AtividadeDetalhes {
   dataEntrega: string | null
   pontuacaoMaxima: number
   status: 'RASCUNHO' | 'PUBLICADA'
-  eGeradaIa: boolean
   criadaEm: string
   totalAlunos: number
   totalEntregas: number
   mediaTurma: number | null
 }
 
-export type StatusSubmissao = 'PENDENTE' | 'EM_CORRECAO' | 'CORRIGIDA'
+export type StatusSubmissao = 'PENDENTE' | 'CORRIGIDA'
 
 export interface SubmissaoItem {
   id: string
@@ -119,7 +115,7 @@ export interface SubmissaoItem {
   entregueComAtraso: boolean
   status: StatusSubmissao
   nota: number | null
-  dataEnvio: string | null
+  enviadaEm: string | null
 }
 
 export interface CorrigirSubmissaoPayload {
@@ -131,14 +127,13 @@ export interface Correcao {
   id: number
   nota: number
   feedbackProfessor: string | null
-  relatorioIaJson: string | null
-  avaliadaEm: string
+  corrigidaEm: string
 }
 
 export interface SubmissaoAvaliativa {
   id: number
   atividadeId: number
-  dataEnvio: string
+  enviadaEm: string
   status: StatusSubmissao
   correcao: Correcao | null
 }
@@ -147,7 +142,7 @@ export interface SubmissaoProfessorDetalhe {
   id: number
   atividadeId: number
   alunoNome: string | null
-  dataEnvio: string
+  enviadaEm: string
   status: StatusSubmissao
   estadoJson: string | null
   correcao: Correcao | null
@@ -194,7 +189,7 @@ export type StatusPratica =
 /** ResultadoValidacao do pedagogico-service (fixtures/blocos-livres/README.md). */
 export interface ResultadoValidacao {
   versaoValidador: number
-  modo: ModoAtividade
+  modo: ModoPratica
   concluida: boolean
   status: StatusPratica
   blocosUsados: number
@@ -312,7 +307,6 @@ export interface StatusEntregas {
   totalEsperado: number
   naoEntregues: number
   pendentes: number
-  emCorrecao: number
   corrigidas: number
   entreguesNoPrazo: number
   entreguesComAtraso: number

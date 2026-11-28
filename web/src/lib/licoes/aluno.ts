@@ -1,4 +1,4 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 import type {
   CorrecaoQuestionario,
   EstadoLicaoAluno,
@@ -8,14 +8,14 @@ import type {
   ProgressoPagina,
   ProgressoVideo,
   PulsoVideo,
-  TipoPaginaAluno,
+  TipoPagina,
   VistaPagina,
 } from '@/types/licao'
 import { formatarDuracao } from './youtube'
 
 /** Regras puras das telas de lição do aluno. */
 
-export const ROTULO_TIPO_ALUNO: Record<TipoPaginaAluno, string> = {
+export const ROTULO_TIPO_ALUNO: Record<TipoPagina, string> = {
   TEXTO: 'Texto',
   IMAGEM_TEXTO: 'Imagem',
   VIDEO_YOUTUBE: 'Vídeo',
@@ -30,7 +30,7 @@ export const ROTULO_ESTADO_ALUNO: Record<EstadoLicaoAluno, string> = {
   CONCLUIDA: 'Concluída',
 }
 
-export const ROTULO_MODO: Record<ModoAtividade, string> = {
+export const ROTULO_MODO: Record<ModoPratica, string> = {
   JOGO_ROBO: 'Jogo do Robô',
   BLOCOS: 'Programação em blocos',
 }

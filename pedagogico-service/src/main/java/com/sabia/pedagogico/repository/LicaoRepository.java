@@ -11,8 +11,6 @@ import java.util.Optional;
 
 public interface LicaoRepository extends JpaRepository<Licao, Long> {
 
-    List<Licao> findByStatusOrderByOrdemAsc(StatusLicao status);
-
     Optional<Licao> findByIdAndStatus(Long id, StatusLicao status);
 
     List<Licao> findByProfessorIdAndStatusOrderByAtualizadaEmDesc(Long professorId, StatusLicao status);

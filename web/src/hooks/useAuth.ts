@@ -7,7 +7,7 @@ interface AuthUser {
   nome: string;
   role: "PROFESSOR" | "ALUNO" | "ADMINISTRADOR";
   /** Troca de senha pendente: o backend recusa tudo (403 SENHA_TEMPORARIA) até a troca. */
-  mustChangePassword: boolean;
+  trocaSenhaObrigatoria: boolean;
 }
 
 /** Payload do JWT é base64url e o JSON é UTF-8 (nomes com acento): `atob` puro não basta. */
@@ -39,7 +39,8 @@ export function useAuth() {
         id: payload.sub,
         nome: payload.nome,
         role: payload.role,
-        mustChangePassword: payload.mustChangePassword === true,
+        // mustChangePassword: nome antigo da claim, ainda presente em tokens emitidos antes do rename.
+        trocaSenhaObrigatoria: payload.trocaSenhaObrigatoria === true || payload.mustChangePassword === true,
       };
     } catch {
       return null;

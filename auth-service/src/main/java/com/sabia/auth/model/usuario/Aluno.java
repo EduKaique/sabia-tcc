@@ -18,10 +18,6 @@ public class Aluno {
     @JoinColumn(name = "id")
     private Usuario usuario;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int pontuacaoGeral = 0;
-
     @Column(unique = true)
     private String matricula;
 

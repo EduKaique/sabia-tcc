@@ -52,6 +52,9 @@ springdoc:
         operationsSorter: alpha
 
 sabia:
+    seed:
+        # Liga/desliga o seed de demonstração (seed-demo.sql). Desligar depois da apresentação.
+        demo: ${SABIA_SEED_DEMO:false}
     jwt:
         # Segredo HMAC compartilhado com o API Gateway e os demais serviços.
         # O auth-service é o ÚNICO emissor; os outros apenas validam com este segredo.

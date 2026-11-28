@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 class ConsumidoresTest {
 
-    private final MensagemProcessadaRepository processadas = mock(MensagemProcessadaRepository.class);
+    private final EventoConsumidoRepository processadas = mock(EventoConsumidoRepository.class);
     private final ProcessadorIdempotente processador = new ProcessadorIdempotente(processadas);
     private final TurmaAlunoRepository turmaAlunos = mock(TurmaAlunoRepository.class);
     private final SubmissaoAvaliativaRepository submissoes = mock(SubmissaoAvaliativaRepository.class);
@@ -44,7 +44,7 @@ class ConsumidoresTest {
 
         verify(turmaAlunos).atualizarNomeAluno(7L, "Ana Souza");
         verify(submissoes).atualizarNomeAluno(7L, "Ana Souza");
-        verify(processadas).saveAndFlush(any(MensagemProcessada.class));
+        verify(processadas).saveAndFlush(any(EventoConsumido.class));
     }
 
     @Test

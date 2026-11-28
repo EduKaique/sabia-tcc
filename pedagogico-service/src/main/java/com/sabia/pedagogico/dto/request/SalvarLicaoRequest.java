@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.dto.request;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +22,7 @@ public record SalvarLicaoRequest(
         @Size(max = 2000, message = "A descrição deve ter no máximo 2000 caracteres.")
         String resumo,
         @NotNull(message = "O modo da prática é obrigatório.")
-        ModoAtividade modo,
+        ModoPratica modo,
         String cenarioJson,
         @NotNull(message = "A lista de páginas é obrigatória.")
         @Size(max = 30, message = "A lição pode ter no máximo 30 páginas.")

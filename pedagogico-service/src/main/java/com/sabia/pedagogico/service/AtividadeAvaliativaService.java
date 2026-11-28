@@ -14,7 +14,7 @@ import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.mapper.AtividadeAvaliativaMapper;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
 import com.sabia.pedagogico.model.atividade.Correcao;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 import com.sabia.pedagogico.model.atividade.StatusAtividadeAluno;
 import com.sabia.pedagogico.model.atividade.StatusSubmissao;
@@ -188,7 +188,7 @@ public class AtividadeAvaliativaService {
         var sub = submissaoAvaliativaRepository.findByAlunoIdAndAtividadeId(alunoId, atividadeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Você ainda não entregou esta atividade."));
         var projeto = sub.getProjeto();
-        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getDataEnvio());
+        return new ProjetoEntregueResponse(projeto != null ? projeto.getEstadoJson() : null, sub.getEnviadaEm());
     }
 
     private AtividadeAvaliativa buscarDisponivelParaAluno(Long alunoId, Long atividadeId) {
@@ -217,13 +217,13 @@ public class AtividadeAvaliativaService {
         return new AtividadeAvaliativaAlunoResponse(
                 a.getId(), a.getTitulo(), a.getDescricao(),
                 a.getTurma().getId(), a.getPontuacaoMaxima(),
-                a.getDataEntrega(), a.isEGeradaIa(),
+                a.getDataEntrega(),
                 statusAluno, a.getCriadaEm(),
-                a.getModo() != null ? a.getModo() : ModoAtividade.BLOCOS,
+                a.getModo() != null ? a.getModo() : ModoPratica.BLOCOS,
                 a.getCenarioJson(),
                 correcao != null ? correcao.getNota() : null,
                 correcao != null ? correcao.getFeedbackProfessor() : null,
-                correcao != null ? correcao.getAvaliadaEm() : null
+                correcao != null ? correcao.getCorrigidaEm() : null
         );
     }
 
@@ -240,8 +240,8 @@ public class AtividadeAvaliativaService {
                 atividade, submissaoAvaliativaRepository.existeCorrecaoNaAtividade(atividade.getId()));
     }
 
-    private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
-        if (modo != ModoAtividade.JOGO_ROBO) return null;
+    private String cenarioDoModo(ModoPratica modo, String cenarioJson) {
+        if (modo != ModoPratica.JOGO_ROBO) return null;
         if (cenarioJson == null || cenarioJson.isBlank()) {
             throw new CenarioInvalidoException("Atividades no modo Jogo do Robô precisam de um cenário.");
         }

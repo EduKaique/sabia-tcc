@@ -14,5 +14,5 @@ public record SubmissaoListagemResponse(
         boolean entregueComAtraso,
         StatusSubmissao status,
         BigDecimal nota,
-        LocalDateTime dataEnvio
+        LocalDateTime enviadaEm
 ) {}

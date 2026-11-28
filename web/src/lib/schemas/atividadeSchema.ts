@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-export const tiposAtividade = [
-  "ATIVIDADE_AVALIATIVA",
-  "ATIVIDADE_TRILHA",
-] as const;
+export const tiposAtividade = ["ATIVIDADE_AVALIATIVA"] as const;
 
 export const atividadeSchema = z.object({
   titulo: z.string().min(3, "Título deve ter pelo menos 3 caracteres").max(200),

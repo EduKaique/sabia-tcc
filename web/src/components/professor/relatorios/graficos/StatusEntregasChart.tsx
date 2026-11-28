@@ -17,7 +17,6 @@ export function StatusEntregasChart({ turmaId, periodo }: Props) {
   const fatias = data
     ? [
         { nome: 'Corrigidas', valor: data.corrigidas, cor: CORES.verde },
-        { nome: 'Em correção', valor: data.emCorrecao, cor: CORES.azul },
         { nome: 'Aguardando correção', valor: data.pendentes, cor: CORES.amarelo },
         { nome: 'Não entregues', valor: data.naoEntregues, cor: CORES.cinza },
       ].filter((f) => f.valor > 0)

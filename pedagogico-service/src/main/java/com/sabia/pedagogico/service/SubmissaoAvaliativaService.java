@@ -41,7 +41,7 @@ public class SubmissaoAvaliativaService {
     private final SubmissaoAvaliativaRepository submissaoRepository;
     private final CorrecaoRepository correcaoRepository;
     private final AtividadeAvaliativaRepository atividadeAvaliativaRepository;
-    private final ProjetoAvaliativoRepository projetoScratchRepository;
+    private final ProjetoAvaliativoRepository projetoBlocosRepository;
     private final TurmaAlunoRepository turmaAlunoRepository;
     private final CorrecaoMapper correcaoMapper;
     private final ApplicationEventPublisher eventPublisher;
@@ -74,7 +74,7 @@ public class SubmissaoAvaliativaService {
                 .alunoId(alunoId)
                 .estadoJson(request.estadoJson())
                 .build();
-        projeto = projetoScratchRepository.save(projeto);
+        projeto = projetoBlocosRepository.save(projeto);
 
         var submissao = SubmissaoAvaliativa.builder()
                 .atividade(atividade)
@@ -88,7 +88,7 @@ public class SubmissaoAvaliativaService {
 
         // O único consumidor de submissao.enviada é a revisão genérica do ia-service, que não conhece o
         // robô: entregas do robô não publicam o evento (o item 3.5 pode reabrir isso com contextoRobo).
-        if (atividade.getModo() != ModoAtividade.JOGO_ROBO) {
+        if (atividade.getModo() != ModoPratica.JOGO_ROBO) {
             eventPublisher.publishEvent(new SubmissaoEnviadaEvent(submissao.getId()));
         }
         log.info("Submissão id={} criada pelo aluno id={} (prática {})", submissao.getId(), alunoId, validacao.status());
@@ -131,7 +131,7 @@ public class SubmissaoAvaliativaService {
                 submissao.getId(),
                 submissao.getAtividade().getId(),
                 submissao.getAlunoNome(),
-                submissao.getDataEnvio(),
+                submissao.getEnviadaEm(),
                 submissao.getStatus(),
                 projeto != null ? projeto.getEstadoJson() : null,
                 correcao != null ? correcaoMapper.toResponse(correcao) : null,
@@ -144,7 +144,7 @@ public class SubmissaoAvaliativaService {
     /** Análise do programa do robô; nula fora do modo robô e se cenário ou estado não forem legíveis. */
     private AnaliseRobo analisarRobo(SubmissaoAvaliativa submissao, String estadoJson) {
         var atividade = submissao.getAtividade();
-        if (atividade.getModo() != ModoAtividade.JOGO_ROBO || estadoJson == null) {
+        if (atividade.getModo() != ModoPratica.JOGO_ROBO || estadoJson == null) {
             return null;
         }
         try {
@@ -216,7 +216,7 @@ public class SubmissaoAvaliativaService {
         return new SubmissaoAvaliativaResponse(
                 submissao.getId(),
                 submissao.getAtividade().getId(),
-                submissao.getDataEnvio(),
+                submissao.getEnviadaEm(),
                 submissao.getStatus(),
                 CorrecaoResponse
         );
@@ -227,7 +227,7 @@ public class SubmissaoAvaliativaService {
         var correcao = submissao.getCorrecao();
 
         boolean entregueComAtraso = atividade.getDataEntrega() != null
-                && submissao.getDataEnvio().isAfter(atividade.getDataEntrega());
+                && submissao.getEnviadaEm().isAfter(atividade.getDataEntrega());
 
         var nota = correcao != null ? correcao.getNota() : null;
 
@@ -242,7 +242,7 @@ public class SubmissaoAvaliativaService {
                 entregueComAtraso,
                 submissao.getStatus(),
                 nota,
-                submissao.getDataEnvio()
+                submissao.getEnviadaEm()
         );
     }
 }

@@ -1,19 +1,18 @@
 -- ================================================================
 -- data.sql  —  Seed de desenvolvimento (Serviço Pedagógico)
 --
--- professor_id=2 e aluno_id=3 e instituicao_id=1 correspondem aos ids do
--- Usuario/Professor/Aluno/Instituicao seedados no banco do módulo `api`
--- (ver api/src/main/resources/data.sql) — aqui são apenas valores Long
+-- professor_id=2 e aluno_id=3 correspondem aos ids do
+-- Usuario/Professor/Aluno seedados pelo auth-service
+-- (ver auth-service/src/main/resources/data.sql) — aqui são apenas valores Long
 -- escalares, sem FK entre bancos (schema-per-service).
 -- ================================================================
 
 -- 1. Turma
-INSERT INTO turma (id, nome, professor_id, instituicao_id, etapa, criada_em)
+INSERT INTO turma (id, nome, professor_id, etapa, criada_em)
 VALUES (
     10,
     'Programação I — 2025/1',
     2,
-    1,
     'ANOS_INICIAIS',
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
@@ -30,7 +29,7 @@ VALUES (
 -- 3. Atividades com status diferentes
 
 -- 3.1 Rascunho (sem prazo)
-INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, status, gabarito_estado_json, criada_em)
 VALUES (
     20,
     10,
@@ -38,14 +37,13 @@ VALUES (
     '<p>Crie um projeto simples no Scratch demonstrando conceitos básicos: sequências, laços e condicionais.</p>',
     NULL,
     10,
-    false,
     'RASCUNHO',
     NULL,
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
 -- 3.2 Publicada com prazo futuro
-INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, status, gabarito_estado_json, criada_em)
 VALUES (
     21,
     10,
@@ -53,14 +51,13 @@ VALUES (
     '<p>Desenvolva uma animação no Scratch com pelo menos dois personagens e uma narrativa coerente.</p><ul><li>Mínimo de 30 segundos</li><li>Uso de variáveis</li><li>Pelo menos um laço</li></ul>',
     '2026-07-31 23:59:00',
     30,
-    false,
     'PUBLICADA',
     NULL,
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
 -- 3.3 Publicada com prazo encerrado
-INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, e_gerada_ia, status, gabarito_estado_json, criada_em)
+INSERT INTO atividade_avaliativa (id, turma_id, titulo, descricao, data_entrega, pontuacao_maxima, status, gabarito_estado_json, criada_em)
 VALUES (
     22,
     10,
@@ -68,7 +65,6 @@ VALUES (
     '<p>Responda as questões sobre algoritmos e estruturas de controle. Use o Scratch para exemplificar cada resposta.</p>',
     '2026-06-01 23:59:00',
     20,
-    false,
     'PUBLICADA',
     NULL,
     CURRENT_TIMESTAMP
@@ -93,7 +89,7 @@ WHERE id = 30 AND aluno_nome IS NULL;
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM turma), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('turma', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;
@@ -101,7 +97,7 @@ FROM (
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM turma_aluno), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM turma_aluno WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('turma_aluno', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;
@@ -109,7 +105,7 @@ FROM (
 SELECT CASE WHEN alvo > 0 THEN setval(seq, alvo, true) ELSE setval(seq, 1, false) END
 FROM (
     SELECT s.seq,
-           GREATEST(COALESCE((SELECT MAX(id) FROM atividade_avaliativa), 0), COALESCE(ps.last_value, 0)) AS alvo
+           GREATEST(COALESCE((SELECT MAX(id) FROM atividade_avaliativa WHERE id < 9000000), 0), COALESCE(ps.last_value, 0)) AS alvo
     FROM (SELECT pg_get_serial_sequence('atividade_avaliativa', 'id') AS seq) s
     LEFT JOIN pg_sequences ps ON format('%I.%I', ps.schemaname, ps.sequencename) = s.seq
 ) x;

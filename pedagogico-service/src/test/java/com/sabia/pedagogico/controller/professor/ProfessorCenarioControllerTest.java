@@ -3,11 +3,11 @@ package com.sabia.pedagogico.controller.professor;
 import com.sabia.pedagogico.config.JwtConfig;
 import com.sabia.pedagogico.config.SecurityConfig;
 import com.sabia.pedagogico.exception.GlobalExceptionHandler;
-import com.sabia.pedagogico.model.robo.CenarioRobo;
-import com.sabia.pedagogico.repository.CenarioRoboRepository;
+import com.sabia.pedagogico.model.robo.CenarioSalvo;
+import com.sabia.pedagogico.repository.CenarioSalvoRepository;
 import com.sabia.pedagogico.security.JwtAuthFilter;
 import com.sabia.pedagogico.security.JwtTokenReader;
-import com.sabia.pedagogico.service.CenarioRoboService;
+import com.sabia.pedagogico.service.CenarioSalvoService;
 import com.sabia.pedagogico.service.CenarioRoboValidador;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -67,11 +67,11 @@ class ProfessorCenarioControllerTest {
     @Configuration
     @EnableWebMvc
     @Import({SecurityConfig.class, JwtAuthFilter.class, JwtTokenReader.class, JwtConfig.class,
-            GlobalExceptionHandler.class, ProfessorCenarioController.class, CenarioRoboService.class})
+            GlobalExceptionHandler.class, ProfessorCenarioController.class, CenarioSalvoService.class})
     static class Config {
         @Bean
-        CenarioRoboRepository cenarioRoboRepository() {
-            return mock(CenarioRoboRepository.class);
+        CenarioSalvoRepository cenarioSalvoRepository() {
+            return mock(CenarioSalvoRepository.class);
         }
 
         @Bean
@@ -83,7 +83,7 @@ class ProfessorCenarioControllerTest {
     @Autowired
     private WebApplicationContext context;
     @Autowired
-    private CenarioRoboRepository repo;
+    private CenarioSalvoRepository repo;
 
     private MockMvc mockMvc;
 
@@ -91,12 +91,12 @@ class ProfessorCenarioControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         reset(repo);
-        when(repo.save(any(CenarioRobo.class))).thenAnswer(inv -> {
-            CenarioRobo c = inv.getArgument(0);
+        when(repo.save(any(CenarioSalvo.class))).thenAnswer(inv -> {
+            CenarioSalvo c = inv.getArgument(0);
             c.setId(1L);
             return c;
         });
-        when(repo.saveAndFlush(any(CenarioRobo.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repo.saveAndFlush(any(CenarioSalvo.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
     private static String token(String sub, String role) {
@@ -121,9 +121,9 @@ class ProfessorCenarioControllerTest {
         return mockMvc.perform(req.header("Authorization", "Bearer " + token(String.valueOf(id), "PROFESSOR")));
     }
 
-    private static CenarioRobo doProfessor(long professorId) {
+    private static CenarioSalvo doProfessor(long professorId) {
         LocalDateTime agora = LocalDateTime.now();
-        return CenarioRobo.builder().id(1L).professorId(professorId).nome("Labirinto").cenarioJson(VALIDO)
+        return CenarioSalvo.builder().id(1L).professorId(professorId).nome("Labirinto").cenarioJson(VALIDO)
                 .criadoEm(agora).atualizadoEm(agora).build();
     }
 
@@ -179,7 +179,7 @@ class ProfessorCenarioControllerTest {
         comoProfessor(6, put(URL + "/1").contentType(MediaType.APPLICATION_JSON).content(corpo("Invasor", VALIDO)))
                 .andExpect(status().isNotFound());
         comoProfessor(6, delete(URL + "/1")).andExpect(status().isNotFound());
-        verify(repo, never()).delete(any(CenarioRobo.class));
+        verify(repo, never()).delete(any(CenarioSalvo.class));
     }
 
     @Test

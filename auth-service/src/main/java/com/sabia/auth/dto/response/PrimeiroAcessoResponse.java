@@ -6,13 +6,13 @@ public record PrimeiroAcessoResponse(
         String tipo,
         String role,
         String nome,
-        boolean mustChangePassword,
+        boolean trocaSenhaObrigatoria,
         Turma turma
 ) {
     public record Turma(String nome) {}
 
     public static PrimeiroAcessoResponse of(LoginResponse login, String turmaNome) {
         return new PrimeiroAcessoResponse(login.token(), login.tipo(), login.role(), login.nome(),
-                login.mustChangePassword(), new Turma(turmaNome));
+                login.trocaSenhaObrigatoria(), new Turma(turmaNome));
     }
 }

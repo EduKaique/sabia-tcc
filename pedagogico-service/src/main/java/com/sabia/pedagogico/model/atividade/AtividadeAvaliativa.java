@@ -32,10 +32,6 @@ public class AtividadeAvaliativa {
     @Column(nullable = false)
     private int pontuacaoMaxima;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean eGeradaIa = false;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
@@ -46,7 +42,7 @@ public class AtividadeAvaliativa {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ModoAtividade modo;
+    private ModoPratica modo;
 
     @Column(columnDefinition = "TEXT")
     private String cenarioJson;

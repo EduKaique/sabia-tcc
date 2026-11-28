@@ -105,6 +105,26 @@ class ValidadorConteudoPaginaTest {
     }
 
     @Test
+    void imagemAceitaDataUriRasterEmLimiteProprio() {
+        String png = "data:image/png;base64,iVBORw0KGgo=";
+        assertThat(validar(TipoPagina.IMAGEM_TEXTO, imagem().put("imagemUrl", png))).contains(png);
+        String grande = "data:image/png;base64," + "A".repeat(20_000 - 22);
+        assertThat(validar(TipoPagina.IMAGEM_TEXTO, imagem().put("imagemUrl", grande))).isNotNull();
+    }
+
+    @Test
+    void imagemRecusaDataUriInvalido() {
+        for (String ruim : new String[] {
+                "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=", "data:text/html;base64,PGI+PC9iPg==",
+                "data:image/png,abc", "data:image/png;base64,AA AA", "data:image/png;base64,",
+                "data:image/png;base64," + "A".repeat(20_000)}) {
+            validar(TipoPagina.IMAGEM_TEXTO, imagem().put("imagemUrl", ruim));
+            assertThat(erros).as(ruim.substring(0, Math.min(40, ruim.length()))).containsKey("paginas[0].imagemUrl");
+            erros.clear();
+        }
+    }
+
+    @Test
     void imagemExigeHttpsEUrlAte500() {
         validar(TipoPagina.IMAGEM_TEXTO, imagem().put("imagemUrl", "http://exemplo.org/a.png"));
         assertThat(erros).containsKey("paginas[0].imagemUrl");

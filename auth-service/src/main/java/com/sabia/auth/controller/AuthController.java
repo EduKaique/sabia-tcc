@@ -97,7 +97,7 @@ public class AuthController {
     }
 
     @PostMapping("/trocar-senha")
-    @Operation(summary = "Troca a senha do usuário autenticado e devolve um token novo (obrigatório quando mustChangePassword=true)")
+    @Operation(summary = "Troca a senha do usuário autenticado e devolve um token novo (obrigatório quando trocaSenhaObrigatoria=true)")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<LoginResponse> trocarSenha(Authentication authentication,
                                                      @Valid @RequestBody TrocarSenhaRequest request) {

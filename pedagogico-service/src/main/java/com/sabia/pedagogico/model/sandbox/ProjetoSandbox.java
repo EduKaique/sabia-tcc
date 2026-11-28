@@ -1,5 +1,6 @@
 package com.sabia.pedagogico.model.sandbox;
 
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,7 @@ import java.time.ZoneOffset;
 
 /**
  * Projeto livre do aluno no Sandbox: privado (só o próprio aluno lê e altera), sem nota, sem
- * entrega e sem validação no servidor. Não herda de ProjetoScratch para não entrar nas consultas
+ * entrega e sem validação no servidor. Não herda de ProjetoBlocos para não entrar nas consultas
  * polimórficas dos projetos entregues.
  */
 @Entity
@@ -28,12 +29,12 @@ public class ProjetoSandbox {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ModoProjetoSandbox modo;
+    private ModoPratica modo;
 
     @Column(name = "estado_json", columnDefinition = "TEXT")
     private String estadoJson;
 
-    /** Snapshot do cenário (só no modo ROBO). */
+    /** Snapshot do cenário (só no modo JOGO_ROBO). */
     @Column(name = "cenario_json", columnDefinition = "TEXT")
     private String cenarioJson;
 

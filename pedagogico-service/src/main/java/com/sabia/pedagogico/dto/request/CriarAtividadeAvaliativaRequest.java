@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 
 public record CriarAtividadeAvaliativaRequest(
@@ -19,6 +19,6 @@ public record CriarAtividadeAvaliativaRequest(
         @Max(value = 100, message = "A pontuação máxima deve ficar entre 1 e 100.") int pontuacaoMaxima,
         LocalDateTime dataEntrega,
         String gabaritoEstadoJson,
-        ModoAtividade modo,
+        ModoPratica modo,
         String cenarioJson
 ) {}

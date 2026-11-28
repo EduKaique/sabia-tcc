@@ -1,6 +1,6 @@
 package com.sabia.pedagogico.dto.response;
 
-import com.sabia.pedagogico.model.sandbox.ModoProjetoSandbox;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.sandbox.ProjetoSandbox;
 
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record ProjetoSandboxResumoResponse(
         Long id,
         String nome,
-        ModoProjetoSandbox modo,
+        ModoPratica modo,
         LocalDateTime atualizadoEm
 ) {
     public static ProjetoSandboxResumoResponse from(ProjetoSandbox p) {

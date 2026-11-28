@@ -27,7 +27,7 @@ export function RelatorioTurmaGraficos({ turmaId, periodo, atividade }: Props) {
     { label: 'Média da turma', valor: formatarPercentual(distribuicao?.mediaPercentual), icone: Star, cor: 'bg-yellow-50 text-yellow-600' },
     { label: 'Mediana', valor: formatarPercentual(distribuicao?.medianaPercentual), icone: Percent, cor: 'bg-blue-50 text-blue-600' },
     { label: 'Taxa de entrega', valor: formatarPercentual(taxaEntrega, 0), icone: CheckCircle2, cor: 'bg-green-50 text-green-600' },
-    { label: 'Aguardando correção', valor: String((status?.pendentes ?? 0) + (status?.emCorrecao ?? 0)), icone: Clock, cor: 'bg-red-50 text-red-500' },
+    { label: 'Aguardando correção', valor: String(status?.pendentes ?? 0), icone: Clock, cor: 'bg-red-50 text-red-500' },
   ]
 
   return (

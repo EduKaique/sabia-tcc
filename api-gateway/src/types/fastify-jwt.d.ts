@@ -8,6 +8,8 @@ declare module '@fastify/jwt' {
       role?: Roles;
       perfil?: Roles | 'ADMINISTRADOR';
       email: string;
+      trocaSenhaObrigatoria?: boolean;
+      /** Nome antigo da claim (tokens emitidos antes do rename). */
       mustChangePassword?: boolean;
     };
     user: {
@@ -15,6 +17,8 @@ declare module '@fastify/jwt' {
       role?: Roles;
       perfil?: Roles | 'ADMINISTRADOR';
       email: string;
+      trocaSenhaObrigatoria?: boolean;
+      /** Nome antigo da claim (tokens emitidos antes do rename). */
       mustChangePassword?: boolean;
     };
   }

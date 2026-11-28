@@ -19,7 +19,7 @@ export async function buscarProjetoAluno(id: number): Promise<ProjetoEntregueDTO
 export interface SubmeterAtividadeResponse {
   id: number
   atividadeId: number
-  dataEnvio: string
+  enviadaEm: string
   status: string
   correcao: null
 }

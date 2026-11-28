@@ -67,7 +67,6 @@ interface Props {
 
 const tipoAtividadeLabels: Record<TipoAtividade, string> = {
   ATIVIDADE_AVALIATIVA: "Atividade Avaliativa",
-  ATIVIDADE_TRILHA: "Atividade Trilha",
 };
 
 const ID_PERSONALIZADO = "personalizado";

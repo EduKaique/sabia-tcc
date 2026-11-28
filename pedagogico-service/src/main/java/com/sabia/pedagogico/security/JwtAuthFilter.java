@@ -34,7 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         String token = extractToken(request);
         if (token != null && jwtTokenReader.isTokenValid(token)) {
-            if (jwtTokenReader.extractMustChangePassword(token)) {
+            if (jwtTokenReader.extractTrocaSenhaObrigatoria(token)) {
                 // Troca de senha pendente: nenhuma rota deste serviço é liberada (a troca é no auth-service).
                 recusarSenhaTemporaria(response);
                 return;

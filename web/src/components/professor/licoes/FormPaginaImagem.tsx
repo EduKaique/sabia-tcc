@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ImageOff } from 'lucide-react'
-import { urlHttps } from '@/lib/schemas/licaoSchema'
+import { urlHttps, urlDataImagem } from '@/lib/schemas/licaoSchema'
 import type { ConteudoImagemTexto } from '@/types/licaoProfessor'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,12 +15,12 @@ interface Props {
   erros: Record<string, string>
 }
 
-/** Página IMAGEM_TEXTO: endereço https da imagem, texto alternativo, legenda e texto opcional. */
+/** Página IMAGEM_TEXTO: endereço https (ou data URI) da imagem, texto alternativo, legenda e texto opcional. */
 export function FormPaginaImagem({ idBase, conteudo, onChange, erros }: Props) {
   const url = (conteudo.imagemUrl ?? '').trim()
   // Guarda a URL que falhou: trocar a URL volta a tentar carregar.
   const [urlComFalha, setUrlComFalha] = useState<string | null>(null)
-  const podeMostrar = urlHttps(url)
+  const podeMostrar = urlHttps(url) || urlDataImagem(url)
 
   return (
     <div className="space-y-4">

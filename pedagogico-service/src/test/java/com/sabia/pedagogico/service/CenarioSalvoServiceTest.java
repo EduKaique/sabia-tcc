@@ -5,8 +5,8 @@ import com.sabia.pedagogico.dto.response.CenarioRoboResponse;
 import com.sabia.pedagogico.exception.CenarioInvalidoException;
 import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.robo.CenarioRobo;
-import com.sabia.pedagogico.repository.CenarioRoboRepository;
+import com.sabia.pedagogico.model.robo.CenarioSalvo;
+import com.sabia.pedagogico.repository.CenarioSalvoRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.json.JsonMapper;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /** Regras da biblioteca de cenários: dono pelo id do token, 404 para outro professor, limite e validação. */
-class CenarioRoboServiceTest {
+class CenarioSalvoServiceTest {
 
     static final String VALIDO = "{\"versao\":1,\"linhas\":5,\"colunas\":5,"
             + "\"inicio\":{\"linha\":4,\"coluna\":0},\"destino\":{\"linha\":0,\"coluna\":4},"
@@ -38,23 +38,23 @@ class CenarioRoboServiceTest {
     private static final long PROFESSOR_A = 5L;
     private static final long PROFESSOR_B = 6L;
 
-    private final CenarioRoboRepository repo = mock(CenarioRoboRepository.class);
-    private final CenarioRoboService service =
-            new CenarioRoboService(repo, new CenarioRoboValidador(JsonMapper.builder().build()));
+    private final CenarioSalvoRepository repo = mock(CenarioSalvoRepository.class);
+    private final CenarioSalvoService service =
+            new CenarioSalvoService(repo, new CenarioRoboValidador(JsonMapper.builder().build()));
 
-    private static CenarioRobo cenario(long id, long professorId, String nome) {
+    private static CenarioSalvo cenario(long id, long professorId, String nome) {
         LocalDateTime agora = LocalDateTime.now();
-        return CenarioRobo.builder().id(id).professorId(professorId).nome(nome).cenarioJson(VALIDO)
+        return CenarioSalvo.builder().id(id).professorId(professorId).nome(nome).cenarioJson(VALIDO)
                 .criadoEm(agora).atualizadoEm(agora).build();
     }
 
-    CenarioRoboServiceTest() {
-        when(repo.save(any(CenarioRobo.class))).thenAnswer(inv -> {
-            CenarioRobo c = inv.getArgument(0);
+    CenarioSalvoServiceTest() {
+        when(repo.save(any(CenarioSalvo.class))).thenAnswer(inv -> {
+            CenarioSalvo c = inv.getArgument(0);
             c.setId(99L);
             return c;
         });
-        when(repo.saveAndFlush(any(CenarioRobo.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repo.saveAndFlush(any(CenarioSalvo.class))).thenAnswer(inv -> inv.getArgument(0));
         when(repo.findByIdAndProfessorId(1L, PROFESSOR_A)).thenReturn(Optional.of(cenario(1L, PROFESSOR_A, "Do A")));
         when(repo.findByIdAndProfessorId(1L, PROFESSOR_B)).thenReturn(Optional.empty());
     }
@@ -63,7 +63,7 @@ class CenarioRoboServiceTest {
     void criaComODonoDoTokenEONomeAparado() {
         CenarioRoboResponse resp = service.criar(PROFESSOR_A, new CenarioRoboRequest("  Labirinto  ", VALIDO));
 
-        ArgumentCaptor<CenarioRobo> salvo = ArgumentCaptor.forClass(CenarioRobo.class);
+        ArgumentCaptor<CenarioSalvo> salvo = ArgumentCaptor.forClass(CenarioSalvo.class);
         verify(repo).save(salvo.capture());
         assertThat(salvo.getValue().getProfessorId()).isEqualTo(PROFESSOR_A);
         assertThat(salvo.getValue().getNome()).isEqualTo("Labirinto");
@@ -89,7 +89,7 @@ class CenarioRoboServiceTest {
         assertThat(editado.nome()).isEqualTo("Novo nome");
 
         service.excluir(PROFESSOR_A, 1L);
-        verify(repo).delete(any(CenarioRobo.class));
+        verify(repo).delete(any(CenarioSalvo.class));
     }
 
     @Test
@@ -100,7 +100,7 @@ class CenarioRoboServiceTest {
         assertThatThrownBy(() -> service.excluir(PROFESSOR_B, 1L)).isInstanceOf(ResourceNotFoundException.class);
 
         verify(repo, never()).saveAndFlush(any());
-        verify(repo, never()).delete(any(CenarioRobo.class));
+        verify(repo, never()).delete(any(CenarioSalvo.class));
     }
 
     @Test
@@ -131,7 +131,7 @@ class CenarioRoboServiceTest {
         when(repo.countByProfessorId(PROFESSOR_A)).thenReturn(49L);
 
         service.criar(PROFESSOR_A, new CenarioRoboRequest("O último", VALIDO));
-        verify(repo).save(any(CenarioRobo.class));
+        verify(repo).save(any(CenarioSalvo.class));
     }
 
     @Test

@@ -118,14 +118,12 @@ public class RelatorioTurmaRules {
             Collection<SubmissaoAvaliativa> submissoes) {
         long esperado = totalAlunos * totalAtividades;
         long pendentes = contar(submissoes, StatusSubmissao.PENDENTE);
-        long emCorrecao = contar(submissoes, StatusSubmissao.EM_CORRECAO);
         long corrigidas = contar(submissoes, StatusSubmissao.CORRIGIDA);
         long comAtraso = submissoes.stream().filter(this::entregueComAtraso).count();
         return new StatusEntregasResponse(
                 esperado,
                 Math.max(0, esperado - submissoes.size()),
                 pendentes,
-                emCorrecao,
                 corrigidas,
                 submissoes.size() - comAtraso,
                 comAtraso
@@ -176,7 +174,7 @@ public class RelatorioTurmaRules {
 
     private boolean entregueComAtraso(SubmissaoAvaliativa submissao) {
         var prazo = submissao.getAtividade().getDataEntrega();
-        return prazo != null && submissao.getDataEnvio().isAfter(prazo);
+        return prazo != null && submissao.getEnviadaEm().isAfter(prazo);
     }
 
     private String nomeDe(TurmaAluno matricula) {

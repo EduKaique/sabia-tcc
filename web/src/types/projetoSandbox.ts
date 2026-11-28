@@ -1,20 +1,20 @@
 /** Projetos do Sandbox ("Meus Projetos"): privados do aluno, sem nota e sem entrega. */
 
-export type ModoProjetoSandbox = 'BLOCOS_LIVRES' | 'ROBO'
+import type { ModoPratica } from '@/types'
 
 export const LIMITE_PROJETOS_SANDBOX = 10
 
 export interface ProjetoSandboxResumo {
   id: number
   nome: string
-  modo: ModoProjetoSandbox
+  modo: ModoPratica
   /** LocalDateTime em UTC, sem fuso (ler com parseDataUtc). */
   atualizadoEm: string
 }
 
 export interface ProjetoSandboxDetalhe extends ProjetoSandboxResumo {
   estadoJson: string | null
-  /** Snapshot do cenário (só no modo ROBO). */
+  /** Snapshot do cenário (só no modo JOGO_ROBO). */
   cenarioJson: string | null
   origemAtividadeId: number | null
   criadoEm: string
@@ -22,8 +22,8 @@ export interface ProjetoSandboxDetalhe extends ProjetoSandboxResumo {
 
 export interface CriarProjetoSandboxPayload {
   nome?: string
-  modo: ModoProjetoSandbox
-  /** Id de um cenário pronto (PRESETS_CENARIO); obrigatório no modo ROBO. */
+  modo: ModoPratica
+  /** Id de um cenário pronto (PRESETS_CENARIO); obrigatório no modo JOGO_ROBO. */
   cenario?: string
 }
 

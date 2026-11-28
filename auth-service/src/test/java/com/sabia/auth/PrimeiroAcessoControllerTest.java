@@ -120,7 +120,7 @@ class PrimeiroAcessoControllerTest {
                 .andExpect(jsonPath("$.tipo").value("Bearer"))
                 .andExpect(jsonPath("$.role").value("ALUNO"))
                 .andExpect(jsonPath("$.nome").value("Maria Souza"))
-                .andExpect(jsonPath("$.mustChangePassword").value(false))
+                .andExpect(jsonPath("$.trocaSenhaObrigatoria").value(false))
                 .andExpect(jsonPath("$.turma.nome").value("Programação I — 2025/1"))
                 .andReturn().getResponse().getContentAsString();
 
@@ -135,7 +135,6 @@ class PrimeiroAcessoControllerTest {
         assertThat(aluno.getMatricula()).isEqualTo("2026A100");
         assertThat(aluno.getAvatar()).isEqualTo("sabia-azul");
         assertThat(aluno.isPerfilCompleto()).isTrue();
-        assertThat(aluno.getPontuacaoGeral()).isZero();
 
         verify(pedagogicoClient).matricular(10L, usuario.getId(), "Maria Souza");
 

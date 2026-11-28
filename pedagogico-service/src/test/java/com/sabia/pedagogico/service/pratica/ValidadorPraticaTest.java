@@ -2,15 +2,15 @@ package com.sabia.pedagogico.service.pratica;
 
 import com.sabia.pedagogico.exception.EstadoPraticaInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.service.CenarioRoboValidador;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import tools.jackson.databind.json.JsonMapper;
 
-import static com.sabia.pedagogico.model.atividade.ModoAtividade.BLOCOS;
-import static com.sabia.pedagogico.model.atividade.ModoAtividade.JOGO_ROBO;
+import static com.sabia.pedagogico.model.atividade.ModoPratica.BLOCOS;
+import static com.sabia.pedagogico.model.atividade.ModoPratica.JOGO_ROBO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -189,7 +189,7 @@ class ValidadorPraticaTest {
 
     @Test
     void jsonIlegivelOuAninhadoDemaisEhEntradaInvalida() {
-        for (ModoAtividade modo : ModoAtividade.values()) {
+        for (ModoPratica modo : ModoPratica.values()) {
             assertThatThrownBy(() -> validador.validar(modo, cenario(""), "{isto não é json"))
                     .isInstanceOf(EstadoPraticaInvalidoException.class);
             assertThatThrownBy(() -> validador.validar(modo, cenario(""), "[".repeat(100_000) + "]".repeat(100_000)))

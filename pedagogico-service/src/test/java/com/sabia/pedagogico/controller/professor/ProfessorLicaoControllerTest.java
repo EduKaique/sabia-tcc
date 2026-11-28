@@ -3,7 +3,7 @@ package com.sabia.pedagogico.controller.professor;
 import com.sabia.pedagogico.config.JwtConfig;
 import com.sabia.pedagogico.config.SecurityConfig;
 import com.sabia.pedagogico.exception.GlobalExceptionHandler;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
 import com.sabia.pedagogico.model.licao.StatusLicao;
@@ -142,8 +142,8 @@ class ProfessorLicaoControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         reset(licaoRepo, paginaRepo, vinculoRepo, matriculaRepo, progressoPaginaRepo, progressoLicaoRepo);
-        licao = Licao.builder().id(1L).codigo("p-x").ordem(0).titulo("Algoritmos").conceito("Sequência")
-                .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(5L).build();
+        licao = Licao.builder().id(1L).titulo("Algoritmos").conceito("Sequência")
+                .modo(ModoPratica.BLOCOS).status(StatusLicao.ATIVA).professorId(5L).build();
         when(licaoRepo.findById(1L)).thenReturn(Optional.of(licao));
         when(licaoRepo.findById(99L)).thenReturn(Optional.empty());
         when(licaoRepo.save(any(Licao.class))).thenAnswer(inv -> {

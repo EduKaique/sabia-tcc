@@ -27,10 +27,6 @@ public class ProgressoLicao {
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean videoVisto = false;
-
-    @Column(nullable = false)
-    @Builder.Default
     private boolean atividadeConcluida = false;
 
     @Column(columnDefinition = "TEXT")

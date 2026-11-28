@@ -3,7 +3,7 @@ package com.sabia.pedagogico.controller.aluno;
 import com.sabia.pedagogico.config.JwtConfig;
 import com.sabia.pedagogico.config.SecurityConfig;
 import com.sabia.pedagogico.exception.GlobalExceptionHandler;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
@@ -119,7 +119,7 @@ class AlunoLicaoControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         reset(licaoRepo, vinculoRepo, paginaRepo, progressoRepo, progressoPaginaRepo);
         linhas.clear();
-        licao = Licao.builder().id(1L).titulo("Laços").conceito("Repetição").modo(ModoAtividade.BLOCOS)
+        licao = Licao.builder().id(1L).titulo("Laços").conceito("Repetição").modo(ModoPratica.BLOCOS)
                 .status(StatusLicao.ATIVA).professorId(2L).publicadaEm(LocalDateTime.of(2026, 11, 1, 0, 0)).build();
         texto = PaginaLicao.builder().id(10L).licao(licao).ordem(0).tipo(TipoPagina.TEXTO)
                 .conteudoJson("{\"html\":\"<p>Oi</p>\"}").build();
@@ -187,7 +187,6 @@ class AlunoLicaoControllerTest {
         assertThat(raiz.get("paginas").get(0).get("conteudo").get("html").stringValue()).isEqualTo("<p>Oi</p>");
         // Campos legados saíram da resposta do aluno.
         assertThat(raiz.has("videoId")).isFalse();
-        assertThat(raiz.has("videoVisto")).isFalse();
         assertThat(raiz.has("conteudo")).isFalse();
         assertThat(raiz.get("estado").stringValue()).isEqualTo("NAO_INICIADA");
         assertThat(raiz.get("praticaLiberada").booleanValue()).isFalse();

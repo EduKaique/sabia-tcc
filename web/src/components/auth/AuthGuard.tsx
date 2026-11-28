@@ -40,7 +40,7 @@ export function AuthGuard({
       return
     }
 
-    if (user?.mustChangePassword) {
+    if (user?.trocaSenhaObrigatoria) {
       router.replace(ROTA_TROCAR_SENHA)
       return
     }
@@ -50,7 +50,7 @@ export function AuthGuard({
     }
   }, [allowedRoles, hydrated, pathname, router, token, user])
 
-  if (!hydrated || !token || !user || user.mustChangePassword || !allowedRoles.includes(user.role)) {
+  if (!hydrated || !token || !user || user.trocaSenhaObrigatoria || !allowedRoles.includes(user.role)) {
     return null
   }
   return children

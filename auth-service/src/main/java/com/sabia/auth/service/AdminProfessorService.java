@@ -59,7 +59,7 @@ public class AdminProfessorService {
                 .email(request.email())
                 .senhaHash(passwordEncoder.encode(senhaTemporaria))
                 .tipoPerfil(PerfilUsuario.PROFESSOR)
-                .mustChangePassword(true)
+                .trocaSenhaObrigatoria(true)
                 .build();
         usuarioRepository.save(usuario);
         professorRepository.save(Professor.builder().usuario(usuario).build());

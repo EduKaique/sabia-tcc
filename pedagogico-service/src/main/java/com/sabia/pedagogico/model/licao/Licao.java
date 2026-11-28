@@ -3,14 +3,14 @@ package com.sabia.pedagogico.model.licao;
 import jakarta.persistence.*;
 import lombok.*;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 
 import java.time.LocalDateTime;
 
 /**
  * Lição do módulo de aprendizado, criada por um professor: páginas de conteúdo (PaginaLicao), vínculo com
  * turmas (LicaoTurma) e uma prática própria (modo + cenário). Colunas novas são anuláveis (ddl-auto update):
- * as lições legadas do antigo seed ficam com professorId nulo. `codigo`, `ordem`, `conceito` e `modo`
+ * as lições legadas do antigo seed ficam com professorId nulo. `conceito` e `modo`
  * continuam NOT NULL no banco e são sempre preenchidos pelo serviço.
  */
 @Entity
@@ -22,35 +22,18 @@ public class Licao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String codigo;
-
-    @Column(nullable = false)
-    private int ordem;
-
     @Column(nullable = false)
     private String titulo;
 
     @Column(columnDefinition = "TEXT")
     private String resumo;
 
-    /** HTML; o front sanitiza antes de exibir. */
-    @Column(columnDefinition = "TEXT")
-    private String conteudo;
-
     @Column(nullable = false)
     private String conceito;
 
-    @Column(length = 20)
-    private String videoId;
-
-    private String videoTitulo;
-
-    private String videoCanal;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ModoAtividade modo;
+    private ModoPratica modo;
 
     /** Obrigatório quando modo = JOGO_ROBO (validado no seed pelo CenarioRoboValidador). */
     @Column(columnDefinition = "TEXT")

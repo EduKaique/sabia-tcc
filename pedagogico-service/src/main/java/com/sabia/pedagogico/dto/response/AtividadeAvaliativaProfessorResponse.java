@@ -2,7 +2,7 @@ package com.sabia.pedagogico.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.StatusAtividade;
 
 public record AtividadeAvaliativaProfessorResponse(
@@ -12,11 +12,10 @@ public record AtividadeAvaliativaProfessorResponse(
         Long turmaId,
         int pontuacaoMaxima,
         LocalDateTime dataEntrega,
-        boolean eGeradaIa,
         StatusAtividade status,
         LocalDateTime criadaEm,
         String gabaritoEstadoJson,
-        ModoAtividade modo,
+        ModoPratica modo,
         String cenarioJson,
         boolean possuiNotas
 ) {}

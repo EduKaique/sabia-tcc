@@ -1,11 +1,11 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 import type {
   ConteudoImagemTexto,
   ConteudoTexto,
-  EstadoLicaoProfessor,
+  EstadoPublicacaoLicao,
   LicaoProfessorDetalhe,
-  TipoPagina,
 } from '@/types/licaoProfessor'
+import type { TipoPagina } from '@/types/licao'
 import { perguntaVazia, LIMITES_QUESTIONARIO, type ConteudoQuestionarioEditor } from './questionario'
 import { lerDuracao, type ConteudoVideoEditor } from './youtube'
 
@@ -48,9 +48,9 @@ export interface MetadadosLicao {
 
 export interface EstadoEditor {
   licaoId: number | null
-  estadoPublicacao: EstadoLicaoProfessor | null
+  estadoPublicacao: EstadoPublicacaoLicao | null
   metadados: MetadadosLicao
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   turmaIds: number[]
   paginas: PaginaEditor[]
@@ -74,13 +74,13 @@ export type ConteudoParcial =
 
 export type AcaoEditor =
   | { tipo: 'carregar'; detalhe: LicaoProfessorDetalhe; manterTurmas?: boolean }
-  | { tipo: 'sincronizarPublicacao'; estadoPublicacao: EstadoLicaoProfessor }
+  | { tipo: 'sincronizarPublicacao'; estadoPublicacao: EstadoPublicacaoLicao }
   | { tipo: 'adicionarPagina'; tipoPagina: TipoEditavel }
   | { tipo: 'removerPagina'; chave: string }
   | { tipo: 'moverPagina'; chave: string; direcao: -1 | 1 }
   | { tipo: 'atualizarPagina'; chave: string; titulo?: string; conteudo?: ConteudoParcial }
   | { tipo: 'atualizarMetadados'; metadados: Partial<MetadadosLicao> }
-  | { tipo: 'trocarModo'; modo: ModoAtividade }
+  | { tipo: 'trocarModo'; modo: ModoPratica }
   | { tipo: 'trocarCenario'; cenarioJson: string | null }
   | { tipo: 'trocarTurmas'; turmaIds: number[] }
 

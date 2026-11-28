@@ -1,4 +1,4 @@
-import type { ModoAtividade, ResultadoValidacao } from '@/types'
+import type { ModoPratica, ResultadoValidacao } from '@/types'
 
 /**
  * Tipos da API do aluno (/api/aluno/licoes). Os do professor ficam em types/licaoProfessor.ts.
@@ -7,7 +7,7 @@ import type { ModoAtividade, ResultadoValidacao } from '@/types'
 
 export type EstadoLicaoAluno = 'NAO_INICIADA' | 'EM_ANDAMENTO' | 'PRATICA_LIBERADA' | 'CONCLUIDA'
 
-export type TipoPaginaAluno = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
+export type TipoPagina = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
 
 /** Item de GET /api/aluno/licoes. `turmas`: só as turmas do aluno às quais a lição está vinculada. */
 export interface LicaoResumo {
@@ -15,7 +15,7 @@ export interface LicaoResumo {
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   estado: EstadoLicaoAluno
   totalPaginas: number
   paginasConcluidas: number
@@ -71,7 +71,7 @@ export interface ProgressoPagina {
 export interface PaginaAluno {
   id: number
   ordem: number
-  tipo: TipoPaginaAluno
+  tipo: TipoPagina
   titulo: string | null
   conteudo: unknown
   progresso: ProgressoPagina
@@ -83,7 +83,7 @@ export interface LicaoDetalhe {
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   /** Texto JSON no modo JOGO_ROBO (ler com lerCenario); null em BLOCOS. */
   cenarioJson: string | null
   /** Último workspace salvo; null antes do primeiro autosave. */

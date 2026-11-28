@@ -23,6 +23,8 @@ x-health-rapido: &health-rapido
 
 x-java-env: &java-env
   SPRING_PROFILES_ACTIVE: prod
+  # Seed de demonstração (apresentação). Para desligar: SABIA_SEED_DEMO=false no .env.prod e recriar auth e pedagogico.
+  SABIA_SEED_DEMO: ${SABIA_SEED_DEMO:-true}
   JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k}
   SPRING_DATASOURCE_USERNAME: sabia
   SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env.prod}

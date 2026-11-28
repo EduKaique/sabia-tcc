@@ -22,7 +22,7 @@ export function ResumoCorrecao({ correcao }: Props) {
           <p className="whitespace-pre-wrap text-sm text-foreground">{correcao.feedbackProfessor || '--'}</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Avaliada em {formatarDataHora(parseDataUtc(correcao.avaliadaEm))}. A nota não pode ser alterada.
+          Avaliada em {formatarDataHora(parseDataUtc(correcao.corrigidaEm))}. A nota não pode ser alterada.
         </p>
       </CardContent>
     </Card>

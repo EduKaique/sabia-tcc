@@ -1,11 +1,9 @@
-import type { ModoAtividade } from '@/types'
-import type { EstadoLicaoAluno } from '@/types/licao'
+import type { ModoPratica } from '@/types'
+import type { EstadoLicaoAluno, TipoPagina } from '@/types/licao'
 
 /** Tipos da API de autoria de lições (/api/professor/licoes). As do aluno ficam em types/licao.ts. */
 
-export type EstadoLicaoProfessor = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA'
-
-export type TipoPagina = 'TEXTO' | 'IMAGEM_TEXTO' | 'VIDEO_YOUTUBE' | 'VIDEO_UPLOAD' | 'QUESTIONARIO'
+export type EstadoPublicacaoLicao = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA'
 
 export interface ConteudoTexto {
   html: string
@@ -41,11 +39,11 @@ export interface PaginaLicaoProfessor {
 
 export interface LicaoProfessorResumo {
   id: number
-  estado: EstadoLicaoProfessor
+  estado: EstadoPublicacaoLicao
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   turmas: { id: number; nome: string }[]
   quantidadePaginas: number
   atualizadaEm: string | null
@@ -53,11 +51,11 @@ export interface LicaoProfessorResumo {
 
 export interface LicaoProfessorDetalhe {
   id: number
-  estado: EstadoLicaoProfessor
+  estado: EstadoPublicacaoLicao
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   turmaIds: number[]
   paginas: PaginaLicaoProfessor[]
@@ -83,7 +81,7 @@ export interface SalvarLicaoPayload {
   titulo: string
   conceito: string
   resumo: string | null
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   paginas: PaginaLicaoPayload[]
 }
@@ -97,8 +95,8 @@ export interface ProgressoLicaoProfessor {
     id: number
     titulo: string
     conceito: string
-    modo: ModoAtividade
-    estado: EstadoLicaoProfessor
+    modo: ModoPratica
+    estado: EstadoPublicacaoLicao
     publicadaEm: string | null
   }
   paginas: { id: number; ordem: number; tipo: TipoPagina; titulo: string | null }[]

@@ -1,6 +1,6 @@
-import type { ModoAtividade } from '@/types'
+import type { ModoPratica } from '@/types'
 
-export type StatusAtividadeAluno = 'PENDENTE' | 'EM_ANDAMENTO' | 'ENTREGUE' | 'CORRIGIDA'
+export type StatusAtividadeAluno = 'PENDENTE' | 'ENTREGUE' | 'CORRIGIDA'
 
 export interface AtividadeAlunoDTO {
   id: number
@@ -9,16 +9,16 @@ export interface AtividadeAlunoDTO {
   dataEntrega: string
   pontuacaoMaxima: number
   status: StatusAtividadeAluno
-  modo: ModoAtividade
+  modo: ModoPratica
   cenarioJson: string | null
   /** Nota, comentário e data da correção: só vêm preenchidos quando status é CORRIGIDA. */
   nota: number | null
   feedbackProfessor: string | null
-  avaliadaEm: string | null
+  corrigidaEm: string | null
 }
 
 /** Projeto entregue pelo próprio aluno (somente leitura). */
 export interface ProjetoEntregueDTO {
   estadoJson: string | null
-  dataEnvio: string
+  enviadaEm: string
 }

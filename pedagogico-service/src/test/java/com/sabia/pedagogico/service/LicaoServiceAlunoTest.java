@@ -5,7 +5,7 @@ import com.sabia.pedagogico.dto.response.LicaoDetalheResponse;
 import com.sabia.pedagogico.dto.response.LicaoResumoResponse;
 import com.sabia.pedagogico.dto.response.TurmaVinculadaResponse;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.licao.EstadoLicaoAluno;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
@@ -66,7 +66,7 @@ class LicaoServiceAlunoTest {
 
     private static Licao licao(long id, LocalDateTime publicadaEm) {
         return Licao.builder().id(id).titulo("Lição " + id).conceito("Conceito").resumo("Resumo")
-                .modo(ModoAtividade.BLOCOS).status(StatusLicao.ATIVA).professorId(2L).publicadaEm(publicadaEm).build();
+                .modo(ModoPratica.BLOCOS).status(StatusLicao.ATIVA).professorId(2L).publicadaEm(publicadaEm).build();
     }
 
     private static LicaoTurma vinculo(Licao l, Turma t) {

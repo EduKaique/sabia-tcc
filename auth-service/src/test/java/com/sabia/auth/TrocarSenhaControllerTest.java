@@ -56,7 +56,7 @@ class TrocarSenhaControllerTest {
                 .email(EMAIL)
                 .senhaHash(passwordEncoder.encode("password"))
                 .tipoPerfil(PerfilUsuario.PROFESSOR)
-                .mustChangePassword(true)
+                .trocaSenhaObrigatoria(true)
                 .build());
         usuarioId = usuario.getId();
     }
@@ -71,13 +71,13 @@ class TrocarSenhaControllerTest {
     }
 
     @Test
-    void login_comMustChangePasswordTrue_exposeAFlag() throws Exception {
+    void login_comTrocaSenhaObrigatoriaTrue_exposeAFlag() throws Exception {
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"email":"professor@sabia.edu","senha":"password"}"""))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.mustChangePassword").value(true));
+                .andExpect(jsonPath("$.trocaSenhaObrigatoria").value(true));
     }
 
     @Test
@@ -91,14 +91,14 @@ class TrocarSenhaControllerTest {
                             {"senhaAtual":"password","novaSenha":"novaSenha123","confirmarSenha":"novaSenha123"}"""))
                 .andExpect(status().isOk());
 
-        assertThat(usuarioRepository.findById(usuarioId).orElseThrow().isMustChangePassword()).isFalse();
+        assertThat(usuarioRepository.findById(usuarioId).orElseThrow().isTrocaSenhaObrigatoria()).isFalse();
 
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"email":"professor@sabia.edu","senha":"novaSenha123"}"""))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.mustChangePassword").value(false));
+                .andExpect(jsonPath("$.trocaSenhaObrigatoria").value(false));
     }
 
     @Test

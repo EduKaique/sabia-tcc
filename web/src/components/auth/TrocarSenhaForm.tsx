@@ -20,7 +20,7 @@ import { CampoSenha } from '@/components/aluno/primeiro-acesso/CampoSenha'
 const subscribeNoop = () => () => {}
 
 /**
- * Troca da própria senha, no visual do login da home. Obrigatória (claim mustChangePassword no
+ * Troca da própria senha, no visual do login da home. Obrigatória (claim trocaSenhaObrigatoria no
  * token): sem saída além de "Sair". Voluntária (pelo menu): com "Voltar". Ao concluir, guarda o
  * token novo e vai para a home do perfil.
  */
@@ -28,7 +28,7 @@ export function TrocarSenhaForm() {
   const router = useRouter()
   const { user, token } = useAuth()
   const hydrated = useSyncExternalStore(subscribeNoop, () => true, () => false)
-  const obrigatoria = !!user?.mustChangePassword
+  const obrigatoria = !!user?.trocaSenhaObrigatoria
 
   useEffect(() => {
     if (hydrated && !token) router.replace('/')

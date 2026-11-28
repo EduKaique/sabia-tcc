@@ -7,10 +7,9 @@ import com.sabia.pedagogico.dto.response.ProjetoSandboxResumoResponse;
 import com.sabia.pedagogico.exception.ErroCodificadoException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
 import com.sabia.pedagogico.model.atividade.AtividadeAvaliativa;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
 import com.sabia.pedagogico.model.atividade.StatusSubmissao;
 import com.sabia.pedagogico.model.atividade.SubmissaoAvaliativa;
-import com.sabia.pedagogico.model.sandbox.ModoProjetoSandbox;
 import com.sabia.pedagogico.model.sandbox.ProjetoSandbox;
 import com.sabia.pedagogico.repository.ProjetoSandboxRepository;
 import com.sabia.pedagogico.repository.SubmissaoAvaliativaRepository;
@@ -64,7 +63,7 @@ public class ProjetoSandboxService {
     @Transactional
     public ProjetoSandboxDetalheResponse criar(Long alunoId, CriarProjetoSandboxRequest request) {
         String cenarioJson = null;
-        if (request.modo() == ModoProjetoSandbox.ROBO) {
+        if (request.modo() == ModoPratica.JOGO_ROBO) {
             cenarioJson = CenariosProntosRobo.porId(request.cenario())
                     .orElseThrow(() -> new ErroCodificadoException(HttpStatus.BAD_REQUEST, "SANDBOX_CENARIO_INVALIDO",
                             "Escolha um dos cenários prontos do Jogo do Robô."));
@@ -119,7 +118,7 @@ public class ProjetoSandboxService {
                     "Só é possível continuar no Sandbox depois que a atividade for corrigida.");
         }
         AtividadeAvaliativa atividade = sub.getAtividade();
-        boolean robo = atividade.getModo() == ModoAtividade.JOGO_ROBO;
+        boolean robo = atividade.getModo() == ModoPratica.JOGO_ROBO;
         String estadoJson = sub.getProjeto() != null ? sub.getProjeto().getEstadoJson() : null;
         String cenarioJson = robo ? atividade.getCenarioJson() : null;
         validarTamanho(estadoJson, cenarioJson);
@@ -127,7 +126,7 @@ public class ProjetoSandboxService {
         ProjetoSandbox projeto = ProjetoSandbox.builder()
                 .alunoId(alunoId)
                 .nome(normalizarNome(nomeDaCopia(atividade.getTitulo())))
-                .modo(robo ? ModoProjetoSandbox.ROBO : ModoProjetoSandbox.BLOCOS_LIVRES)
+                .modo(robo ? ModoPratica.JOGO_ROBO : ModoPratica.BLOCOS)
                 .estadoJson(estadoJson)
                 .cenarioJson(cenarioJson)
                 .origemAtividadeId(atividade.getId())

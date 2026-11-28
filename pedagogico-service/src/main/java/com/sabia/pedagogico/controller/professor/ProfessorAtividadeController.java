@@ -94,7 +94,7 @@ public class ProfessorAtividadeController {
             Authentication auth,
             @PathVariable Long id,
             @RequestParam(required = false) StatusSubmissao status,
-            @PageableDefault(size = 20, sort = "dataEnvio", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "enviadaEm", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(submissaoAvaliativaService.listarSubmissoesPorAtividade(id, professorId(auth), status, pageable));
     }
 

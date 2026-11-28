@@ -35,7 +35,7 @@ export default function ProjetoEntreguePage({ params }: Props) {
       </h1>
       {projeto && (
         <p className={cn(textoApoio, 'mb-4')}>
-          Projeto entregue em {formatarDataHora(parseDataUtc(projeto.dataEnvio))}. Somente
+          Projeto entregue em {formatarDataHora(parseDataUtc(projeto.enviadaEm))}. Somente
           visualização.
         </p>
       )}

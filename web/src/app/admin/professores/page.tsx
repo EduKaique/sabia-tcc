@@ -172,7 +172,7 @@ export default function AdminProfessoresPage() {
                 </div>
                 <div className="flex items-center gap-3 sm:shrink-0">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${professor.ativo ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>{professor.ativo ? 'Ativo' : 'Inativo'}</span>
-                  {professor.mustChangePassword && <span className="hidden rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 md:inline">Troca de senha pendente</span>}
+                  {professor.trocaSenhaObrigatoria && <span className="hidden rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 md:inline">Troca de senha pendente</span>}
                   <Button variant={professor.ativo ? 'destructive' : 'outline'} size="sm" disabled={alterarStatus.isPending} onClick={() => toggleStatus(professor)}>
                     {alterarStatus.isPending ? <Loader2 size={15} className="animate-spin" /> : professor.ativo ? <ShieldOff size={15} /> : <CheckCircle2 size={15} />}
                     {professor.ativo ? 'Desativar' : 'Reativar'}

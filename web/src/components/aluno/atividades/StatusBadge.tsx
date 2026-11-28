@@ -10,10 +10,6 @@ const config: Record<StatusAtividadeAluno, { label: string; className: string }>
     label: 'Pendente',
     className: 'border-sabia-amarelo bg-sabia-amarelo/25',
   },
-  EM_ANDAMENTO: {
-    label: 'Em Andamento',
-    className: 'border-sabia-azul bg-sabia-azul-claro',
-  },
   ENTREGUE: {
     label: 'Em avaliação',
     className: 'border-sabia-laranja bg-sabia-laranja/15',

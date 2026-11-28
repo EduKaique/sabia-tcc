@@ -14,8 +14,8 @@ import com.sabia.pedagogico.exception.ConflitoException;
 import com.sabia.pedagogico.exception.ConteudoInvalidoException;
 import com.sabia.pedagogico.exception.OperacaoInvalidaException;
 import com.sabia.pedagogico.exception.ResourceNotFoundException;
-import com.sabia.pedagogico.model.atividade.ModoAtividade;
-import com.sabia.pedagogico.model.licao.EstadoLicao;
+import com.sabia.pedagogico.model.atividade.ModoPratica;
+import com.sabia.pedagogico.model.licao.EstadoPublicacaoLicao;
 import com.sabia.pedagogico.model.licao.Licao;
 import com.sabia.pedagogico.model.licao.LicaoTurma;
 import com.sabia.pedagogico.model.licao.PaginaLicao;
@@ -44,7 +44,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -92,7 +91,7 @@ public class ProfessorLicaoService {
         }
 
         return licoes.stream()
-                .map(l -> new LicaoProfessorResumoResponse(l.getId(), EstadoLicao.de(l), l.getTitulo(), l.getConceito(),
+                .map(l -> new LicaoProfessorResumoResponse(l.getId(), EstadoPublicacaoLicao.de(l), l.getTitulo(), l.getConceito(),
                         l.getResumo(), l.getModo(), turmas.getOrDefault(l.getId(), List.of()),
                         paginas.getOrDefault(l.getId(), 0L), l.getAtualizadaEm()))
                 .toList();
@@ -106,12 +105,10 @@ public class ProfessorLicaoService {
         }
         LocalDateTime agora = agora();
         Licao licao = licaoRepository.save(Licao.builder()
-                .codigo("p-" + UUID.randomUUID())
-                .ordem(0)
                 .titulo(request.titulo())
                 .conceito(request.conceito())
                 .resumo(vazioComoNulo(request.resumo()))
-                .modo(ModoAtividade.BLOCOS)
+                .modo(ModoPratica.BLOCOS)
                 .status(StatusLicao.ATIVA)
                 .professorId(professorId)
                 .criadaEm(agora)
@@ -228,7 +225,7 @@ public class ProfessorLicaoService {
                 }
             }
         }
-        if (licao.getModo() == ModoAtividade.JOGO_ROBO) {
+        if (licao.getModo() == ModoPratica.JOGO_ROBO) {
             if (licao.getCenarioJson() == null || licao.getCenarioJson().isBlank()) {
                 throw new OperacaoInvalidaException("Escolha o cenário do Jogo do Robô antes de publicar.");
             }
@@ -296,8 +293,8 @@ public class ProfessorLicaoService {
     }
 
     /** Como AtividadeAvaliativaService.cenarioDoModo, mas o rascunho do robô pode ficar sem cenário. */
-    private String cenarioDoModo(ModoAtividade modo, String cenarioJson) {
-        if (modo != ModoAtividade.JOGO_ROBO || cenarioJson == null || cenarioJson.isBlank()) return null;
+    private String cenarioDoModo(ModoPratica modo, String cenarioJson) {
+        if (modo != ModoPratica.JOGO_ROBO || cenarioJson == null || cenarioJson.isBlank()) return null;
         cenarioRoboValidador.validar(cenarioJson);
         return cenarioJson;
     }
@@ -315,7 +312,7 @@ public class ProfessorLicaoService {
                 .map(p -> new PaginaLicaoResponse(p.getId(), p.getOrdem(), p.getTipo(), p.getTitulo(),
                         objectMapper.readTree(p.getConteudoJson())))
                 .toList();
-        return new LicaoProfessorDetalheResponse(licao.getId(), EstadoLicao.de(licao), licao.getTitulo(),
+        return new LicaoProfessorDetalheResponse(licao.getId(), EstadoPublicacaoLicao.de(licao), licao.getTitulo(),
                 licao.getConceito(), licao.getResumo(), licao.getModo(), licao.getCenarioJson(),
                 turmaIds.stream().sorted().toList(), respostas, licao.getPublicadaEm(), licao.getCriadaEm(),
                 licao.getAtualizadaEm());

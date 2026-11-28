@@ -19,11 +19,11 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class ProcessadorIdempotente {
 
-    private final MensagemProcessadaRepository repository;
+    private final EventoConsumidoRepository repository;
 
     @Transactional
     public <T> boolean processar(String consumidor, EnvelopeEvento<T> evento, Consumer<T> tratamento) {
-        var registro = MensagemProcessada.de(consumidor, evento.messageId());
+        var registro = EventoConsumido.de(consumidor, evento.messageId());
         if (repository.existsById(registro.getId())) {
             log.info("Mensagem duplicada descartada: consumidor={} messageId={}", consumidor, evento.messageId());
             return false;

@@ -13,7 +13,7 @@ import java.time.ZoneOffset;
 @Entity
 @Table(name = "cenario_robo")
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-public class CenarioRobo {
+public class CenarioSalvo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

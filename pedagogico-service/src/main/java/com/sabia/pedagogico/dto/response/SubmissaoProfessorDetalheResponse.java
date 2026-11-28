@@ -10,7 +10,7 @@ public record SubmissaoProfessorDetalheResponse(
         Long id,
         Long atividadeId,
         String alunoNome,
-        LocalDateTime dataEnvio,
+        LocalDateTime enviadaEm,
         StatusSubmissao status,
         String estadoJson,
         CorrecaoResponse correcao,
